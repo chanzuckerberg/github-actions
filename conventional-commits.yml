@@ -7,7 +7,7 @@ on:
         required: true
         type: string
 
-jjobs:
+jobs:
   conventional_commit_title:
     runs-on: ubuntu-latest
     steps:
