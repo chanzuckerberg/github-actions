@@ -1,0 +1,12 @@
+{
+	"release-type": "simple",
+	"pull-request-title-pattern": "chore${scope}: release${component} ${version}",
+	"bump-minor-pre-major": true,
+	"prerelease": false,
+	"packages": {
+		"conventional-commits.yml": {
+			"package-name": "conventional-commits"
+		},
+		".": {}
+	}
+}
