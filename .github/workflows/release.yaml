@@ -31,3 +31,5 @@ jobs:
           changelog-types: ${{ steps.configure-changelog.outputs.result }}
           token: ${{ secrets.GITHUB_TOKEN }}
           monorepo-tags: true
+          manifest-file: ".release-please-manifest.json"
+          config-file: "release-please-config.json"
