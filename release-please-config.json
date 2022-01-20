@@ -3,6 +3,7 @@
 	"pull-request-title-pattern": "chore${scope}: release${component} ${version}",
 	"bump-minor-pre-major": true,
 	"prerelease": false,
+	"initial-version": "0.0.0",
 	"packages": {
 		"conventional-commits.yml": {
 			"package-name": "conventional-commits"
