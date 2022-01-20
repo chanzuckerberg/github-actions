@@ -6,8 +6,11 @@
 	"initial-version": "0.0.0",
 	"packages": {
 		"conventional-commits.yml": {
+			"initial-version": "0.0.0",
 			"package-name": "conventional-commits"
 		},
-		".": {}
+		".": {
+			"initial-version": "0.0.0"
+		}
 	}
 }
