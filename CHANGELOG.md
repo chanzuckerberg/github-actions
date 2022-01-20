@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.1](https://github.com/chanzuckerberg/github-actions/compare/v1.1.0...v1.1.1) (2022-01-20)
+
+
+### Bug Fixes
+
+* conventional-commits don't require pr-title ([14a7be4](https://github.com/chanzuckerberg/github-actions/commit/14a7be4f0fa6084b60c7400c12c1d71b57a1a00b))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/v1.0.0...v1.1.0) (2022-01-20)
 
 
