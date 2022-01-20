@@ -1,12 +1,12 @@
 {
-	"release-type": "simple",
-	"group-pull-request-title-pattern": "chore: release ${version}",
-	"bump-minor-pre-major": true,
+	"releaseType": "simple",
+	"groupPullRequestTitlePattern": "chore: release ${version}",
+	"bumpMinorPreMajor": true,
 	"prerelease": false,
-	"initial-version": "0.0.0",
+	"initialVersion": "0.0.0",
 	"packages": {
 		"conventional-commits": {
-			"package-name": "conventional-commits"
+			"packageName": "conventional-commits"
 		},
 		".": {}
 	}
