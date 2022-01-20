@@ -5,7 +5,7 @@
 	"prerelease": false,
 	"initial-version": "0.0.0",
 	"packages": {
-		"conventional-commits": {
+		".github/workflows/conventional-commits": {
 			"package-name": "conventional-commits"
 		},
 		".": {}
