@@ -1,11 +1,7 @@
 name: Conventional Commits Checking
 
 on:
-  workflow_call:
-    inputs:
-      pr-title:
-        required: true
-        type: string
+  workflow_call: {}
 
 jobs:
   conventional_commit_title:
