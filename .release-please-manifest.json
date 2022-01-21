@@ -1,4 +1,4 @@
 {
 	".": "1.1.1",
-	"conventional-commits": "1.0.1"
+	".github/workflows/conventional-commits": "1.0.1"
 }
