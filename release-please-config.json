@@ -4,9 +4,29 @@
 	"bump-minor-pre-major": true,
 	"prerelease": false,
 	"initial-version": "0.0.0",
+	"changelog-types": [
+		{
+			"type": "feat",
+			"section": "Features",
+			"hidden": false
+		},
+		{
+			"type": "chore",
+			"section": "Misc",
+			"hidden": false
+		},
+		{
+			"type": "fix",
+			"section": "BugFixes",
+			"hidden": false
+		}
+	],
 	"packages": {
-		".github/workflows/conventional-commits": {
+		"conventional-commits": {
 			"package-name": "conventional-commits"
+		},
+		"docker-build-push": {
+			"package-name": "docker-build-push"
 		},
 		".": {}
 	}

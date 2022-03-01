@@ -1,0 +1,55 @@
+name: "Docker Build and Push"
+description: "Will build and push a docker iamge."
+inputs:
+  dockerfile: # id of input
+    description: "Path to the Dockerfile to be built."
+    required: true
+    default: "Dockerfile"
+  context:
+    description: "Path to the Docker build context."
+    required: true
+    default: "."
+  name:
+    description: "Name of the built docker image."
+    required: true
+  registry:
+    description: "URI for your docker registry. Typically an ECR registry."
+    required: true
+  # TODO: cache-to, cache-from
+  # cache-from:
+  # description: "A list of external caches to use during the docker build process"
+  # required: false
+outputs:
+  tags:
+    description: "The tags we built and pushed"
+    value: ${{ steps.meta.outputs.tags }}
+runs:
+  using: "composite"
+  steps:
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: ${{ inputs.registry }}/${{ inputs.name }}
+        tags: |
+          type=ref,prefix=branch-,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix=sha-
+          type=sha,format=long
+    - name: Login to ECR
+      uses: docker/login-action@v1
+      with:
+        registry: $${{ inputs.registry }}
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: ${{ inputs.context }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
