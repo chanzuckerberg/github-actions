@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/chanzuckerberg/github-actions/compare/v1.1.0...v1.2.0) (2022-03-02)
+
+
+### Features
+
+* Shared action to create or update a happy stack ([#15](https://github.com/chanzuckerberg/github-actions/issues/15)) ([e3eec6a](https://github.com/chanzuckerberg/github-actions/commit/e3eec6a2bc334818c2991b2e28771a87e4ca8844))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/v1.0.0...v1.1.0) (2022-03-02)
 
 
