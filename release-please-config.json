@@ -31,6 +31,9 @@
 		"install-happy": {
 			"package-name": "install-happy"
 		},
+		"deploy-happy-stack": {
+			"package-name": "deploy-happy-stack"
+		},
 		".": {}
 	}
 }
