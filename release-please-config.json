@@ -28,7 +28,7 @@
 		"docker-build-push": {
 			"package-name": "docker-build-push"
 		},
-		"docker-build-push": {
+		"install-happy": {
 			"package-name": "install-happy"
 		},
 		".": {}
