@@ -1,23 +1,23 @@
 name: Create or Update a Happy Stack
 description: "Will create or update a Happy Stack"
 inputs:
-  aws_access_key_id:
+  aws-access-key-id:
     description: "AWS Access Key ID"
     required: true
     default: ""
-  aws_secret_access_key:
+  aws-secret-access-key:
     description: "AWS Secret Access Key"
     required: true
     default: ""
-  role_to_assume:
+  role-to-assume:
     description: "Role to assume"
     required: true
     default: ""
-  tfe_token:
+  tfe-token:
     description: "TFE Token"
     required: true
     default: ""
-  stack_name:
+  stack-name:
     description: "Name of the stack to create or update"
     required: true
     default: "rdev"
@@ -27,18 +27,18 @@ runs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ inputs.aws_access_key_id }}
-          aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
+          aws-access-key-id: ${{ inputs.aws-access-key-id }}
+          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
           aws-region: us-west-2
-          role-to-assume: ${{ inputs.role_to_assume }}
+          role-to-assume: ${{ inputs.role-to-assume }}
           role-duration-seconds: 900
       - name: Install happy
         uses: chanzuckerberg/github-actions/install-happy@install-happy-v1.1.0
       - name: Create update rdev
         env:
-          TFE_TOKEN: ${{ inputs.tfe_token }}
+          TFE_TOKEN: ${{ inputs.tfe-token }}
         run: |
-          STACK_NAME=${GITHUB_REF#refs/heads/${{ inputs.stack_name }}-}
+          STACK_NAME=${GITHUB_REF#refs/heads/${{ inputs.stack-name }}-}
           if $(happy --profile="" list | grep -q $STACK_NAME); then
             echo "Updating stack $STACK_NAME"
             happy --profile=""  update --tag sha-${GITHUB_SHA:0:8} $STACK_NAME
