@@ -28,25 +28,25 @@ inputs:
 runs:
   using: "composite"
   steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-          aws-region: ${{ inputs.aws-region }}
-          role-to-assume: ${{ inputs.role-to-assume }}
-          role-duration-seconds: 900
-      - name: Install happy
-        uses: chanzuckerberg/github-actions/install-happy@install-happy-v1.1.0
-      - name: Create update rdev
-        env:
-          TFE_TOKEN: ${{ inputs.tfe-token }}
-        run: |
-          STACK_NAME=${GITHUB_REF#refs/heads/${{ inputs.stack-name }}-}
-          if $(happy --profile="" list | grep -q $STACK_NAME); then
-            echo "Updating stack $STACK_NAME"
-            happy --profile=""  update --tag sha-${GITHUB_SHA:0:8} $STACK_NAME
-          else
-            echo "Creating stack $STACK_NAME"
-            happy --profile="" create  --tag sha-${GITHUB_SHA:0:8} $STACK_NAME
-          fi
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}
+        role-to-assume: ${{ inputs.role-to-assume }}
+        role-duration-seconds: 900
+    - name: Install happy
+      uses: chanzuckerberg/github-actions/install-happy@install-happy-v1.1.0
+    - name: Create update rdev
+      env:
+        TFE_TOKEN: ${{ inputs.tfe-token }}
+      run: |
+        STACK_NAME=${GITHUB_REF#refs/heads/${{ inputs.stack-name }}-}
+        if $(happy --profile="" list | grep -q $STACK_NAME); then
+          echo "Updating stack $STACK_NAME"
+          happy --profile=""  update --tag sha-${GITHUB_SHA:0:8} $STACK_NAME
+        else
+          echo "Creating stack $STACK_NAME"
+          happy --profile="" create  --tag sha-${GITHUB_SHA:0:8} $STACK_NAME
+        fi

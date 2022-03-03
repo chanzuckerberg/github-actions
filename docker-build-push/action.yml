@@ -1,7 +1,7 @@
 name: "Docker Build and Push"
 description: "Will build and push a docker iamge."
 inputs:
-  dockerfile: # id of input
+  dockerfile:
     description: "Path to the Dockerfile to be built."
     required: true
     default: "Dockerfile"
@@ -45,7 +45,7 @@ runs:
     - name: Login to ECR
       uses: docker/login-action@v1
       with:
-        registry: $${{ inputs.registry }}
+        registry: ${{ inputs.registry }}
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
