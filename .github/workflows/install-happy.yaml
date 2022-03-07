@@ -4,6 +4,7 @@ on:
 name: Test Install Happy
 jobs:
   test-install-happy:
+    runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/install-happy/action.yml
       - run: happy version
