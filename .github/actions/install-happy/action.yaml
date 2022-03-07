@@ -6,7 +6,8 @@ runs:
     - name: Install happy
       shell: bash
       run: |
-        wget https://github.com/chanzuckerberg/happy/releases/download/v0.12.0/happy_0.12.0_darwin_amd64.tar.gz -O happy.tar.gz
+        cd $(mktemp -d)
+        wget https://github.com/chanzuckerberg/happy/releases/download/v0.12.0/happy_0.12.0_linux_amd64.tar.gz -O happy.tar.gz
         tar -xf happy.tar.gz
         ls -la
         pwd
