@@ -16,6 +16,7 @@ runs:
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
+      shell: bash
       run: |
         if $(happy --profile="" list | grep -q ${{ inputs.stack-name }} ); then
           echo "Updating stack ${{ inputs.stack-name }}"
