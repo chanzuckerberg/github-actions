@@ -5,5 +5,5 @@ name: Test Install Happy
 jobs:
   test-install-happy:
     steps:
-      - uses: ./install-happy/action.yml
+      - uses: ./.github/actions/install-happy/action.yml
       - run: happy version

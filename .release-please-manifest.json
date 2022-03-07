@@ -1,1 +1,7 @@
-{"conventional-commits":"1.0.0","docker-build-push":"1.0.0",".":"1.2.0","install-happy":"1.1.0","deploy-happy-stack":"1.0.0"}
+{
+	".github/actions/conventional-commits": "1.0.0",
+	".github/actions/docker-build-push": "1.0.0",
+	".": "1.2.0",
+	".github/actions/install-happy": "1.1.0",
+	".github/actions/deploy-happy-stack": "1.0.0"
+}
