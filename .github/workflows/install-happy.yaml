@@ -1,0 +1,9 @@
+on:
+  pull_request: {}
+
+name: Test Install Happy
+jobs:
+  test-install-happy:
+    steps:
+      - uses: ./install-happy/action.yml
+      - run: happy version
