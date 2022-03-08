@@ -1,14 +1,17 @@
 name: Downloads and installs Happy CLI
 description: "Will download and install Happy CLI."
+inputs:
+  happy_version:
+    description: "Version of happy CLI to fetch"
+    required: true
+    default: "0.12.0"
 runs:
   using: "composite"
   steps:
     - name: Install happy
       shell: bash
-      env:
-        version: "0.12.0"
       run: |
         cd $(mktemp -d)
-        wget https://github.com/chanzuckerberg/happy/releases/download/v${happy_version}/happy_${happy_version}_linux_amd64.tar.gz -O happy.tar.gz
+        wget https://github.com/chanzuckerberg/happy/releases/download/v$${ inputs.happy_version }}/happy_$${{ inputs.happy_version }}_linux_amd64.tar.gz -O happy.tar.gz
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
