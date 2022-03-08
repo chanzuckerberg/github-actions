@@ -19,6 +19,10 @@ runs:
         STACK_NAME: ${{ inputs.stack-name }}
       shell: bash
       run: |
+        set -e
+        set -o pipefail
+        AWS_PROFILE=""
+
         if $(happy list | grep -q ${STACK_NAME}} ); then
           echo "Updating stack ${STACK_NAME}"
           happy update --tag sha-${GITHUB_SHA} ${STACK_NAME}
