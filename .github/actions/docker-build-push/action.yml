@@ -52,7 +52,7 @@ runs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: |
-          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ context.payload.pull_requesst.base.ref }}
+          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.head_ref }}
           type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.base_ref }}
         cache-to: |
           type=inline,mode=max
