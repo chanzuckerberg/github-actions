@@ -52,11 +52,11 @@ runs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: |
-          type=gha
-          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.head_ref }}
+          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ context.payload.pull_requesst.base.ref }}
           type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.base_ref }}
-        cache-to: type=gha,mode=max
+        cache-to: |
           type=inline,mode=max
+
 # context.payload.pull_request.base.ref
 # context.payload.pull_request.head.ref
 # --cache-from=type=registry,ref=${{ secrets.ECR_REPO }}/${{ matrix.image.name }}:branch-trunk
