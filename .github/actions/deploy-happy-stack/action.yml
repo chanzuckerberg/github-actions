@@ -18,10 +18,13 @@ runs:
         TFE_TOKEN: ${{ inputs.tfe-token }}
       shell: bash
       run: |
-        if $(happy --profile="" list | grep -q ${{ inputs.stack-name }} ); then
+        if $(happy list | grep -q ${{ inputs.stack-name }} ); then
           echo "Updating stack ${{ inputs.stack-name }}"
-          happy --profile=""  update --tag sha-${GITHUB_SHA} ${{ inputs.stack-name }}
+          happy update --tag sha-${GITHUB_SHA} ${{ inputs.stack-name }}
         else
           echo "Creating stack ${{ inputs.stack-name }}"
-          happy --profile="" create  --tag sha-${GITHUB_SHA} ${{ inputs.stack-name }}
+          happy create  --tag sha-${GITHUB_SHA} ${{ inputs.stack-name }}
         fi
+
+# context.payload.pull_request.base.ref
+# context.payload.pull_request.head.ref
