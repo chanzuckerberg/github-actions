@@ -16,14 +16,15 @@ runs:
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
+        STACK_NAME: ${{ inputs.stack-name }}
       shell: bash
       run: |
-        if $(happy list | grep -q ${{ inputs.stack-name }} ); then
-          echo "Updating stack ${{ inputs.stack-name }}"
-          happy update --tag sha-${GITHUB_SHA} ${{ inputs.stack-name }}
+        if $(happy list | grep -q ${STACK_NAME}} ); then
+          echo "Updating stack ${STACK_NAME}"
+          happy update --tag sha-${GITHUB_SHA} ${STACK_NAME}
         else
-          echo "Creating stack ${{ inputs.stack-name }}"
-          happy create  --tag sha-${GITHUB_SHA} ${{ inputs.stack-name }}
+          echo "Creating stack ${STACK_NAME}"
+          happy create  --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi
 
 # context.payload.pull_request.base.ref
