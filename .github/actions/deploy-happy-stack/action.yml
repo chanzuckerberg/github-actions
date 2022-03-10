@@ -7,6 +7,10 @@ inputs:
   stack-name:
     description: "Name of the stack to create or update"
     required: true
+  create-tag:
+    description: "Should we build and tag docker images. Defaults to false and assumes images already exist."
+    default: "false"
+    required: false
 runs:
   using: "composite"
   steps:
@@ -26,8 +30,8 @@ runs:
 
         if $(happy list --aws-profile "" | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --create-tag=false --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy update --aws-profile "" --create-tag=${{ inputs.create-tag }} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --create-tag=false --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy create --aws-profile "" --create-tag=${{ inputs.create-tag }} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi
