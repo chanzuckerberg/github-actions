@@ -24,10 +24,10 @@ runs:
 
         echo "Targetting Stack ${STACK_NAME}"
 
-        if $(happy list --aws-profile "" | grep -q ${STACK_NAME}} ); then
+        if $(happy list --aws-profile "" | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy update --aws-profile "" --create-tag=false --tag sha-${GITHUB_SHA} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy create --aws-profile "" --create-tag=false --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi

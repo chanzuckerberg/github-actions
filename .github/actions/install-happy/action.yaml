@@ -10,6 +10,8 @@ runs:
   steps:
     - name: Install happy
       shell: bash
+      # TODO: cache as in:
+      #       https://docs.github.com/en/actions/creating-actions/developing-a-third-party-cli-action
       run: |
         set -ue
         cd $(mktemp -d)
