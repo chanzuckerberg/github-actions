@@ -11,7 +11,8 @@ runs:
     - name: Install happy
       shell: bash
       run: |
+        set -ue
         cd $(mktemp -d)
-        wget https://github.com/chanzuckerberg/happy/releases/download/v${{ inputs.happy_version }}/happy_${{ inputs.happy_version }}_linux_amd64.tar.gz -O happy.tar.gz
+        wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${{ inputs.happy_version }}/happy_${{ inputs.happy_version }}_linux_amd64.tar.gz -O happy.tar.gz
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"

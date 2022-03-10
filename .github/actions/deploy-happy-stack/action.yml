@@ -19,14 +19,15 @@ runs:
         STACK_NAME: ${{ inputs.stack-name }}
       shell: bash
       run: |
-        set -e
+        set -ue
         set -o pipefail
-        AWS_PROFILE=""
 
-        if $(happy list | grep -q ${STACK_NAME}} ); then
+        echo "Targetting Stack ${STACK_NAME}"
+
+        if $(happy list --aws-profile "" | grep -q ${STACK_NAME}} ); then
           echo "Updating stack ${STACK_NAME}"
-          happy update --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy update --aws-profile "" --tag sha-${GITHUB_SHA} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
-          happy create  --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy create --aws-profile "" --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi
