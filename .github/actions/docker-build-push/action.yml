@@ -57,8 +57,3 @@ runs:
         cache-to: |
           type=inline,mode=max
 
-# context.payload.pull_request.base.ref
-# context.payload.pull_request.head.ref
-# --cache-from=type=registry,ref=${{ secrets.ECR_REPO }}/${{ matrix.image.name }}:branch-trunk
-# --cache-to=type=inline,mode=max
-# --cache-from ${{ secrets.ECR_REPO }}/${{ matrix.image.name }}:branch-${GITHUB_REF##*/}
