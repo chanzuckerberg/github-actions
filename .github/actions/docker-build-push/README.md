@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-	    # An example building multiple docker images in parallel
+        # An example building multiple docker images in parallel
         image:
           - dockerfile: src/backend/Dockerfile
             context: ./src/backend/
