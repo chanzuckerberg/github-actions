@@ -1,7 +1,7 @@
 name: "Docker Build and Push"
 description: "Will build and push a docker iamge."
 inputs:
-  dockerfile: # id of input
+  dockerfile:
     description: "Path to the Dockerfile to be built."
     required: true
     default: "Dockerfile"
@@ -15,10 +15,6 @@ inputs:
   registry:
     description: "URI for your docker registry. Typically an ECR registry."
     required: true
-  # TODO: cache-to, cache-from
-  # cache-from:
-  # description: "A list of external caches to use during the docker build process"
-  # required: false
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -26,6 +22,7 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - uses: actions/checkout@v2
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
     - name: Set up Docker Buildx
@@ -36,20 +33,27 @@ runs:
       with:
         images: ${{ inputs.registry }}/${{ inputs.name }}
         tags: |
-          type=ref,prefix=branch-,event=branch
-          type=ref,event=pr
+          type=ref,event=branch,prefix=branch-
+          type=ref,event=pr,prefix=pr-
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=sha,prefix=sha-
-          type=sha,format=long
+          type=sha,format=long,prefix=sha-
     - name: Login to ECR
       uses: docker/login-action@v1
       with:
-        registry: $${{ inputs.registry }}
+        registry: ${{ inputs.registry }}
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
+        file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        cache-from: |
+          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.head_ref }}
+          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.base_ref }}
+        cache-to: |
+          type=inline,mode=max
+

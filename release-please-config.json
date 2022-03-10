@@ -22,16 +22,16 @@
 		}
 	],
 	"packages": {
-		"conventional-commits": {
+		".github/actions/conventional-commits": {
 			"package-name": "conventional-commits"
 		},
-		"docker-build-push": {
+		".github/actions/docker-build-push": {
 			"package-name": "docker-build-push"
 		},
-		"install-happy": {
+		".github/actions/install-happy": {
 			"package-name": "install-happy"
 		},
-		"deploy-happy-stack": {
+		".github/actions/deploy-happy-stack": {
 			"package-name": "deploy-happy-stack"
 		},
 		".": {}
