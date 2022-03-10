@@ -30,6 +30,3 @@ runs:
           echo "Creating stack ${STACK_NAME}"
           happy create  --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi
-
-# context.payload.pull_request.base.ref
-# context.payload.pull_request.head.ref
