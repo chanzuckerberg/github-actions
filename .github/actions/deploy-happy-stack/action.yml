@@ -12,7 +12,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@9fd4a711d0ee9411b78d8c94a23afcd485ea93fa
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@41c7efb56fadc2517f6843a50c1d42bd38a47b9a
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
