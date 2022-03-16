@@ -19,6 +19,6 @@ jobs:
               "${{ steps.refs.baseRef }}",
               "${{ steps.refs.headRef }}",
             ].map(ref => ref.replaceAll(/[^a-zA-Z0-9/-]+/g, "-"))
-              .map(ref => `type=registry,ref=foo/bar:branch-${ref}`).join('\r\n');
+              .map(ref => `type=registry,ref=foo/bar:branch-${ref}`).join(', ');
             console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
             core.setOutput("cacheFrom", cacheFrom);
