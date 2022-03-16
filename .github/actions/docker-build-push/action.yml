@@ -48,9 +48,9 @@ runs:
         registry: ${{ inputs.registry }}
     - name: Calculate Branch and Base Names
       id: refs
-      uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@8a6ceafbeffb65ade951c5827771fbaec53f27f6
+      uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@e6e00197894cd0665df2fc4a409917795f729e1c
     - name: Calculate Cache-From
-      id: stack-name
+      id: cache-from
       uses: actions/github-script@v6
       with:
         script: |
@@ -68,9 +68,7 @@ runs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: |
-          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.head_ref }}
-          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.base_ref }}
+        cache-from: ${{ steps.cache-from.cacheFrom }}
         cache-to: |
           type=inline,mode=max
         build-args: ${{ inputs.build_args }}
