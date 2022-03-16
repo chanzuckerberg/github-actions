@@ -8,7 +8,6 @@ inputs:
     description: "Should we build and tag docker images. Defaults to false and assumes images already exist."
     default: "false"
     required: false
-secrets:
   tfe-token:
     description: "TFE Token"
     required: true
@@ -20,7 +19,7 @@ runs:
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@41c7efb56fadc2517f6843a50c1d42bd38a47b9a
     - name: Create or update happy stack
       env:
-        TFE_TOKEN: ${{ secrets.tfe-token }}
+        TFE_TOKEN: ${{ inputs.tfe-token }}
         STACK_NAME: ${{ inputs.stack-name }}
       shell: bash
       run: |
