@@ -1,0 +1,44 @@
+name: "Get GitHub Ref Names"
+description: |
+  A script that will attempt to get the current branch and upsream's default branch names.
+  Works when GitHub action triggers are pull_request or push.
+  Will also attempt to calculate docker-build-and-push's cache_from.
+
+  NOTE: doesn't yet work when tags are pushed, only branches.
+
+outputs:
+  head_ref:
+    description: "The name of our branch's ref"
+    value: ${{ steps.refs.head_ref }}
+  base_ref:
+    description: "The name of the upstream's default ref"
+    value: ${{ steps.refs.base_ref }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Calculate Refs
+      id: refs
+      uses: actions/github-script@v6
+      with:
+        script: |
+          let eventName = context.eventName;
+          let base;
+          let head;
+
+          // TODO: what do we do wrt characters not allowed in docker tags?
+          if (context.eventName === "pull_request") {
+            head = context.payload.head.ref;
+            base = context.payload.pull_request.base.ref;
+          } else if (context.eventName === "push") {
+            // TODO: this won't work with tags
+            const pruneHead = "refs/heads/";
+            head = context.payload.ref.substring(pruneHead.length);
+            base = context.payload.repository.default_branch;
+          } else {
+            core.setFailed(`EventName ${eventName} not supported`);
+            return;
+          }
+
+          core.setOutput("head_ref", head);
+          core.setOutput("base_ref", base);

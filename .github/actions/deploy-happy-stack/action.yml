@@ -1,9 +1,6 @@
 name: Create or Update a Happy Stack
 description: "Will create or update a Happy Stack"
 inputs:
-  tfe-token:
-    description: "TFE Token"
-    required: true
   stack-name:
     description: "Name of the stack to create or update"
     required: true
@@ -11,6 +8,10 @@ inputs:
     description: "Should we build and tag docker images. Defaults to false and assumes images already exist."
     default: "false"
     required: false
+secrets:
+  tfe-token:
+    description: "TFE Token"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -19,7 +20,7 @@ runs:
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@41c7efb56fadc2517f6843a50c1d42bd38a47b9a
     - name: Create or update happy stack
       env:
-        TFE_TOKEN: ${{ inputs.tfe-token }}
+        TFE_TOKEN: ${{ secrets.tfe-token }}
         STACK_NAME: ${{ inputs.stack-name }}
       shell: bash
       run: |

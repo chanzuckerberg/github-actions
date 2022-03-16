@@ -46,6 +46,38 @@ runs:
       uses: docker/login-action@v1
       with:
         registry: ${{ inputs.registry }}
+    - name: Calculate Cache-From
+      id: stack-name
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const prefix = "rdev-";
+          let cache_from = [];
+          let eventName = context.eventName;
+
+          if (context.eventName === "pull_request") {
+
+          }
+
+          if (context.eventName)
+
+          console.log(context)
+          let cache_from = [
+            `branch-${context.head_ref}`,
+            `branch-${context.base_ref}`,
+            `branch-${ context?.payload?. }`
+
+          ]
+          // If pull_request
+          const ref = context.payload.pull_request.head.ref
+          if (!ref.startsWith(prefix)) {
+            core.setFailed(`ref ${ref} did not start with ${prefix}`)
+            return
+          }
+          // Must be compatible with DNS charset, replace chars not allowed with '-'
+          const stackName = ref.slice(prefix.length).replaceAll(/[^a-zA-Z0-9/-]+/g, "-")
+          console.log(`stackName: ${stackName}`)
+          core.setOutput('stack-name', stackName)
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
