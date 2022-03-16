@@ -9,10 +9,10 @@ description: |
 outputs:
   head_ref:
     description: "The name of our branch's ref"
-    value: ${{ steps.refs.head_ref }}
+    value: ${{ steps.refs.headRef }}
   base_ref:
     description: "The name of the upstream's default ref"
-    value: ${{ steps.refs.base_ref }}
+    value: ${{ steps.refs.baseRef }}
 
 runs:
   using: "composite"
@@ -40,5 +40,5 @@ runs:
             return;
           }
 
-          core.setOutput("head_ref", head);
-          core.setOutput("base_ref", base);
+          core.setOutput("headRef", head);
+          core.setOutput("baseRef", base);
