@@ -1,0 +1,11 @@
+on:
+  pull_request: {}
+  push: {}
+
+name: Test Get GitHub Ref Names
+jobs:
+  test-install-happy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/get-github-ref-names

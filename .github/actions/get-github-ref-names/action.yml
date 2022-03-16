@@ -27,10 +27,10 @@ runs:
           let head;
 
           // TODO: what do we do wrt characters not allowed in docker tags?
-          if (context.eventName === "pull_request") {
+          if (eventName === "pull_request") {
             head = context.payload.head.ref;
             base = context.payload.pull_request.base.ref;
-          } else if (context.eventName === "push") {
+          } else if (eventName === "push") {
             // TODO: this won't work with tags
             const pruneHead = "refs/heads/";
             head = context.payload.ref.substring(pruneHead.length);
@@ -39,6 +39,8 @@ runs:
             core.setFailed(`EventName ${eventName} not supported`);
             return;
           }
+
+          console.log(`Calculated the following ${JSON.stringify({eventName,base,head}, null, 2)}`);
 
           core.setOutput("headRef", head);
           core.setOutput("baseRef", base);
