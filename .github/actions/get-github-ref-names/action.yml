@@ -9,10 +9,10 @@ description: |
 outputs:
   headRef:
     description: "The name of our branch's ref"
-    value: ${{ steps.refs.headRef }}
+    value: ${{ steps.refs.outputs.headRef }}
   baseRef:
     description: "The name of the upstream's default ref"
-    value: ${{ steps.refs.baseRef }}
+    value: ${{ steps.refs.outputs.baseRef }}
 
 runs:
   using: "composite"
