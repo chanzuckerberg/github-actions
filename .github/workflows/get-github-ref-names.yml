@@ -9,6 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/get-github-ref-names
+        id: refs
       - name: Calculate Cache-From
         id: cache-from
         uses: actions/github-script@v6
