@@ -29,7 +29,7 @@ runs:
 
         echo "Targetting Stack ${STACK_NAME}"
 
-        if $(happy list --aws-profile "" | grep -q ${STACK_NAME} ); then
+        if $(happy list --aws-profile "" 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
           happy update --aws-profile "" --create-tag=${{ inputs.create-tag }} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         else
