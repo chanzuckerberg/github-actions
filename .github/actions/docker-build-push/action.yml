@@ -55,9 +55,11 @@ runs:
       with:
         script: |
           let cacheFrom = [
-            "${{ steps.refs.base_ref }}",
-            "${{ steps.refs.head_ref }}",
-          ].map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join(",");
+            "${{ steps.refs.baseRef }}",
+            "${{ steps.refs.headRef }}",
+          ].map(ref => ref.replaceAll(/[^a-zA-Z0-9/-]+/g, "-"))
+            .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
+          console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
           core.setOutput("cacheFrom", cacheFrom);
 
     - name: Build and push
