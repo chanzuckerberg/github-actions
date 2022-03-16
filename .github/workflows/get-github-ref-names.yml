@@ -15,6 +15,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            console.log(JSON.stringify(${{steps.refs}}, null, 2));
             let cacheFrom = [
               "${{ steps.refs.baseRef }}",
               "${{ steps.refs.headRef }}",
