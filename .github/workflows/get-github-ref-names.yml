@@ -4,7 +4,7 @@ on:
 
 name: Test Get GitHub Ref Names
 jobs:
-  test-install-happy:
+  test-github-ref-names:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
