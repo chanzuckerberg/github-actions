@@ -7,10 +7,10 @@ description: |
   NOTE: doesn't yet work when tags are pushed, only branches.
 
 outputs:
-  head_ref:
+  headRef:
     description: "The name of our branch's ref"
     value: ${{ steps.refs.headRef }}
-  base_ref:
+  baseRef:
     description: "The name of the upstream's default ref"
     value: ${{ steps.refs.baseRef }}
 
