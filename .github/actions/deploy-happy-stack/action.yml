@@ -21,6 +21,7 @@ runs:
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
         STACK_NAME: ${{ inputs.stack-name }}
+        CREATE_TAG: ${{ inputs.create-tag }}
       shell: bash
       run: |
         set -ue
@@ -30,8 +31,8 @@ runs:
 
         if $(happy list --aws-profile "" 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --create-tag=${{ inputs.create-tag }} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy update --aws-profile "" --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --create-tag=${{ inputs.create-tag }} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy create --aws-profile "" --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi
