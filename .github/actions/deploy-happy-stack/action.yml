@@ -16,7 +16,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@0b8549279a25d9ebb05c152994afc8f8ea29714b
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@9f6d901750728bf97041063580eeda064ff74322
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
