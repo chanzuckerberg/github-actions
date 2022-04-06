@@ -20,6 +20,14 @@ jobs:
             ]
 
             return JSON.stringify(changelogTypes)
+      # See https://docs.github.com/en/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow
+      # For why we need to generate a token and not use the default
+      - name: Generate token
+        id: generate_token
+        uses: chanzuckerberg/github-app-token@v1.1.4
+        with:
+          app_id: ${{ secrets.CZI_RELEASE_PLEASE_APP_ID }}
+          private_key: ${{ secrets.CZI_RELEASE_PLEASE_PK }}
 
       - name: release please
         uses: google-github-actions/release-please-action@v3
@@ -29,7 +37,7 @@ jobs:
           command: manifest
           bump-minor-pre-major: true
           changelog-types: ${{ steps.configure-changelog.outputs.result }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.generate_token.outputs.token }}
           monorepo-tags: true
           manifest-file: ".release-please-manifest.json"
           config-file: "release-please-config.json"
