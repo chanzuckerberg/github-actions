@@ -15,6 +15,9 @@ inputs:
   registry:
     description: "URI for your docker registry. Typically an ECR registry."
     required: true
+  build_args:
+    description: "A list of build arguments to pass to the docker build."
+    required: false
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -43,6 +46,22 @@ runs:
       uses: docker/login-action@v1
       with:
         registry: ${{ inputs.registry }}
+    - name: Calculate Branch and Base Names
+      id: refs
+      uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@9f6d901750728bf97041063580eeda064ff74322
+    - name: Calculate Cache-From
+      id: cache-from
+      uses: actions/github-script@v6
+      with:
+        script: |
+          let cacheFrom = [
+            "${{ steps.refs.outputs.baseRef }}",
+            "${{ steps.refs.outputs.headRef }}",
+          ].map(ref => ref.replaceAll(/[^a-zA-Z0-9/-]+/g, "-"))
+            .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
+          console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
+          core.setOutput("cacheFrom", cacheFrom);
+
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
@@ -51,9 +70,7 @@ runs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: |
-          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.head_ref }}
-          type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${{ github.base_ref }}
+        cache-from: ${{ steps.cache-from.outputs.cacheFrom }}
         cache-to: |
           type=inline,mode=max
-
+        build-args: ${{ inputs.build_args }}

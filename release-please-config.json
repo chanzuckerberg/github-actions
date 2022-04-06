@@ -34,6 +34,9 @@
 		".github/actions/deploy-happy-stack": {
 			"package-name": "deploy-happy-stack"
 		},
+		".github/actions/get-github-ref-names": {
+			"package-name": "get-github-ref-names"
+		},
 		".": {}
 	}
 }

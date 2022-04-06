@@ -1,0 +1,24 @@
+on:
+  pull_request: {}
+  push: {}
+
+name: Test Get GitHub Ref Names
+jobs:
+  test-github-ref-names:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/get-github-ref-names
+        id: refs
+      - name: Calculate Cache-From
+        id: cache-from
+        uses: actions/github-script@v6
+        with:
+          script: |
+            let cacheFrom = [
+              "${{ steps.refs.outputs.baseRef }}",
+              "${{ steps.refs.outputs.headRef }}",
+            ].map(ref => ref.replaceAll(/[^a-zA-Z0-9/-]+/g, "-"))
+              .map(ref => `type=registry,ref=foo/bar:branch-${ref}`).join(', ');
+            console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
+            core.setOutput("cacheFrom", cacheFrom);

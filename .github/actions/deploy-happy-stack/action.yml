@@ -1,9 +1,6 @@
 name: Create or Update a Happy Stack
 description: "Will create or update a Happy Stack"
 inputs:
-  tfe-token:
-    description: "TFE Token"
-    required: true
   stack-name:
     description: "Name of the stack to create or update"
     required: true
@@ -11,16 +8,20 @@ inputs:
     description: "Should we build and tag docker images. Defaults to false and assumes images already exist."
     default: "false"
     required: false
+  tfe-token:
+    description: "TFE Token"
+    required: true
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@41c7efb56fadc2517f6843a50c1d42bd38a47b9a
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@9f6d901750728bf97041063580eeda064ff74322
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
         STACK_NAME: ${{ inputs.stack-name }}
+        CREATE_TAG: ${{ inputs.create-tag }}
       shell: bash
       run: |
         set -ue
@@ -28,10 +29,10 @@ runs:
 
         echo "Targetting Stack ${STACK_NAME}"
 
-        if $(happy list --aws-profile "" | grep -q ${STACK_NAME} ); then
+        if $(happy list --aws-profile "" 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --create-tag=${{ inputs.create-tag }} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy update --aws-profile "" --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --create-tag=${{ inputs.create-tag }} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy create --aws-profile "" --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi
