@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.5.1](https://github.com/chanzuckerberg/github-actions/compare/v1.5.0...v1.5.1) (2022-04-06)
+
+
+### Bug Fixes
+
+* Release action uses generated token ([#27](https://github.com/chanzuckerberg/github-actions/issues/27)) ([2141470](https://github.com/chanzuckerberg/github-actions/commit/2141470140bb7a7521017603979c33b7e07de3ad))
+* Update internal versions to latest ([#25](https://github.com/chanzuckerberg/github-actions/issues/25)) ([c4b5600](https://github.com/chanzuckerberg/github-actions/commit/c4b5600b452b6a52f89e6e668b3a1acf1dcac63d))
+
 ## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/v1.4.0...v1.5.0) (2022-04-06)
 
 
