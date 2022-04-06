@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.2.0...conventional-commits-v1.3.0) (2022-04-06)
+
+
+### Features
+
+* happy push, docker build+push, install happy ([#17](https://github.com/chanzuckerberg/github-actions/issues/17)) ([62ea2cb](https://github.com/chanzuckerberg/github-actions/commit/62ea2cb4247fd65ae7dec27ffadf58696abd3c29))
+
 ## [1.2.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.1.0...conventional-commits-v1.2.0) (2022-04-06)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/v1.4.0...v1.5.0) (2022-04-06)
+
+
+### Features
+
+* Enable dependabot to keep GHA versions up to date; pin latest; happy-deploy-stack allows setting happy cli version ([#23](https://github.com/chanzuckerberg/github-actions/issues/23)) ([abb2f43](https://github.com/chanzuckerberg/github-actions/commit/abb2f43aa173caa13b3602415d482ca9bbf6d395))
+
 ## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/v1.3.0...v1.4.0) (2022-04-06)
 
 
