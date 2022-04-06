@@ -28,8 +28,7 @@ runs:
 
           // TODO: what do we do wrt characters not allowed in docker tags?
           if (eventName === "pull_request") {
-            console.log(JSON.stringify(context, null, 2));
-            head = context.payload.head.ref;
+            head = context.payload.pull_request.head.ref;
             base = context.payload.pull_request.base.ref;
           } else if (eventName === "push") {
             // TODO: this won't work with tags
