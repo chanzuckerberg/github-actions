@@ -11,12 +11,19 @@ inputs:
   tfe-token:
     description: "TFE Token"
     required: true
+  happy_version:
+    description: "Version of happy CLI to fetch"
+    required: true
+    default: "0.15.3"
+
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@9f6d901750728bf97041063580eeda064ff74322
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.0
+      with:
+        happy_version: ${{ inputs.happy_version }}
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
