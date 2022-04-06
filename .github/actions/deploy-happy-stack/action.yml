@@ -21,7 +21,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.0
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.3.0
       with:
         happy_version: ${{ inputs.happy_version }}
     - name: Create or update happy stack
