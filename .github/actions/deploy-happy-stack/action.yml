@@ -14,14 +14,14 @@ inputs:
   happy_version:
     description: "Version of happy CLI to fetch"
     required: true
-    default: "0.15.3"
+    default: "0.16.0"
 
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.3.0
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.5.0
       with:
         happy_version: ${{ inputs.happy_version }}
     - name: Create or update happy stack
