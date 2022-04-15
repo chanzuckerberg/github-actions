@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.4.0...docker-build-push-v1.5.0) (2022-04-15)
+
+
+### Features
+
+* Enable dependabot to keep GHA versions up to date; pin latest; happy-deploy-stack allows setting happy cli version ([#23](https://github.com/chanzuckerberg/github-actions/issues/23)) ([abb2f43](https://github.com/chanzuckerberg/github-actions/commit/abb2f43aa173caa13b3602415d482ca9bbf6d395))
+* **get-github-ref-names:** Add support for release event ([#28](https://github.com/chanzuckerberg/github-actions/issues/28)) ([b234d6e](https://github.com/chanzuckerberg/github-actions/commit/b234d6e2dd14b58b1cf8f03a3acf046175a449a2))
+
+
+### Bug Fixes
+
+* Update internal versions to latest ([#25](https://github.com/chanzuckerberg/github-actions/issues/25)) ([c4b5600](https://github.com/chanzuckerberg/github-actions/commit/c4b5600b452b6a52f89e6e668b3a1acf1dcac63d))
+
 ## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.3.0...docker-build-push-v1.4.0) (2022-04-06)
 
 
