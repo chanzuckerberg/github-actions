@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.5.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.5.0...deploy-happy-stack-v1.5.1) (2022-04-15)
+
+
+### Bug Fixes
+
+* Update internal versions to latest ([#25](https://github.com/chanzuckerberg/github-actions/issues/25)) ([c4b5600](https://github.com/chanzuckerberg/github-actions/commit/c4b5600b452b6a52f89e6e668b3a1acf1dcac63d))
+
 ## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.4.0...deploy-happy-stack-v1.5.0) (2022-04-15)
 
 
