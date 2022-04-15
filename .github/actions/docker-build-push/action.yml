@@ -18,6 +18,10 @@ inputs:
   build_args:
     description: "A list of build arguments to pass to the docker build."
     required: false
+  custom_tag:
+    description: "A single custom tag to apply to the built image."
+    required: false
+    default: ""
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -42,6 +46,7 @@ runs:
           type=semver,pattern={{major}}.{{minor}}
           type=sha,prefix=sha-
           type=sha,format=long,prefix=sha-
+          ${{ inputs.custom_tag }}
     - name: Login to ECR
       uses: docker/login-action@v1
       with:

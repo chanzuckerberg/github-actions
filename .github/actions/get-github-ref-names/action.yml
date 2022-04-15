@@ -35,6 +35,9 @@ runs:
             const pruneHead = "refs/heads/";
             head = context.payload.ref.substring(pruneHead.length);
             base = context.payload.repository.default_branch;
+          } else if (eventName === "release") {
+            head = context.payload.repository.default_branch;
+            base = context.payload.repository.default_branch;
           } else {
             core.setFailed(`EventName ${eventName} not supported`);
             return;
