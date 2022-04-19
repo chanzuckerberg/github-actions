@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.6.0...docker-build-push-v1.7.0) (2022-04-19)
+
+
+### Features
+
+* Docker Build and Push Upgrade get-github-ref-names to v1.6.0 ([#30](https://github.com/chanzuckerberg/github-actions/issues/30)) ([85ea809](https://github.com/chanzuckerberg/github-actions/commit/85ea80906696110eb9f6ebdcde7e4cf5faa8c280))
+
 ## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.5.0...docker-build-push-v1.6.0) (2022-04-15)
 
 
