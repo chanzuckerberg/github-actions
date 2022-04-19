@@ -15,6 +15,9 @@ inputs:
     description: "Version of happy CLI to fetch"
     required: true
     default: "0.16.0"
+  env:
+    description: "The environment to update or create"
+    required: false
 
 runs:
   using: "composite"
@@ -29,6 +32,7 @@ runs:
         TFE_TOKEN: ${{ inputs.tfe-token }}
         STACK_NAME: ${{ inputs.stack-name }}
         CREATE_TAG: ${{ inputs.create-tag }}
+        ENV: ${{inputs.env}}
       shell: bash
       run: |
         set -ue
@@ -38,8 +42,8 @@ runs:
 
         if $(happy list --aws-profile "" 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi
