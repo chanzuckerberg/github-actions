@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.8.1](https://github.com/chanzuckerberg/github-actions/compare/v1.8.0...v1.8.1) (2022-04-20)
+
+
+### Bug Fixes
+
+* revert version of release-please ([#36](https://github.com/chanzuckerberg/github-actions/issues/36)) ([330cc32](https://github.com/chanzuckerberg/github-actions/commit/330cc32f459de0911625eea673b93d6cc09c89e1))
+* revert version of release-please ([#37](https://github.com/chanzuckerberg/github-actions/issues/37)) ([dfdc2f8](https://github.com/chanzuckerberg/github-actions/commit/dfdc2f83cf7e9540a3add14616f63d237dfec9bd))
+* testing if a fix makes a release PR ([#41](https://github.com/chanzuckerberg/github-actions/issues/41)) ([a1e5df5](https://github.com/chanzuckerberg/github-actions/commit/a1e5df542e66f5d71cb17dbc7fc5060a598d194f))
+
 ## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/v1.7.0...v1.8.0) (2022-04-19)
 
 

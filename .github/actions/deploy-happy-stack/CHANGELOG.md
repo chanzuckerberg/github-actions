@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.7.0...deploy-happy-stack-v1.8.0) (2022-04-20)
+
+
+### Features
+
+* adding env input to create/update stack ([#32](https://github.com/chanzuckerberg/github-actions/issues/32)) ([3d50d97](https://github.com/chanzuckerberg/github-actions/commit/3d50d9785aaa8e3cac51a280b3420360c2198f58))
+
 ## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.6.0...deploy-happy-stack-v1.7.0) (2022-04-20)
 
 
