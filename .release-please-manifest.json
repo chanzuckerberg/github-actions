@@ -3,6 +3,6 @@
 	".github/actions/docker-build-push": "1.7.0",
 	".": "1.8.0",
 	".github/actions/install-happy": "1.5.1",
-	".github/actions/deploy-happy-stack": "1.6.0",
-	".github/actions/get-github-ref-names": "1.5.0"
+	".github/actions/deploy-happy-stack": "1.7.0",
+	".github/actions/get-github-ref-names": "1.6.0"
 }

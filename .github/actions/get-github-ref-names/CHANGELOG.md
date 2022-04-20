@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.5.0...get-github-ref-names-v1.6.0) (2022-04-20)
+
+
+### Features
+
+* **get-github-ref-names:** Add support for release event ([#28](https://github.com/chanzuckerberg/github-actions/issues/28)) ([b234d6e](https://github.com/chanzuckerberg/github-actions/commit/b234d6e2dd14b58b1cf8f03a3acf046175a449a2))
+
 ## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.4.0...get-github-ref-names-v1.5.0) (2022-04-19)
 
 
