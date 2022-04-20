@@ -17,5 +17,3 @@ runs:
             })
             core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. See more details: ${details}`)
           }
-
-#bump
