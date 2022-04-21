@@ -1,4 +1,5 @@
 {
+	"bootstrap-sha": "6c6c5f211c87b697e24596e972f0a52fd81da47b",
 	"release-type": "simple",
 	"group-pull-request-title-pattern": "chore: release ${version}",
 	"bump-minor-pre-major": true,
