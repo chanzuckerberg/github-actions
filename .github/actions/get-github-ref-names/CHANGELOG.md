@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.8.1](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.8.0...get-github-ref-names-v1.8.1) (2022-04-21)
+
+
+### Bug Fixes
+
+* only tag get-github-ref-names ([#49](https://github.com/chanzuckerberg/github-actions/issues/49)) ([110bf8f](https://github.com/chanzuckerberg/github-actions/commit/110bf8f705d931947df5eb1772bce3d9236f0b17))
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
 ## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.7.1...get-github-ref-names-v1.8.0) (2022-04-21)
 
 
