@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.8.7](https://github.com/chanzuckerberg/github-actions/compare/v1.8.6...v1.8.7) (2022-04-21)
+
+
+### Bug Fixes
+
+* add bootstrap-sha ([#58](https://github.com/chanzuckerberg/github-actions/issues/58)) ([c6d62e2](https://github.com/chanzuckerberg/github-actions/commit/c6d62e2231f97c718e57332955304925bc0946bd))
+
 ### [1.8.6](https://github.com/chanzuckerberg/github-actions/compare/v1.8.5...v1.8.6) (2022-04-21)
 
 

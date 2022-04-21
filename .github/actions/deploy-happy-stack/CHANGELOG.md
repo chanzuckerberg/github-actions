@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.8.6](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.8.5...deploy-happy-stack-v1.8.6) (2022-04-21)
+
+
+### Bug Fixes
+
+* version.txt ([#57](https://github.com/chanzuckerberg/github-actions/issues/57)) ([6aa749b](https://github.com/chanzuckerberg/github-actions/commit/6aa749b3aeed3f48b4be13783b1e1bbec4136cfa))
+
 ### [1.8.5](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.8.4...deploy-happy-stack-v1.8.5) (2022-04-21)
 
 
