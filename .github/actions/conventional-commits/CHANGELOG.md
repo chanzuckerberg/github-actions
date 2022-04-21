@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.8.5](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.8.4...conventional-commits-v1.8.5) (2022-04-21)
+
+
+### Bug Fixes
+
+* blah ([#53](https://github.com/chanzuckerberg/github-actions/issues/53)) ([842818a](https://github.com/chanzuckerberg/github-actions/commit/842818aef61bc2937a22fcaff2315144b0171c46))
+
 ### [1.5.1](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.5.0...conventional-commits-v1.5.1) (2022-04-21)
 
 
