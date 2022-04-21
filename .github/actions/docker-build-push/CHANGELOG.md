@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.8.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.8.0...docker-build-push-v1.8.1) (2022-04-21)
+
+
+### Bug Fixes
+
+* testing if a fix makes a release PR ([#41](https://github.com/chanzuckerberg/github-actions/issues/41)) ([a1e5df5](https://github.com/chanzuckerberg/github-actions/commit/a1e5df542e66f5d71cb17dbc7fc5060a598d194f))
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
 ## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.7.1...docker-build-push-v1.8.0) (2022-04-20)
 
 
