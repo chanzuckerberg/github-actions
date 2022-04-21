@@ -1,5 +1,19 @@
 # Changelog
 
+### [1.8.2](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.8.1...deploy-happy-stack-v1.8.2) (2022-04-21)
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
+### [1.8.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.8.0...deploy-happy-stack-v1.8.1) (2022-04-20)
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
 ## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.7.0...deploy-happy-stack-v1.8.0) (2022-04-20)
 
 

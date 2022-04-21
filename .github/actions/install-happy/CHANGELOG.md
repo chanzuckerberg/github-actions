@@ -1,5 +1,33 @@
 # Changelog
 
+### [1.6.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.6.0...install-happy-v1.6.1) (2022-04-21)
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
+## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.5.2...install-happy-v1.6.0) (2022-04-21)
+
+
+### Features
+
+* Docker Build + Push; Get Github Ref Names ([#22](https://github.com/chanzuckerberg/github-actions/issues/22)) ([09a79d8](https://github.com/chanzuckerberg/github-actions/commit/09a79d869f781d2069e81965d570c1ff1bc5b1b1))
+* happy push, docker build+push, install happy ([#17](https://github.com/chanzuckerberg/github-actions/issues/17)) ([62ea2cb](https://github.com/chanzuckerberg/github-actions/commit/62ea2cb4247fd65ae7dec27ffadf58696abd3c29))
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+* Update internal versions to latest ([#25](https://github.com/chanzuckerberg/github-actions/issues/25)) ([c4b5600](https://github.com/chanzuckerberg/github-actions/commit/c4b5600b452b6a52f89e6e668b3a1acf1dcac63d))
+
+### [1.5.2](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.5.1...install-happy-v1.5.2) (2022-04-20)
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
 ### [1.5.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.5.0...install-happy-v1.5.1) (2022-04-15)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.8.2](https://github.com/chanzuckerberg/github-actions/compare/v1.8.1...v1.8.2) (2022-04-20)
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
 ### [1.8.1](https://github.com/chanzuckerberg/github-actions/compare/v1.8.0...v1.8.1) (2022-04-20)
 
 

@@ -1,5 +1,31 @@
 # Changelog
 
+### [1.4.1](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.4.0...conventional-commits-v1.4.1) (2022-04-21)
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
+## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.1...conventional-commits-v1.4.0) (2022-04-21)
+
+
+### Features
+
+* happy push, docker build+push, install happy ([#17](https://github.com/chanzuckerberg/github-actions/issues/17)) ([62ea2cb](https://github.com/chanzuckerberg/github-actions/commit/62ea2cb4247fd65ae7dec27ffadf58696abd3c29))
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
+### [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.0...conventional-commits-v1.3.1) (2022-04-20)
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
 ## [1.3.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.2.0...conventional-commits-v1.3.0) (2022-04-06)
 
 
