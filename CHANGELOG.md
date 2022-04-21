@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.8.3](https://github.com/chanzuckerberg/github-actions/compare/v1.8.2...v1.8.3) (2022-04-21)
+
+
+### Bug Fixes
+
+* the tagging ([d3fcc37](https://github.com/chanzuckerberg/github-actions/commit/d3fcc37fd587724083bc65c8f36c71ce8b81c92e))
+
 ### [1.8.2](https://github.com/chanzuckerberg/github-actions/compare/v1.8.1...v1.8.2) (2022-04-20)
 
 
