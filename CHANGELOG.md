@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.8.8](https://github.com/chanzuckerberg/github-actions/compare/v1.8.7...v1.8.8) (2022-04-21)
+
+
+### Bug Fixes
+
+* test ([#60](https://github.com/chanzuckerberg/github-actions/issues/60)) ([0eee7f3](https://github.com/chanzuckerberg/github-actions/commit/0eee7f35fd1a984cc76c0a621e0f84d4e39b1599))
+
 ### [1.8.7](https://github.com/chanzuckerberg/github-actions/compare/v1.8.6...v1.8.7) (2022-04-21)
 
 
