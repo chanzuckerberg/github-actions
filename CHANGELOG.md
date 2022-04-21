@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.8.4](https://github.com/chanzuckerberg/github-actions/compare/v1.8.3...v1.8.4) (2022-04-21)
+
+
+### Bug Fixes
+
+* initial version ([#51](https://github.com/chanzuckerberg/github-actions/issues/51)) ([cb3eac9](https://github.com/chanzuckerberg/github-actions/commit/cb3eac9de53cc005d9055c9f1b358991950645c2))
+* only tag get-github-ref-names ([#49](https://github.com/chanzuckerberg/github-actions/issues/49)) ([110bf8f](https://github.com/chanzuckerberg/github-actions/commit/110bf8f705d931947df5eb1772bce3d9236f0b17))
+* the tagging ([d3fcc37](https://github.com/chanzuckerberg/github-actions/commit/d3fcc37fd587724083bc65c8f36c71ce8b81c92e))
+
 ### [1.8.3](https://github.com/chanzuckerberg/github-actions/compare/v1.8.2...v1.8.3) (2022-04-21)
 
 
