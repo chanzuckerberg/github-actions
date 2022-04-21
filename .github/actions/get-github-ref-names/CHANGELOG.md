@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.7.1](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.7.0...get-github-ref-names-v1.7.1) (2022-04-21)
+
+
+### Bug Fixes
+
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+
 ## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.6.1...get-github-ref-names-v1.7.0) (2022-04-21)
 
 
