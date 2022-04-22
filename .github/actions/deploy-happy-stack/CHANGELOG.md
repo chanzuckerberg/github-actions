@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.8.8](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.8.7...deploy-happy-stack-v1.8.8) (2022-04-22)
+
+
+### Bug Fixes
+
+* adding env to list check ([#63](https://github.com/chanzuckerberg/github-actions/issues/63)) ([72114b7](https://github.com/chanzuckerberg/github-actions/commit/72114b738e257cbc77281a5abd9f1e58bb303cd7))
+
 ### [1.8.6](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.8.5...deploy-happy-stack-v1.8.6) (2022-04-21)
 
 
