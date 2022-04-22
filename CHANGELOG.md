@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.8.9](https://github.com/chanzuckerberg/github-actions/compare/v1.8.8...v1.8.9) (2022-04-22)
+
+
+### Bug Fixes
+
+* adding env to list check ([#63](https://github.com/chanzuckerberg/github-actions/issues/63)) ([72114b7](https://github.com/chanzuckerberg/github-actions/commit/72114b738e257cbc77281a5abd9f1e58bb303cd7))
+
 ### [1.8.8](https://github.com/chanzuckerberg/github-actions/compare/v1.8.7...v1.8.8) (2022-04-21)
 
 
