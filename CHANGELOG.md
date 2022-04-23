@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 (2022-04-23)
+
+
+### Bug Fixes
+
+* test ([343ae2c](https://github.com/chanzuckerberg/github-actions/commit/343ae2c1311a684dd449a57e724db5a570940142))
+
 ### [2.0.1](https://github.com/chanzuckerberg/github-actions/compare/v2.0.0...v2.0.1) (2022-04-23)
 
 
