@@ -47,3 +47,4 @@ runs:
           echo "Creating stack ${STACK_NAME}"
           happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi
+# test
