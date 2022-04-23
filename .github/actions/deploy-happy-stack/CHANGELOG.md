@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 (2022-04-23)
+
+
+### Bug Fixes
+
+* test ([343ae2c](https://github.com/chanzuckerberg/github-actions/commit/343ae2c1311a684dd449a57e724db5a570940142))
+
 ### [1.8.8](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.8.7...deploy-happy-stack-v1.8.8) (2022-04-22)
 
 
