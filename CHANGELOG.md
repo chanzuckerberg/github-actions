@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.0.1](https://github.com/chanzuckerberg/github-actions/compare/v1.0.0...v1.0.1) (2022-04-23)
+
+
+### Bug Fixes
+
+* add comment to test ([1d4efca](https://github.com/chanzuckerberg/github-actions/commit/1d4efca59da673e7541bac5817eecc70d7d82258))
+* revert comment ([9d7f8de](https://github.com/chanzuckerberg/github-actions/commit/9d7f8dee196875f1378acb12ffe0898148db5c09))
+* test ([343ae2c](https://github.com/chanzuckerberg/github-actions/commit/343ae2c1311a684dd449a57e724db5a570940142))
+
 ## 1.0.0 (2022-04-23)
 
 

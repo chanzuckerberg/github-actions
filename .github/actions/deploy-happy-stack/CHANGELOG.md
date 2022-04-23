@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.0.0...deploy-happy-stack-v1.0.1) (2022-04-23)
+
+
+### Bug Fixes
+
+* revert comment ([9d7f8de](https://github.com/chanzuckerberg/github-actions/commit/9d7f8dee196875f1378acb12ffe0898148db5c09))
+
 ## 1.0.0 (2022-04-23)
 
 
