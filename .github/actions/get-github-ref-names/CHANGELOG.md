@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.0.0...get-github-ref-names-v1.1.0) (2022-04-23)
+
+
+### Features
+
+* version bump ([8f24ce6](https://github.com/chanzuckerberg/github-actions/commit/8f24ce67498d7f2eef6f6902854f1d6568090636))
+
+
+### Bug Fixes
+
+* version bump ([6691a5a](https://github.com/chanzuckerberg/github-actions/commit/6691a5ae1282d1869096bbe7a35e97efde504a07))
+* version bump ([931198a](https://github.com/chanzuckerberg/github-actions/commit/931198a3d01023001ce41326dcd4c460a9a00d06))
+* version bump ([c908b5b](https://github.com/chanzuckerberg/github-actions/commit/c908b5b232fa5e57b5a2ec15405e69b2ed1c9e3c))
+
 ## 1.0.0 (2022-04-23)
 
 
