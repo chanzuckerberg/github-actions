@@ -1,5 +1,12 @@
 # Changelog
 
+### [2.0.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v2.0.0...docker-build-push-v2.0.1) (2022-04-23)
+
+
+### Bug Fixes
+
+* test ([#65](https://github.com/chanzuckerberg/github-actions/issues/65)) ([fecd0a2](https://github.com/chanzuckerberg/github-actions/commit/fecd0a287fa3e033e21902968c95b83f8bf21f74))
+
 ### [1.8.9](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.8.8...docker-build-push-v1.8.9) (2022-04-23)
 
 
