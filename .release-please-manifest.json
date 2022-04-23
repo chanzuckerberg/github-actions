@@ -1,8 +1,8 @@
 {
-	".github/actions/conventional-commits": "2.0.0",
-	".github/actions/docker-build-push": "2.0.1",
-	".": "2.0.1",
-	".github/actions/install-happy": "2.0.0",
-	".github/actions/deploy-happy-stack": "2.0.0",
-	".github/actions/get-github-ref-names": "2.0.0"
+	".github/actions/conventional-commits": "0.0.0",
+	".github/actions/docker-build-push": "0.0.0",
+	".": "0.0.0",
+	".github/actions/install-happy": "0.0.0",
+	".github/actions/deploy-happy-stack": "0.0.0",
+	".github/actions/get-github-ref-names": "0.0.0"
 }
