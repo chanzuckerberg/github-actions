@@ -1,7 +1,7 @@
 {
 	".github/actions/conventional-commits": "0.0.0",
-	".github/actions/docker-build-push": "0.0.0",
-	".": "0.0.0",
+	".github/actions/docker-build-push": "1.0.0",
+	".": "1.0.0",
 	".github/actions/install-happy": "0.0.0",
 	".github/actions/deploy-happy-stack": "0.0.0",
 	".github/actions/get-github-ref-names": "0.0.0"
