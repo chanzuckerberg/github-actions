@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.4](https://github.com/chanzuckerberg/github-actions/compare/v1.0.3...v1.0.4) (2022-04-23)
+
+
+### Bug Fixes
+
+* revert back to main version ([a6ddf36](https://github.com/chanzuckerberg/github-actions/commit/a6ddf36a0b1425188a66d538505e8eb727680480))
+
 ### [1.0.3](https://github.com/chanzuckerberg/github-actions/compare/v1.0.2...v1.0.3) (2022-04-23)
 
 
