@@ -1,5 +1,15 @@
 # Changelog
 
+### [1.0.2](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.0.1...deploy-happy-stack-v1.0.2) (2022-04-23)
+
+
+### Bug Fixes
+
+* delete version.txt ([7b20373](https://github.com/chanzuckerberg/github-actions/commit/7b203735ce07ff062a4489126d5b8f6fc3084e8a))
+* revert comment ([9d7f8de](https://github.com/chanzuckerberg/github-actions/commit/9d7f8dee196875f1378acb12ffe0898148db5c09))
+* test ([a1f42eb](https://github.com/chanzuckerberg/github-actions/commit/a1f42ebdd7b8ec064e4a9b9c0a87d13f1f0f91c5))
+* test ([343ae2c](https://github.com/chanzuckerberg/github-actions/commit/343ae2c1311a684dd449a57e724db5a570940142))
+
 ### [1.0.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.0.0...deploy-happy-stack-v1.0.1) (2022-04-23)
 
 

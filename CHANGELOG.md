@@ -1,5 +1,17 @@
 # Changelog
 
+### [1.0.2](https://github.com/chanzuckerberg/github-actions/compare/v1.0.1...v1.0.2) (2022-04-23)
+
+
+### Bug Fixes
+
+* delete version.txt ([7b20373](https://github.com/chanzuckerberg/github-actions/commit/7b203735ce07ff062a4489126d5b8f6fc3084e8a))
+* install-happy ([2c14ebb](https://github.com/chanzuckerberg/github-actions/commit/2c14ebb7cab8fecf2d5e24d2ad79befec2adb4d7))
+* remove comment ([c613a08](https://github.com/chanzuckerberg/github-actions/commit/c613a0824523e44682eee635a2c1558c0107a280))
+* test ([a1f42eb](https://github.com/chanzuckerberg/github-actions/commit/a1f42ebdd7b8ec064e4a9b9c0a87d13f1f0f91c5))
+* test docker-build push ([de82461](https://github.com/chanzuckerberg/github-actions/commit/de8246115500c196391998e5c64ceea58c370009))
+* test get-github ([6f0b5f1](https://github.com/chanzuckerberg/github-actions/commit/6f0b5f17897122721a841303c2779119477b6540))
+
 ### [1.0.1](https://github.com/chanzuckerberg/github-actions/compare/v1.0.0...v1.0.1) (2022-04-23)
 
 

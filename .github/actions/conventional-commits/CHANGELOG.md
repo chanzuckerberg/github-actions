@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.0.1](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.0.0...conventional-commits-v1.0.1) (2022-04-23)
+
+
+### Bug Fixes
+
+* add comment to test ([1d4efca](https://github.com/chanzuckerberg/github-actions/commit/1d4efca59da673e7541bac5817eecc70d7d82258))
+* remove comment ([c613a08](https://github.com/chanzuckerberg/github-actions/commit/c613a0824523e44682eee635a2c1558c0107a280))
+
 ## 1.0.0 (2022-04-23)
 
 
