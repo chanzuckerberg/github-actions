@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.0.0...docker-build-push-v1.0.1) (2022-04-23)
+
+
+### Bug Fixes
+
+* removing last test comment ([6fe5eab](https://github.com/chanzuckerberg/github-actions/commit/6fe5eabaece50cc5320fb709010188cf9cbda456))
+
 ## 1.0.0 (2022-04-23)
 
 
