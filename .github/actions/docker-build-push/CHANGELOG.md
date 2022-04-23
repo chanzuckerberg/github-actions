@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.5.0...docker-build-push-v1.6.0) (2022-04-23)
+
+
+### Features
+
+* version bump ([639bd72](https://github.com/chanzuckerberg/github-actions/commit/639bd7271dca3a6cad3b8429c1d39ad5275ce592))
+
 ### [1.0.2](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.0.1...docker-build-push-v1.0.2) (2022-04-23)
 
 
