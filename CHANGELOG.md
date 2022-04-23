@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.8.10](https://github.com/chanzuckerberg/github-actions/compare/v1.8.9...v1.8.10) (2022-04-23)
+
+
+### Bug Fixes
+
+* test ([#65](https://github.com/chanzuckerberg/github-actions/issues/65)) ([fecd0a2](https://github.com/chanzuckerberg/github-actions/commit/fecd0a287fa3e033e21902968c95b83f8bf21f74))
+
 ### [1.8.9](https://github.com/chanzuckerberg/github-actions/compare/v1.8.8...v1.8.9) (2022-04-22)
 
 
