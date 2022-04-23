@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.0.6](https://github.com/chanzuckerberg/github-actions/compare/v1.0.5...v1.0.6) (2022-04-23)
+
+
+### Bug Fixes
+
+* version bump ([6691a5a](https://github.com/chanzuckerberg/github-actions/commit/6691a5ae1282d1869096bbe7a35e97efde504a07))
+* version bump ([198a667](https://github.com/chanzuckerberg/github-actions/commit/198a6675401b2979dba79bf94cf8ea37eaa62bd6))
+
 ### [1.0.5](https://github.com/chanzuckerberg/github-actions/compare/v1.0.4...v1.0.5) (2022-04-23)
 
 
