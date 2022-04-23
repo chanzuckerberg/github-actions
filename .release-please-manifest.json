@@ -4,5 +4,5 @@
 	".": "1.0.5",
 	".github/actions/install-happy": "1.0.1",
 	".github/actions/deploy-happy-stack": "1.0.3",
-	".github/actions/get-github-ref-names": "1.0.0"
+	".github/actions/get-github-ref-names": "1.5.0"
 }
