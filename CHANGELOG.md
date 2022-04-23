@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.0.3](https://github.com/chanzuckerberg/github-actions/compare/v1.0.2...v1.0.3) (2022-04-23)
+
+
+### Bug Fixes
+
+* remove install happy test comment ([6a204e5](https://github.com/chanzuckerberg/github-actions/commit/6a204e599d05f5b5ab8d171912342e77f4967208))
+* removing last test comment ([6fe5eab](https://github.com/chanzuckerberg/github-actions/commit/6fe5eabaece50cc5320fb709010188cf9cbda456))
+
 ### [1.0.2](https://github.com/chanzuckerberg/github-actions/compare/v1.0.1...v1.0.2) (2022-04-23)
 
 

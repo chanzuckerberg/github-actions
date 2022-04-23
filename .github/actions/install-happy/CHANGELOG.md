@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.0.0...install-happy-v1.0.1) (2022-04-23)
+
+
+### Bug Fixes
+
+* remove install happy test comment ([6a204e5](https://github.com/chanzuckerberg/github-actions/commit/6a204e599d05f5b5ab8d171912342e77f4967208))
+
 ## 1.0.0 (2022-04-23)
 
 
