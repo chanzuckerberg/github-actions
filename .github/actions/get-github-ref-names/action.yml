@@ -46,5 +46,3 @@ runs:
           core.setOutput("headRef", head);
           core.setOutput("baseRef", base);
           console.log(`Calculated the following ${JSON.stringify({eventName,base,head}, null, 2)}`);
-
-##
