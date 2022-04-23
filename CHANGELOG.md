@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/chanzuckerberg/github-actions/compare/v1.1.0...v1.2.0) (2022-04-23)
+
+
+### Features
+
+* version bump ([4746e1b](https://github.com/chanzuckerberg/github-actions/commit/4746e1bc05fbeaeddcf2a43496744c2cd7a20976))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/v1.0.5...v1.1.0) (2022-04-23)
 
 
