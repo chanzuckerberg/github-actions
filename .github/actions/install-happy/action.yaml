@@ -20,3 +20,4 @@ runs:
         wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_amd64.tar.gz -O happy.tar.gz
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
+# test
