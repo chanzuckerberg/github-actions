@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 (2022-04-23)
+
+
+### Bug Fixes
+
+* test get-github ([6f0b5f1](https://github.com/chanzuckerberg/github-actions/commit/6f0b5f17897122721a841303c2779119477b6540))
+
 ### [1.8.1](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.8.0...get-github-ref-names-v1.8.1) (2022-04-21)
 
 

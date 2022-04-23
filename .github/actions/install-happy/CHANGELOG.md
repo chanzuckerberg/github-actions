@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 (2022-04-23)
+
+
+### Bug Fixes
+
+* install-happy ([2c14ebb](https://github.com/chanzuckerberg/github-actions/commit/2c14ebb7cab8fecf2d5e24d2ad79befec2adb4d7))
+
 ### [1.7.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.7.0...install-happy-v1.7.1) (2022-04-21)
 
 
