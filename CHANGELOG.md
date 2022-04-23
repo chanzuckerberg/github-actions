@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/v1.0.5...v1.1.0) (2022-04-23)
+
+
+### Features
+
+* version bump ([639bd72](https://github.com/chanzuckerberg/github-actions/commit/639bd7271dca3a6cad3b8429c1d39ad5275ce592))
+* version bump ([8f24ce6](https://github.com/chanzuckerberg/github-actions/commit/8f24ce67498d7f2eef6f6902854f1d6568090636))
+
+
+### Bug Fixes
+
+* version bump ([6d80c28](https://github.com/chanzuckerberg/github-actions/commit/6d80c281ff91d19bbdcc6aa2365af51b0e1da2b8))
+* version bump ([6691a5a](https://github.com/chanzuckerberg/github-actions/commit/6691a5ae1282d1869096bbe7a35e97efde504a07))
+* version bump ([198a667](https://github.com/chanzuckerberg/github-actions/commit/198a6675401b2979dba79bf94cf8ea37eaa62bd6))
+
 ### [1.0.5](https://github.com/chanzuckerberg/github-actions/compare/v1.0.4...v1.0.5) (2022-04-23)
 
 
