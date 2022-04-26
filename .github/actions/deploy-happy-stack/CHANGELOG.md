@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.4](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.0.3...deploy-happy-stack-v1.0.4) (2022-04-26)
+
+
+### Bug Fixes
+
+* deploy-happy-stack: fix bug introduced by new ENV parameter ([#82](https://github.com/chanzuckerberg/github-actions/issues/82)) ([17414e4](https://github.com/chanzuckerberg/github-actions/commit/17414e497606b2a5f6336e3db54ac6845422d848))
+
 ### [1.0.3](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.0.2...deploy-happy-stack-v1.0.3) (2022-04-23)
 
 
