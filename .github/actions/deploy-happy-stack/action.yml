@@ -40,11 +40,12 @@ runs:
 
         echo "Targetting Stack ${STACK_NAME}"
 
-        if $(happy list --aws-profile --env=${ENV} "" 2>&1 | grep -q ${STACK_NAME} ); then
+        if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
           happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
           happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
         fi
+
 # bump
