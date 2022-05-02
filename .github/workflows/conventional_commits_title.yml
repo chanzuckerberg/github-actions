@@ -17,4 +17,4 @@ jobs:
         with:
           enforce_identifier_prefixes: |
             CCIE
-            CID
+            CDI
