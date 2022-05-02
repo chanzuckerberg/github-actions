@@ -1,16 +1,66 @@
 name: Conventional Commits Checking
 description: "Validates that a pull request title is compatible with Conventional Commits."
+inputs:
+  enforce_jira_identifiers:
+    description: "List of JIRA project identifiers to enforce. eg: `feat(FOO-123)` or `feat(BAR-123` pass in FOO\nBAR"
+    required: false
 runs:
   using: composite
   steps:
+    - uses: actions/setup-node@v3
+      with:
+        node-version: "14"
+        check-latest: true
+    - run: npm install csv-parse
     - uses: actions/github-script@v5
       with:
         script: |
-          const validator = /^(chore|feat|fix|revert|docs|style)(\([a-zA-Z0-9- ]+\))?(!)?: (.)+$/
-          const title = context.payload.pull_request.title
-          const is_valid = validator.test(title)
+          const {parse} = require('csv-parse/sync');
 
-          if (!is_valid) {
+          // From https://github.com/docker/metadata-action/blob/b2391d37b4157fa4aa2e118d643f417910ff3242/src/context.ts#L41
+          const getInputList(name): string[] {
+            const res = [];
+
+            const items = core.getInput(name);
+            if (items == '') {
+              return res;
+            }
+
+            const records = parse(items, {
+              columns: false,
+              relaxQuotes: true,
+              comment: '#',
+              relaxColumnCount: true,
+              skipEmptyLines: true
+            });
+
+            for (const record of records) {
+              if (record.length == 1) {
+                res.push(record[0]);
+                continue;
+              }
+              res.push(...record);
+            }
+            return res.filter(item => item).map(pat => pat.trim());
+          }
+
+          // Begin our logic
+          const typeValidator = "(chore|feat|fix|revert|docs|style)";
+          let identifierValidator = "(\([a-zA-Z0-9- ]+\))?"
+          const enforceJiraIdentifiers = getInputList("enforce_jira_identifiers");
+          if (enforceJiraIdentifiers.length > 0) {
+            identifierValidator = `\((${enforceJiraIdentifiers.join("|")})-[0-9]+`;
+          }
+
+          // const validator = /^(chore|feat|fix|revert|docs|style)(\([a-zA-Z0-9- ]+\))?(!)?: (.)+$/
+          const validtor = new RegExp(`^${typeValidator}${identifierValidator}(!)?: (.)+$`);
+
+          console.log(`Will use validator ${validator.toString()}`);
+
+          const title = context.payload.pull_request.title
+          const isValid = validator.test(title)
+
+          if (!isValid) {
             const details = JSON.stringify({
               title: title,
               valid_syntax: validator.toString(),
