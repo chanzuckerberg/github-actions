@@ -6,7 +6,7 @@ runs:
     - uses: actions/github-script@v5
       with:
         script: |
-          const validator = /^(chore|feat|fix|revert|docs|style)(\([a-z ]+\))?(!)?: (.)+$/
+          const validator = /^(chore|feat|fix|revert|docs|style)(\([a-zA-Z0-9- ]+\))?(!)?: (.)+$/
           const title = context.payload.pull_request.title
           const is_valid = validator.test(title)
 
@@ -17,4 +17,3 @@ runs:
             })
             core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. See more details: ${details}`)
           }
-# bump
