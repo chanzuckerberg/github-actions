@@ -54,7 +54,7 @@ runs:
           }
 
           // const validator = /^(chore|feat|fix|revert|docs|style)(\([a-zA-Z0-9- ]+\))?(!)?: (.)+$/
-          const validtor = new RegExp(`^${typeValidator}${identifierValidator}(!)?: (.)+$`);
+          const validator = new RegExp(`^${typeValidator}${identifierValidator}(!)?: (.)+$`);
 
           console.log(`Will use validator ${validator.toString()}`);
 
