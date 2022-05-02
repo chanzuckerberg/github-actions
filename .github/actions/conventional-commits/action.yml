@@ -12,6 +12,7 @@ runs:
         node-version: "14"
         check-latest: true
     - run: npm install csv-parse
+      shell: bash
     - uses: actions/github-script@v5
       with:
         script: |
