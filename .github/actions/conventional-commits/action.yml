@@ -49,6 +49,9 @@ runs:
           const typeValidator = "(chore|feat|fix|revert|docs|style)";
           let identifierValidator = "(\([a-zA-Z0-9- ]+\))?"
           const enforceIdentifierPrefixes = getInputList("enforce_identifier_prefixes");
+
+          console.log(`The following identifier prefixes were specified: ${JSON.stringify(enforceIdentifierPrefixes)}`);
+
           if (enforceIdentifierPrefixes.length > 0) {
             identifierValidator = `\((${enforceIdentifierPrefixes.join("|")})-[0-9]+`;
           }
