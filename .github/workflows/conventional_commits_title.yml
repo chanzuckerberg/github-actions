@@ -13,3 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/conventional-commits
+      - uses: ./.github/actions/conventional-commits
+        with:
+          enforce_identifier_prefixes: |
+            CCIE

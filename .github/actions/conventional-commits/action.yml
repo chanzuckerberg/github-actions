@@ -1,8 +1,8 @@
 name: Conventional Commits Checking
 description: "Validates that a pull request title is compatible with Conventional Commits."
 inputs:
-  enforce_jira_identifiers:
-    description: "List of JIRA project identifiers to enforce. eg: `feat(FOO-123)` or `feat(BAR-123` pass in FOO\nBAR"
+  enforce_identifier_prefixes:
+    description: "List of JIRA (or similar) project identifiers to enforce. eg: `feat(FOO-123):...` or `feat(BAR-123):...` then pass in FOO\nBAR"
     required: false
 runs:
   using: composite
