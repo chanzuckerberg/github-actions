@@ -23,6 +23,8 @@ runs:
             let res = [];
 
             const items = core.getInput(name);
+            console.log(`The following input ${name} specified: ${items}`);
+
             if (items == '') {
               return res;
             }
@@ -35,6 +37,8 @@ runs:
               skipEmptyLines: true
             });
 
+            console.log(`The following input ${name} records parsed: ${JSON.stringify(records)}`);
+
             for (const record of records) {
               if (record.length == 1) {
                 res.push(record[0]);
@@ -42,7 +46,8 @@ runs:
               }
               res.push(...record);
             }
-            return res.filter(item => item).map(pat => pat.trim());
+            const cleanRecords = res.filter(item => item).map(pat => pat.trim());
+            return cleanRecords;
           }
 
           // Begin our logic
