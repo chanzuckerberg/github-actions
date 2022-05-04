@@ -30,12 +30,13 @@ runs:
   using: "composite"
   steps:
     - name: Prevent registry from ending with a slash
+      id: registry-validation
       uses: actions/github-script@v6
-        with:
-          script: |
-            if (`${{ inputs.name }}`.endsWith("/")) {
-              core.setFailed("Don't end a registry with a slash otherwise, we can't log into ECR properly")
-            }
+      with:
+        script: |
+          if (`${{ inputs.name }}`.endsWith("/")) {
+            core.setFailed("Don't end a registry with a slash otherwise, we can't log into ECR properly")
+          }
     - uses: actions/checkout@v2
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
