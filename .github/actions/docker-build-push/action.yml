@@ -34,7 +34,7 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
-          if (`${{ inputs.name }}`.endsWith("/")) {
+          if (`${{ inputs.registry }}`.endsWith("/")) {
             core.setFailed("Don't end a registry with a slash otherwise, we can't log into ECR properly")
           }
     - uses: actions/checkout@v2
