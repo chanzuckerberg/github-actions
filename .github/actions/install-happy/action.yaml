@@ -16,6 +16,7 @@ runs:
       shell: bash
       env:
         HAPPY_VERSION: ${{ inputs.happy_version }}
+        INSTALL_SYSTEMWIDE: ${{ inputs.install_globally }}
       # TODO: cache as in:
       #       https://docs.github.com/en/actions/creating-actions/developing-a-third-party-cli-action
       run: |
@@ -24,6 +25,6 @@ runs:
         wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_amd64.tar.gz -O happy.tar.gz
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
-        if [ -n "${{ inputs.install_golbally }}" ]; then
+        if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
             cp happy /usr/local/bin/
         fi
