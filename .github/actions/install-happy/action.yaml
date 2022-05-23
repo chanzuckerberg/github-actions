@@ -5,6 +5,10 @@ inputs:
     description: "Version of happy CLI to fetch"
     required: true
     default: "0.16.0"
+  install_globally:
+    description: "Whether to add happy to the system bin directory"
+    required: false
+    default: ""
 runs:
   using: "composite"
   steps:
@@ -20,4 +24,6 @@ runs:
         wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_amd64.tar.gz -O happy.tar.gz
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
-# bump2
+        if [ -n "${{ inputs.install_golbally }}" ]; then
+            cp happy /usr/local/bin/
+        fi
