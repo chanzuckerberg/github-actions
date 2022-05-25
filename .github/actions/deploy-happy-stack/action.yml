@@ -9,7 +9,7 @@ inputs:
     default: "false"
     required: false
   tag:
-    description: "pecify the tag for the docker images. If not specified we will generate a default tag."
+    description: "Specify the tag for the docker images. If not specified we will generate a default tag."
     default: ""
     required: false
   tfe-token:
