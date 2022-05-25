@@ -37,7 +37,7 @@ runs:
         STACK_NAME: ${{ inputs.stack-name }}
         CREATE_TAG: ${{ inputs.create-tag }}
         TAG: ${{ inputs.tag }}
-        ENV: ${{inputs.env}}
+        ENV: ${{ inputs.env }}
       shell: bash
       run: |
         set -ue
