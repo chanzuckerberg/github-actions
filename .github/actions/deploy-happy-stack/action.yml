@@ -32,6 +32,7 @@ runs:
         TFE_TOKEN: ${{ inputs.tfe-token }}
         STACK_NAME: ${{ inputs.stack-name }}
         CREATE_TAG: ${{ inputs.create-tag }}
+        TAG: ${{ inputs.tag }}
         ENV: ${{inputs.env}}
       shell: bash
       run: |
@@ -39,13 +40,14 @@ runs:
         set -o pipefail
 
         echo "Targetting Stack ${STACK_NAME}"
-
+        IMAGE_TAG="${TAG:-sha-$GITHUB_SHA}"
+        
         if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
         fi
 
 # bump
