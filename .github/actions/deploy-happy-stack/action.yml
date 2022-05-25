@@ -8,6 +8,10 @@ inputs:
     description: "Should we build and tag docker images. Defaults to false and assumes images already exist."
     default: "false"
     required: false
+  tag:
+    description: "pecify the tag for the docker images. If not specified we will generate a default tag."
+    default: ""
+    required: false
   tfe-token:
     description: "TFE Token"
     required: true
