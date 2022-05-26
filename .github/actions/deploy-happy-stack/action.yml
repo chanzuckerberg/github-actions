@@ -8,6 +8,10 @@ inputs:
     description: "Should we build and tag docker images. Defaults to false and assumes images already exist."
     default: "false"
     required: false
+  tag:
+    description: "Specify the tag for the docker images. If not specified we will generate a default tag."
+    default: ""
+    required: false
   tfe-token:
     description: "TFE Token"
     required: true
@@ -32,20 +36,22 @@ runs:
         TFE_TOKEN: ${{ inputs.tfe-token }}
         STACK_NAME: ${{ inputs.stack-name }}
         CREATE_TAG: ${{ inputs.create-tag }}
-        ENV: ${{inputs.env}}
+        TAG: ${{ inputs.tag }}
+        ENV: ${{ inputs.env }}
       shell: bash
       run: |
         set -ue
         set -o pipefail
-
-        echo "Targetting Stack ${STACK_NAME}"
+        
+        IMAGE_TAG="${TAG:-sha-$GITHUB_SHA}"
+        echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
 
         if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag sha-${GITHUB_SHA} ${STACK_NAME}
+          happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
         fi
 
 # bump
