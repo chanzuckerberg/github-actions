@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.0.4...deploy-happy-stack-v1.1.0) (2022-05-26)
+
+
+### Features
+
+* Add the ability to pass arbitrary tag into deploy-happy-stack action ([#98](https://github.com/chanzuckerberg/github-actions/issues/98)) ([5c2ab58](https://github.com/chanzuckerberg/github-actions/commit/5c2ab58d3a49b66295954382b405e7fd52ec70a6))
+
+
+### Bug Fixes
+
+* Typo in a tag parameter description ([#99](https://github.com/chanzuckerberg/github-actions/issues/99)) ([ad477a1](https://github.com/chanzuckerberg/github-actions/commit/ad477a1c7cb46ea8ea73879c6080fd2f462e6ef5))
+
 ### [1.0.4](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.0.3...deploy-happy-stack-v1.0.4) (2022-04-26)
 
 
