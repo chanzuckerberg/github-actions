@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.1.0...install-happy-v1.2.0) (2022-06-01)
+
+
+### Features
+
+* Support installing the happy CLI system-wide ([#96](https://github.com/chanzuckerberg/github-actions/issues/96)) ([f8857aa](https://github.com/chanzuckerberg/github-actions/commit/f8857aa7f28f9514d0e7794e9ec7aec0c623b394))
+
+
+### Bug Fixes
+
+* version update ([#87](https://github.com/chanzuckerberg/github-actions/issues/87)) ([97ede60](https://github.com/chanzuckerberg/github-actions/commit/97ede60fee4a44fda4d4c697be060043b4cc0ad9))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.0.2...install-happy-v1.1.0) (2022-05-26)
 
 
