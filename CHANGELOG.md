@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.3](https://github.com/chanzuckerberg/github-actions/compare/v1.3.2...v1.3.3) (2022-06-01)
+
+
+### Bug Fixes
+
+* add docs to release-please version ([#107](https://github.com/chanzuckerberg/github-actions/issues/107)) ([989f4ba](https://github.com/chanzuckerberg/github-actions/commit/989f4bacacd23ab2b4373da1c8878cff4b7f6ebd))
+
 ### [1.3.2](https://github.com/chanzuckerberg/github-actions/compare/v1.3.1...v1.3.2) (2022-06-01)
 
 
