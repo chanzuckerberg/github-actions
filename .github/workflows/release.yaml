@@ -30,6 +30,9 @@ jobs:
           private_key: ${{ secrets.CZI_RELEASE_PLEASE_PK }}
 
       - name: release please
+        # DO NOT CHANGE THIS VERSION OF RELEASE-PLEASE PLEASEEEEEEE
+        # A future version of release-please seems to be broken and we haven't figured out
+        # why, but this version works. Updating this version will break future releases numbers.
         uses: google-github-actions/release-please-action@v3.0.0
         id: release
         with:
