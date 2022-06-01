@@ -1,5 +1,5 @@
 {
-	"bootstrap-sha": "1f9d739416f9cf70907e8c916726383225051246",
+	"bootstrap-sha": "1141c2bfeee406489809c4ac2fbdf6daeac0353c",
 	"release-type": "simple",
 	"group-pull-request-title-pattern": "chore: release ${version}",
 	"bump-minor-pre-major": true,
