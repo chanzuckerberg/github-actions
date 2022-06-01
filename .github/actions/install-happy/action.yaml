@@ -28,3 +28,4 @@ runs:
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
             cp happy /usr/local/bin/
         fi
+# BUMP
