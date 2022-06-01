@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.2](https://github.com/chanzuckerberg/github-actions/compare/v1.3.1...v1.3.2) (2022-06-01)
+
+
+### Bug Fixes
+
+* update version of install happy ([#105](https://github.com/chanzuckerberg/github-actions/issues/105)) ([59cd968](https://github.com/chanzuckerberg/github-actions/commit/59cd968312f3bd7fd1e2c9a8df7fea1d3d9b2e6d))
+
 ### [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/v1.3.0...v1.3.1) (2022-06-01)
 
 
