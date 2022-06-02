@@ -53,5 +53,3 @@ runs:
           echo "Creating stack ${STACK_NAME}"
           happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
         fi
-
-# bump
