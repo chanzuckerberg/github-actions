@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.2](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.3.1...deploy-happy-stack-v1.3.2) (2022-06-02)
+
+
+### Bug Fixes
+
+* bump version ([#111](https://github.com/chanzuckerberg/github-actions/issues/111)) ([ed47eb4](https://github.com/chanzuckerberg/github-actions/commit/ed47eb41bd286fa7fda5cc15d4ff865dc0352f88))
+
 ### [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.3.0...deploy-happy-stack-v1.3.1) (2022-06-01)
 
 
