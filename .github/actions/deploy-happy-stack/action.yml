@@ -1,8 +1,8 @@
 name: Create or Update a Happy Stack
-description: "Will create or update a Happy Stack"
+description: "Will create, update, or delete a Happy Stack"
 inputs:
   stack-name:
-    description: "Name of the stack to create or update"
+    description: "Name of the stack to create, update, or delete"
     required: true
   create-tag:
     description: "Should we build and tag docker images. Defaults to false and assumes images already exist."
@@ -22,6 +22,10 @@ inputs:
   env:
     description: "The environment to update or create"
     required: false
+  delete-stack:
+    description: "Should we delete current stack. Defaults to false."
+    default: false
+    required: false
 
 runs:
   using: "composite"
@@ -38,6 +42,7 @@ runs:
         CREATE_TAG: ${{ inputs.create-tag }}
         TAG: ${{ inputs.tag }}
         ENV: ${{ inputs.env }}
+        DELETE_STACK: ${{ inputs.delete-stack }}
       shell: bash
       run: |
         set -ue
@@ -46,7 +51,10 @@ runs:
         IMAGE_TAG="${TAG:-sha-$GITHUB_SHA}"
         echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
 
-        if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q ${STACK_NAME} ); then
+        if ${DELETE_STACK}; then
+          echo "Deleting stack ${STACK_NAME}"
+          happy delete --aws-profile "" --env=${ENV} ${STACK_NAME}
+        elif $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
           happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
         else
