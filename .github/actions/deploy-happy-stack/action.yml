@@ -54,7 +54,7 @@ runs:
         if ${DELETE_STACK}; then
           echo "Deleting stack ${STACK_NAME}"
           happy delete --aws-profile "" --env=${ENV} ${STACK_NAME}
-        elif $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q "^${STACK_NAME}$" ); then
+        elif $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
           happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
         else
