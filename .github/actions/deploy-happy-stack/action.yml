@@ -51,8 +51,6 @@ runs:
         IMAGE_TAG="${TAG:-sha-$GITHUB_SHA}"
         echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
 
-        happy list --aws-profile "" --env=${ENV}
-
         if ${DELETE_STACK}; then
           echo "Deleting stack ${STACK_NAME}"
           happy delete --aws-profile "" --env=${ENV} ${STACK_NAME}
