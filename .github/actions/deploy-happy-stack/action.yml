@@ -27,7 +27,7 @@ inputs:
     description: "The environment to update or create"
     required: false
   flags:
-    description: "Additional flags to set for happy commands. Flags --aws-profile "" and --env=${ENV} are currently always used."
+    description: "Additional flags to set for happy commands. Flags --aws-profile  and --env=${ENV} are currently always used."
     default: ""
     required: false
 
