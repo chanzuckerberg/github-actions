@@ -26,6 +26,10 @@ inputs:
   env:
     description: "The environment to update or create"
     required: false
+  flags:
+    description: "Additional flags to set for happy commands. Flags --aws-profile "" and --env=${ENV} are currently always used."
+    default: ""
+    required: false
 
 runs:
   using: "composite"
@@ -43,6 +47,7 @@ runs:
         TAG: ${{ inputs.tag }}
         ENV: ${{ inputs.env }}
         OPERATION: ${{ inputs.operation }}
+        FLAGS: ${{ inputs.flags }}
       shell: bash
       run: |
         set -ue
@@ -51,9 +56,9 @@ runs:
         IMAGE_TAG="${TAG:-sha-$GITHUB_SHA}"
         echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
         HAPPY_OPERATION=${OPERATION}
-        HAPPY_DEPLOYMENT_FLAGS=""
+        HAPPY_DEPLOYMENT_FLAGS=${FLAGS}
 
-        if [[ ${HAPPY_OPERATION} != "create" && ${HAPPY_OPERATION} != "update" && ${HAPPY_OPERATION} != "delete" ]]; then
+        if [[ ${HAPPY_OPERATION} == "" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="--create-tag=${CREATE_TAG} --tag ${IMAGE_TAG}"
           if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q "^|\s*${STACK_NAME}\s*|" ); then
             HAPPY_OPERATION="update"
