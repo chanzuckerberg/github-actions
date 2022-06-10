@@ -1,6 +1,10 @@
 name: Create or Update a Happy Stack
 description: "Will create, update, or delete a Happy Stack"
 inputs:
+  operation:
+    description: "Operation we want this to perform. Defaults to create-or-update. Set to delete if you want to delete the stack."
+    default: ""
+    required: false
   stack-name:
     description: "Name of the stack to create, update, or delete"
     required: true
@@ -22,10 +26,6 @@ inputs:
   env:
     description: "The environment to update or create"
     required: false
-  delete-stack:
-    description: "Should we delete current stack. Defaults to false."
-    default: false
-    required: false
 
 runs:
   using: "composite"
@@ -42,7 +42,7 @@ runs:
         CREATE_TAG: ${{ inputs.create-tag }}
         TAG: ${{ inputs.tag }}
         ENV: ${{ inputs.env }}
-        DELETE_STACK: ${{ inputs.delete-stack }}
+        OPERATION: ${{ inputs.operation }}
       shell: bash
       run: |
         set -ue
@@ -50,14 +50,16 @@ runs:
         
         IMAGE_TAG="${TAG:-sha-$GITHUB_SHA}"
         echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
+        HAPPY_OPERATION=${OPERATION}
+        HAPPY_DEPLOYMENT_FLAGS=""
 
-        if ${DELETE_STACK}; then
-          echo "Deleting stack ${STACK_NAME}"
-          happy delete --aws-profile "" --env=${ENV} ${STACK_NAME}
-        elif $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q "^|\s*${STACK_NAME}\s*|" ); then
-          echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
-        else
-          echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
-        fi
+        if [[ ${HAPPY_OPERATION} != "create" && ${HAPPY_OPERATION} != "update" && ${HAPPY_OPERATION} != "delete" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="--create-tag=${CREATE_TAG} --tag ${IMAGE_TAG}"
+          if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q "^|\s*${STACK_NAME}\s*|" ); then
+            HAPPY_OPERATION="update"
+          else
+            HAPPY_OPERATION="create"
+          fi
+        echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
+        echo "happy ${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}"
+        happy ${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}
