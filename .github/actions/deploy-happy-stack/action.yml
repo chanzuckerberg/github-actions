@@ -53,13 +53,14 @@ runs:
         HAPPY_DEPLOYMENT_FLAGS=""
 
         if [[ ${OPERATION} == "create-or-update" ]]; then
-          HAPPY_DEPLOYMENT_FLAGS="--create-tag=${CREATE_TAG} --tag ${IMAGE_TAG}"
           if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q "^|\s*${STACK_NAME}\s*|" ); then
             OPERATION="update"
           else
             OPERATION="create"
           fi
-        elif [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
+        fi
+        
+        if [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="--create-tag=${CREATE_TAG} --tag ${IMAGE_TAG}"
         fi
 
