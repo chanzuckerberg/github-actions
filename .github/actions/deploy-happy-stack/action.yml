@@ -1,8 +1,12 @@
 name: Create or Update a Happy Stack
-description: "Will create or update a Happy Stack"
+description: "Will create, update, or delete a Happy Stack"
 inputs:
+  operation:
+    description: "Operation we want this to perform. If not provided, happy will automatically create or update the stack with given name. Could be set to delete to delete the stack."
+    default: "create-or-update"
+    required: false
   stack-name:
-    description: "Name of the stack to create or update"
+    description: "Name of the stack to create, update, or delete"
     required: true
   create-tag:
     description: "Should we build and tag docker images. Defaults to false and assumes images already exist."
@@ -38,6 +42,7 @@ runs:
         CREATE_TAG: ${{ inputs.create-tag }}
         TAG: ${{ inputs.tag }}
         ENV: ${{ inputs.env }}
+        OPERATION: ${{ inputs.operation }}
       shell: bash
       run: |
         set -ue
@@ -45,11 +50,19 @@ runs:
         
         IMAGE_TAG="${TAG:-sha-$GITHUB_SHA}"
         echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
+        HAPPY_DEPLOYMENT_FLAGS=""
 
-        if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q ${STACK_NAME} ); then
-          echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
-        else
-          echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
+        if [[ ${OPERATION} == "create-or-update" ]]; then
+          if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q "^|\s*${STACK_NAME}\s*|" ); then
+            OPERATION="update"
+          else
+            OPERATION="create"
+          fi
         fi
+        
+        if [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="--create-tag=${CREATE_TAG} --tag ${IMAGE_TAG}"
+        fi
+
+        echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
+        happy ${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}
