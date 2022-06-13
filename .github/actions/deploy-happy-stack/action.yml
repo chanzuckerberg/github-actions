@@ -2,7 +2,7 @@ name: Create or Update a Happy Stack
 description: "Will create, update, or delete a Happy Stack"
 inputs:
   operation:
-    description: "Operation we want this to perform. Defaults to create-or-update. Set to delete if you want to delete the stack."
+    description: "Operation we want this to perform. If not provided, happy will automatically create or update the stack with given name. Could be set to delete to delete the stack."
     default: ""
     required: false
   stack-name:
@@ -59,7 +59,9 @@ runs:
           else
             OPERATION="create"
           fi
+        elif [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="--create-tag=${CREATE_TAG} --tag ${IMAGE_TAG}"
         fi
+
         echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
-        echo "happy ${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}"
         happy ${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}
