@@ -22,6 +22,9 @@ inputs:
   env:
     description: "The environment to update or create"
     required: false
+  env-file:
+    description: "Specify a docker env file to use when deploying"
+    required: false
 
 runs:
   using: "composite"
@@ -38,6 +41,7 @@ runs:
         CREATE_TAG: ${{ inputs.create-tag }}
         TAG: ${{ inputs.tag }}
         ENV: ${{ inputs.env }}
+        ENV_FILE: $ {{ inputs.env-file }}
       shell: bash
       run: |
         set -ue
@@ -48,8 +52,8 @@ runs:
 
         if $(happy list --aws-profile "" --env=${ENV} 2>&1 | grep -q ${STACK_NAME} ); then
           echo "Updating stack ${STACK_NAME}"
-          happy update --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
+          happy update --aws-profile "" --env=${ENV} --docker-compose-env-file=${ENV_FILE} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
         else
           echo "Creating stack ${STACK_NAME}"
-          happy create --aws-profile "" --env=${ENV} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
+          happy create --aws-profile "" --env=${ENV} --docker-compose-env-file=${ENV_FILE} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} ${STACK_NAME}
         fi
