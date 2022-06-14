@@ -3,7 +3,7 @@ description: "Determine the SHA of the last successful deployment"
 inputs:
   environment:
     description: "Name of the environment to get the last successful deployment from"
-    default: "chanzuckerberg"
+    default: "staging"
     required: true
   owner:
     description: "Repo owner, or the organization name"
