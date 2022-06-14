@@ -1,0 +1,36 @@
+name: Last Successful Deployment
+description: "Determine the SHA of the last successful deployment"
+inputs:
+  owner:
+    description: "Repo owner, or the organization name"
+    default: "chanzuckerberg"
+    required: true
+  repo:
+    description: "GitHub repo name"
+    required: true
+  out:
+    description: "Name of the file to write the SHA to"
+    default: ".sha"
+    required: false
+  happy_version:
+    description: "Version of happy CLI to fetch"
+    required: true
+    default: "0.22.0"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v2
+    - name: Install happy
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.3.1
+      with:
+        happy_version: ${{ inputs.happy_version }}
+    - name: Get the SHA of the last successful deployment
+      shell: bash
+      run: |
+        set -ue
+        set -o pipefail
+
+        DEPLOY_SHA="sha-$(./happy deploy staging --owner ${{ inputs.owner }} --repo ${{ inputs.repo }} --out ${{ inputs.out }} && cat ${{ inputs.out }})"
+
+        echo "DEPLOY_SHA=$DEPLOY_SHA" >> $GITHUB_ENV
+        echo "Found last successful deployment SHA: $DEPLOY_SHA"
