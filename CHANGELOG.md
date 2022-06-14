@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/v1.3.4...v1.4.0) (2022-06-13)
+
+
+### Features
+
+* add delete functionality to deploy-happy-stack ([#115](https://github.com/chanzuckerberg/github-actions/issues/115)) ([512e55e](https://github.com/chanzuckerberg/github-actions/commit/512e55ede634ec6cc221063535daa1d0824932ce))
+
 ### [1.3.4](https://github.com/chanzuckerberg/github-actions/compare/v1.3.3...v1.3.4) (2022-06-02)
 
 
