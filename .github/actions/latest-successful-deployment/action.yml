@@ -19,7 +19,7 @@ inputs:
   happy_version:
     description: "Version of happy CLI to fetch"
     required: true
-    default: "0.22.0"
+    default: "0.23.0"
 runs:
   using: "composite"
   steps:
