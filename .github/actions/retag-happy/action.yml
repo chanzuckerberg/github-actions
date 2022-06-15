@@ -12,7 +12,7 @@ inputs:
   happy_version:
     description: "Version of happy CLI to fetch"
     required: true
-    default: "0.22.1"
+    default: "0.23.0"
 
 runs:
   using: "composite"
@@ -23,9 +23,6 @@ runs:
       with:
         happy_version: ${{ inputs.happy_version }}
     - name: Retag images
-      env:
-        SOURCE_TAG: ${{ inputs.source-tag }}
-        DEST_TAG: ${{ inputs.dest-tag }}
       shell: bash
       run: |
         set -ue
