@@ -1,0 +1,34 @@
+name: Retag Images
+description: "Will retag images given the source and target tags"
+inputs:
+  source-tag:
+    description: "Tag name for existing docker images"
+    default: ""
+    required: true
+  dest-tag:
+    description: "Extra tags to apply and push to the docker repo."
+    default: ""
+    required: true
+  happy_version:
+    description: "Version of happy CLI to fetch"
+    required: true
+    default: "0.22.1"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v2
+    - name: Install happy
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.3.1
+      with:
+        happy_version: ${{ inputs.happy_version }}
+    - name: Retag images
+      env:
+        SOURCE_TAG: ${{ inputs.source-tag }}
+        DEST_TAG: ${{ inputs.dest-tag }}
+      shell: bash
+      run: |
+        set -ue
+        set -o pipefail
+
+        happy --profile="" addtags --source-tag ${{ inputs.source-tag }} --dest-tag ${{ inputs.dest-tag }}
