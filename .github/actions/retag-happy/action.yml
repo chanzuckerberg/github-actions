@@ -28,4 +28,4 @@ runs:
         set -ue
         set -o pipefail
 
-        happy --profile="" addtags --source-tag ${{ inputs.source-tag }} --dest-tag ${{ inputs.dest-tag }}
+        happy --aws-profile="" addtags --source-tag ${{ inputs.source-tag }} --dest-tag ${{ inputs.dest-tag }}
