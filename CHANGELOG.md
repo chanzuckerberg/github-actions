@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/v1.4.0...v1.5.0) (2022-06-22)
+
+
+### Features
+
+* add env-file option to happy stack deploy ([#116](https://github.com/chanzuckerberg/github-actions/issues/116)) ([3f9a5cd](https://github.com/chanzuckerberg/github-actions/commit/3f9a5cdaf50fafd6ced794a56e46177d216d149d))
+* Last Successful Deployment Action and Re-tag Action ([#119](https://github.com/chanzuckerberg/github-actions/issues/119)) ([7477d71](https://github.com/chanzuckerberg/github-actions/commit/7477d71112ac0a744100f1cd7e8c5f7715f10f69))
+* Release retag-happy github action ([#122](https://github.com/chanzuckerberg/github-actions/issues/122)) ([69b5e5f](https://github.com/chanzuckerberg/github-actions/commit/69b5e5f8535125d3c1cace92da4838df0aa06c2a))
+
 ## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/v1.3.4...v1.4.0) (2022-06-13)
 
 
