@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.4.0...deploy-happy-stack-v1.5.0) (2022-06-22)
+
+
+### Features
+
+* add env-file option to happy stack deploy ([#116](https://github.com/chanzuckerberg/github-actions/issues/116)) ([3f9a5cd](https://github.com/chanzuckerberg/github-actions/commit/3f9a5cdaf50fafd6ced794a56e46177d216d149d))
+
 ## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.3.2...deploy-happy-stack-v1.4.0) (2022-06-13)
 
 
