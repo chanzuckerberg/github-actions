@@ -41,6 +41,9 @@
 		".github/actions/latest-successful-deployment": {
 			"package-name": "latest-successful-deployment"
 		},
+		".github/actions/retag-happy": {
+			"package-name": "retag-happy"
+		},
 		".": {}
 	}
 }
