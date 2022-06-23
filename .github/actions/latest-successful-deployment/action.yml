@@ -34,7 +34,7 @@ runs:
         set -ue
         set -o pipefail
 
-        DEPLOY_SHA="$(./happy deploy --aws-profile "" ${{ inputs.environment }} --owner ${{ inputs.owner }} --repo ${{ inputs.repo }} --out ${{ inputs.out }} && cat ${{ inputs.out }})"
+        DEPLOY_SHA="$(happy deploy --aws-profile "" ${{ inputs.environment }} --owner ${{ inputs.owner }} --repo ${{ inputs.repo }} --out ${{ inputs.out }} && cat ${{ inputs.out }})"
 
         echo "DEPLOY_SHA=$DEPLOY_SHA" >> $GITHUB_ENV
         echo "Found last successful deployment SHA in ${{ inputs.environment }}: $DEPLOY_SHA"
