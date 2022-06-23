@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.6.1](https://github.com/chanzuckerberg/github-actions/compare/v1.6.0...v1.6.1) (2022-06-23)
+
+
+### Bug Fixes
+
+* Retag action was calling the happy cli locally ([#125](https://github.com/chanzuckerberg/github-actions/issues/125)) ([d248b12](https://github.com/chanzuckerberg/github-actions/commit/d248b12e9f5f244b9d8bc723b699820f1fd4181a))
+
 ## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/v1.5.0...v1.6.0) (2022-06-22)
 
 
