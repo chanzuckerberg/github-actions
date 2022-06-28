@@ -45,7 +45,7 @@ runs:
         CREATE_TAG: ${{ inputs.create-tag }}
         TAG: ${{ inputs.tag }}
         ENV: ${{ inputs.env }}
-        ENV_FILE: $ {{ inputs.env-file }}
+        ENV_FILE: ${{ inputs.env-file }}
         OPERATION: ${{ inputs.operation }}
       shell: bash
       run: |
