@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.6.2](https://github.com/chanzuckerberg/github-actions/compare/v1.6.1...v1.6.2) (2022-06-28)
+
+
+### Bug Fixes
+
+* Incorrectly passed env-file argument ([#127](https://github.com/chanzuckerberg/github-actions/issues/127)) ([6a0ec96](https://github.com/chanzuckerberg/github-actions/commit/6a0ec963273ff32fd86f816c9b8517e070330458))
+
 ### [1.6.1](https://github.com/chanzuckerberg/github-actions/compare/v1.6.0...v1.6.1) (2022-06-23)
 
 
