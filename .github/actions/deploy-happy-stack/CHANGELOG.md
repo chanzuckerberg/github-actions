@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.5.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.5.0...deploy-happy-stack-v1.5.1) (2022-06-28)
+
+
+### Bug Fixes
+
+* Incorrectly passed env-file argument ([#127](https://github.com/chanzuckerberg/github-actions/issues/127)) ([6a0ec96](https://github.com/chanzuckerberg/github-actions/commit/6a0ec963273ff32fd86f816c9b8517e070330458))
+
 ## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.4.0...deploy-happy-stack-v1.5.0) (2022-06-22)
 
 
