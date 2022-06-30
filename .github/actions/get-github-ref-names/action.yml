@@ -30,7 +30,7 @@ runs:
           if (eventName === "pull_request") {
             head = context.payload.pull_request.head.ref;
             base = context.payload.pull_request.base.ref;
-          } else if (eventName === "push") {
+          } else if (eventName === "push" || eventName === "delete") {
             // TODO: this won't work with tags
             const pruneHead = "refs/heads/";
             head = context.payload.ref.substring(pruneHead.length);
