@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/v1.6.2...v1.7.0) (2022-06-30)
+
+
+### Features
+
+* (CCIE-308) Adding delete action ([#129](https://github.com/chanzuckerberg/github-actions/issues/129)) ([1bd8689](https://github.com/chanzuckerberg/github-actions/commit/1bd86899281d23e1a05f7726f22a45e4e110663c))
+
 ### [1.6.2](https://github.com/chanzuckerberg/github-actions/compare/v1.6.1...v1.6.2) (2022-06-28)
 
 
