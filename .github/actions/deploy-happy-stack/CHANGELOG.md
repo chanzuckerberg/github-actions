@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.5.2](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.5.1...deploy-happy-stack-v1.5.2) (2022-07-01)
+
+
+### Bug Fixes
+
+* Stack update fails as grep doesn't pick up the output ([#130](https://github.com/chanzuckerberg/github-actions/issues/130)) ([a2db87d](https://github.com/chanzuckerberg/github-actions/commit/a2db87dc97959f5f43e68763b90378818910b9f6))
+
 ### [1.5.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.5.0...deploy-happy-stack-v1.5.1) (2022-06-28)
 
 
