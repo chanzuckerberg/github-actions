@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.7.1](https://github.com/chanzuckerberg/github-actions/compare/v1.7.0...v1.7.1) (2022-07-01)
+
+
+### Bug Fixes
+
+* Update pinned ref action in docker-build-push ([#132](https://github.com/chanzuckerberg/github-actions/issues/132)) ([0de90dd](https://github.com/chanzuckerberg/github-actions/commit/0de90dda7c3c742549d41ff14424d61ef1b1d933))
+
 ## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/v1.6.2...v1.7.0) (2022-06-30)
 
 

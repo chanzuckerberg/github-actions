@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.3.0...docker-build-push-v1.3.1) (2022-07-01)
+
+
+### Bug Fixes
+
+* Update pinned ref action in docker-build-push ([#132](https://github.com/chanzuckerberg/github-actions/issues/132)) ([0de90dd](https://github.com/chanzuckerberg/github-actions/commit/0de90dda7c3c742549d41ff14424d61ef1b1d933))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.0.2...docker-build-push-v1.1.0) (2022-04-23)
 
 
