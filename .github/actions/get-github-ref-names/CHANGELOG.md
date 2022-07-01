@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.3.0...get-github-ref-names-v1.4.0) (2022-06-30)
+
+
+### Features
+
+* (CCIE-308) Adding delete action ([#129](https://github.com/chanzuckerberg/github-actions/issues/129)) ([1bd8689](https://github.com/chanzuckerberg/github-actions/commit/1bd86899281d23e1a05f7726f22a45e4e110663c))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.0.0...get-github-ref-names-v1.1.0) (2022-04-23)
 
 

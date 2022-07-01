@@ -1,6 +1,7 @@
 on:
   pull_request: {}
   push: {}
+  delete: {}
 
 name: Test Get GitHub Ref Names
 jobs:
