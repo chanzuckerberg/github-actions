@@ -58,10 +58,10 @@ runs:
 
         if [[ ${OPERATION} == "create-or-update" ]]; then
           happy list --aws-profile "" --env=${ENV} &>out.txt
-          exit_status=$?
-          if [[ $exit_status -ne 0 ]]; then
+          EXIT_CODE=$?
+          if [[ $EXIT_CODE -ne 0 ]]; then
               cat out.txt
-              exit $exit_status
+              exit $EXIT_CODE
           fi
 
           STACKS=$(grep "^|\s*${STACK_NAME}\s*|" out.txt)
