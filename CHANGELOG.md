@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.7.3](https://github.com/chanzuckerberg/github-actions/compare/v1.7.2...v1.7.3) (2022-07-13)
+
+
+### Bug Fixes
+
+* When happy list errors out for whatever reason, treat it as a failure, not as an update ([#137](https://github.com/chanzuckerberg/github-actions/issues/137)) ([27fd165](https://github.com/chanzuckerberg/github-actions/commit/27fd1654aa10c5ecdada98b5a860ff78bf2a151e))
+
 ### [1.7.2](https://github.com/chanzuckerberg/github-actions/compare/v1.7.1...v1.7.2) (2022-07-01)
 
 
