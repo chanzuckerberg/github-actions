@@ -57,7 +57,16 @@ runs:
         HAPPY_DEPLOYMENT_FLAGS=""
 
         if [[ ${OPERATION} == "create-or-update" ]]; then
-          if $(happy list --aws-profile "" --env=${ENV} &>out.txt; grep "^|\s*${STACK_NAME}\s*|" out.txt); then
+          happy list --aws-profile "" --env=${ENV} &>out.txt
+          exit_status=$?
+          if [[ $exit_status -ne 0 ]]; then
+              cat out.txt
+              exit $exit_status
+          fi
+
+          STACKS=$(grep "^|\s*${STACK_NAME}\s*|" out.txt)
+         
+          if [[ $STACKS ]]; then
             OPERATION="update"
           else
             OPERATION="create"
