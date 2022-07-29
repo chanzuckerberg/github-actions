@@ -29,6 +29,10 @@ inputs:
   env-file:
     description: "Specify a docker env file to use when deploying"
     required: false
+  skip-migrations:
+    description: "Specify true to skip migrations"
+    default: "false"
+    required: false
 
 runs:
   using: "composite"
@@ -47,6 +51,7 @@ runs:
         ENV: ${{ inputs.env }}
         ENV_FILE: ${{ inputs.env-file }}
         OPERATION: ${{ inputs.operation }}
+        SKIP_MIGRATIONS: {{ inputs.skip-migrations }}
       shell: bash
       run: |
         set -ue
@@ -75,6 +80,10 @@ runs:
         
         if [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="--create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} --docker-compose-env-file=${ENV_FILE}"
+        fi
+        
+        if [[ ${SKIP_MIGRATIONS} == "true" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --skip-migrations"
         fi
 
         echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
