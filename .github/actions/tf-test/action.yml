@@ -16,7 +16,8 @@ inputs:
     required: true
   github-token:
     description: A Github token to use to comment on this PR
-    required: true
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: "composite"
@@ -65,7 +66,7 @@ runs:
       env:
         PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ inputs.github-token }}
         script: |
           // 1. Retrieve existing bot comments for the PR
           const { data: comments } = await github.rest.issues.listComments({
