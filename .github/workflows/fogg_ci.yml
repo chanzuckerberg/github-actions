@@ -49,5 +49,5 @@ jobs:
         with:
           ssh-private-key: ${{secrets.SHARED_INFRA_DEPLOY_KEY}}
           working-dir: ${{matrix.workspace}}
-          tf-version: ${{steps.get_tf_version.outputs.tf-version}}
+          tf-version: ${{steps.get_tf_version.outputs.version}}
           tfe-token: ${{secrets.TFE_TOKEN}}
