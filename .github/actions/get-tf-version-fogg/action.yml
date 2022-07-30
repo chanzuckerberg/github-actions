@@ -16,4 +16,4 @@ runs:
       id: find-tf-version
       shell: bash
       working-directory: ${{ inputs.working-dir }}
-      run: echo "::set-output name=version::$(sed -nr 's/required_version = "=(.*)"/\1/p' fogg.tf | xargs)
+      run: echo "::set-output name=version::$(sed -nr 's/required_version = "=(.*)"/\1/p' fogg.tf | xargs)"
