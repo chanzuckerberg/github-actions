@@ -1,0 +1,38 @@
+defaults:
+  backend:
+    bucket: blah
+    dynamodb_table: ""
+    profile: test1
+    region: us-west-2
+  owner: test1
+  project: test1
+  providers:
+    aws:
+      profile: test1
+      region: us-west-2
+      version: 2.47.0
+  terraform_version: 0.13.5
+global:
+  providers:
+    aws:
+      profile: test1
+      region: us-west-2
+      version: 2.47.0
+      account_id: 1234
+version: 2
+envs:
+  preprod:
+    extra_vars:
+      eks_cluster_name: ie-connections-prod
+    project: ie
+    providers:
+      aws:
+        account_id: "340591210379"
+        region: us-east-1
+    components:
+      test1: {}
+      test2:
+        depends_on:
+          accounts: []
+          components:
+            - test1
