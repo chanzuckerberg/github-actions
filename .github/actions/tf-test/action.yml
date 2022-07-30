@@ -2,17 +2,20 @@ name: TF Test
 description: Init, validate, and plan a Terraform workspace. Outputs from the plan are placed in the PR. Terraform plugins and modules are cached using actions/cache.
 inputs:
   ssh-private-key:
-    description: "An SSH key to run `terraform init`"
+    description: An SSH key to run `terraform init`
     required: true
   tf-version:
-    description: "The version of Terraform to use"
+    description: The version of Terraform to use
     required: true
   tfe-hostname:
-    description: "The hostname of where Terraform Enterprise is located"
-    default: "si.prod.tfe.czi.technology"
+    description: The hostname of where Terraform Enterprise is located
+    default: si.prod.tfe.czi.technology
     required: false
   tfe-token:
-    description: "An API token to connect to Terraform Enterprise"
+    description: An API token to connect to Terraform Enterprise
+    required: true
+  github-token:
+    description: A Github token to use to comment on this PR
     required: true
 
 runs:

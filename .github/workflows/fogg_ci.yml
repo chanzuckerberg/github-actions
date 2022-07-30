@@ -51,3 +51,4 @@ jobs:
           working-dir: ${{matrix.workspace}}
           tf-version: ${{steps.get_tf_version.outputs.tf-version}}
           tfe-token: ${{secrets.TFE_TOKEN}}
+          github-token: ${{secrets.GITHUB_TOKEN}}
