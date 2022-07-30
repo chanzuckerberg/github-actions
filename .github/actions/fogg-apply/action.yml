@@ -1,0 +1,31 @@
+name: Run fogg apply
+description: Runs fogg apply and commits any changed files back to this
+inputs:
+  github-token:
+    description: A Github token used to write back to this PR. Can't be GITHUB_TOKEN
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ inputs.github-token }}
+    - name: Cache Fogg
+      id: cache-fogg
+      uses: actions/cache@v3
+      with:
+        path: ~/.fogg/cache
+        key: fogg-cache-${{ hashFiles('**/.fogg-version') }}
+    - name: Install fogg 
+      shell: bash
+      run: make setup
+    - name: Run fogg
+      shell: bash
+      run: .fogg/bin/fogg apply
+      env:
+        FOGG_GITHUBAPPTOKEN: ${{ inputs.github-token }}
+    - uses: EndBug/add-and-commit@v9
+      with:
+        add: -A
+        message: |
+          commit from fogg_ci -- ran fogg apply and pushed

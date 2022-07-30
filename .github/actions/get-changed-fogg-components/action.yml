@@ -1,0 +1,42 @@
+name: Get Changed Fogg Components
+description: Finds all the changed TFE workspaces and modules in this PR for smarter Terraform planning
+outputs:
+  all:
+    description: All of the directories changed
+    value: ${{ steps.changed-dirs.outputs.all }}
+  tfe-workspaces:
+    description: The TFE workspaces that changed
+    value: ${{ steps.changed-dirs.outputs.tfe-workspaces }}
+  modules:
+    description: The modules that changed
+    value: ${{ steps.changed-dirs.outputs.modules }}
+runs:
+  using: "composite"
+  steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2.10.2
+        id: filter
+        with:
+          initial-fetch-depth: '1'
+          list-files: json
+          filters: |
+            changed:
+              - added|modified: 'terraform/**'
+      - uses: actions/github-script@v6
+        id: changed-dirs
+        with:
+          script: |
+            const path = require("path")
+            const changedFiles = ${{ steps.filter.outputs.changed_files }}
+            const changedDirs = changedFiles.map(f => path.dirname(f))
+            console.log(`Found the following changed dirs: ${JSON.stringify(changedDirs, null, 2)}\n OG: ${JSON.stringify(changedFiles, null, 2)} `)
+            const changedModules = [... new Set(changedDirs.filter(d => d.indexOf("modules") !== -1))]
+            const changedAccounts = [... new Set(changedDirs.filter(d => d.indexOf("accounts") !== -1 && d.split("/").length === 3))]
+            const changedEnvs = [... new Set(changedDirs.filter(d => d.indexOf("envs") !== -1 && d.split("/").length === 4))]
+            const allChanges = [...changedAccounts,...changedEnvs, ...changedModules]
+            console.log(`changedModules: ${JSON.stringify(changedModules)}`)
+            console.log(`changedAccounts: ${JSON.stringify(changedAccounts)}`)
+            console.log(`changedEnvs: ${JSON.stringify(changedEnvs)}`)
+            core.setOutput("all", allChanges)
+            core.setOutput("tfe-workspaces", [...changedAccounts, ,...changedEnvs])
+            core.setOutput("modules", changedModules)
