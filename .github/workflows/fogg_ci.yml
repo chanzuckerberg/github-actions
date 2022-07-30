@@ -10,6 +10,7 @@ jobs:
   fogg-apply:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: Generate token
         id: generate_token
         uses: chanzuckerberg/github-app-token@v1.1.4
@@ -24,6 +25,7 @@ jobs:
     outputs:
       tfe-workspaces: ${{ steps.get-changed-fogg-components.outputs.tfe-workspaces }}
     steps:
+      - uses: actions/checkout@v3
       - name: get-changed-fogg-components
         id: get-changed-fogg-components
         uses: ./.github/actions/get-changed-fogg-components
@@ -35,6 +37,7 @@ jobs:
         workspace: ${{ fromJson(needs.get-changed-fogg-components.outputs.tfe-workspaces) }}
     if: ${{ needs.find-changed-dirs.outputs.allChanges != '[]' }}
     steps:
+      - uses: actions/checkout@v3
       - name: get-tf-version-fogg
         id: get-tf-version-fogg
         uses: ./.github/actions/get-tf-version-fogg
