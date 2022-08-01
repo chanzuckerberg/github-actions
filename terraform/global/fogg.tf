@@ -2,25 +2,27 @@
 # Make improvements in fogg, so that everyone can benefit.
 provider "aws" {
 
-  region  = "us-west-2"
-  profile = "test1"
+  region = "us-west-2"
 
-  allowed_account_ids = ["1234"]
+
+  assume_role {
+    role_arn = "arn:aws:iam::626314663667:role/tfe-si"
+  }
+
+  allowed_account_ids = ["626314663667"]
 }
 # Aliased Providers (for doing things in every region).
 
 terraform {
   required_version = "=0.13.5"
 
-  backend "s3" {
+  backend "remote" {
 
-    bucket         = "blah"
-    dynamodb_table = ""
-    key            = "terraform/test1/global.tfstate"
-    encrypt        = true
-    region         = "us-west-2"
-    profile        = "test1"
-
+    hostname     = "si.prod.tfe.czi.technology"
+    organization = "shared-infra"
+    workspaces {
+      name = "global"
+    }
 
   }
   required_providers {
@@ -42,7 +44,7 @@ terraform {
     aws = {
       source = "hashicorp/aws"
 
-      version = "2.47.0"
+      version = "3.63.0"
 
     }
 
@@ -96,7 +98,7 @@ variable "env" {
 }
 variable "project" {
   type    = string
-  default = "test1"
+  default = "shared-infra"
 }
 variable "region" {
   type    = string
@@ -106,23 +108,51 @@ variable "component" {
   type    = string
   default = "global"
 }
-variable "aws_profile" {
-  type    = string
-  default = "test1"
-}
 variable "owner" {
   type    = string
-  default = "test1"
+  default = "infra-eng@chanzuckerberg.com"
 }
 variable "tags" {
   type = object({ project : string, env : string, service : string, owner : string, managedBy : string })
   default = {
-    project   = "test1"
+    project   = "shared-infra"
     env       = ""
     service   = "global"
-    owner     = "test1"
+    owner     = "infra-eng@chanzuckerberg.com"
     managedBy = "terraform"
   }
+}
+variable "aws_cloudtrail_bucket_name" {
+  type    = string
+  default = "czi-logs-cloudtrail"
+}
+variable "aws_cloudtrail_s3_encryption_key_arn" {
+  type    = string
+  default = "arn:aws:kms:us-west-2:724328632434:key/5e9e938a-441e-4ffd-96b3-8e38b951301e"
+}
+variable "aws_config_bucket_name" {
+  type    = string
+  default = "czi-aws-config"
+}
+variable "aws_github_bucket_name" {
+  type    = string
+  default = "shared-infra-logs-github-webhooks-archiver"
+}
+variable "aws_org_id" {
+  type    = string
+  default = "o-56v5gp5fcu"
+}
+variable "ie_pd_default_escalation" {
+  type    = string
+  default = "[Infra] Core Infra Eng"
+}
+variable "ie_pd_team" {
+  type    = string
+  default = "Infra Eng"
+}
+variable "learning_platform_aws_org_id" {
+  type    = string
+  default = "o-iqjigxi1d8"
 }
 variable "aws_accounts" {
   type = map(string)
