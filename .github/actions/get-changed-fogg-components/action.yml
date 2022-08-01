@@ -38,5 +38,5 @@ runs:
             console.log(`changedAccounts: ${JSON.stringify(changedAccounts)}`)
             console.log(`changedEnvs: ${JSON.stringify(changedEnvs)}`)
             core.setOutput("all", allChanges)
-            core.setOutput("tfe-workspaces", [...changedAccounts, ,...changedEnvs])
+            core.setOutput("tfe-workspaces", [...changedAccounts, ...changedEnvs])
             core.setOutput("modules", changedModules)

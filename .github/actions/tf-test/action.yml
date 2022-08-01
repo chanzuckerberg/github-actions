@@ -18,6 +18,9 @@ inputs:
     description: A Github token to use to comment on this PR
     required: false
     default: ${{ github.token }}
+  working-dir:
+    description: The current working directory of the TFE workspace
+    required: true
 
 runs:
   using: "composite"

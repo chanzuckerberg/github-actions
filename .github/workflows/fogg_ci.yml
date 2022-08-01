@@ -42,7 +42,7 @@ jobs:
         id: get-tf-version-fogg
         uses: ./.github/actions/get-tf-version-fogg
         with:
-          working-dir: "./${{matrix.workspace}}"
+          working-dir: ${{matrix.workspace}}
       - name: tf-test
         id: tf-test
         uses: ./.github/actions/tf-test
