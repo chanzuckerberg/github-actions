@@ -1,7 +1,5 @@
 on: 
-  push:
-    paths:
-        - '**.ts'
+  push: {}
   pull_request:
     types:
       - opened
