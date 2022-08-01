@@ -62,9 +62,8 @@ runs:
     - name: Terraform plan
       id: plan
       shell: bash
-      run: terraform plan -no-color
+      run: terraform plan -no-color || true # continue on fail
       working-directory: ${{ inputs.working-dir }}
-      continue-on-error: true
     - name: Write plan to PR
       uses: actions/github-script@v6
       if: github.event_name == 'pull_request'
