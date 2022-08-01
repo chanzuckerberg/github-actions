@@ -5,7 +5,7 @@ inputs:
     description: The current working directory of the Terraform workspace
     required: true
 outputs:
-  tf-version:
+  version:
     description: "The Terraform version in this workspace"
     value: ${{ steps.find-tf-version.outputs.version }}
 runs:
@@ -17,7 +17,6 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-dir }}
       run: |
-        echo "$(pwd)"
         VERSION=$(sed -nr 's/required_version = "=(.*)"/\1/p' fogg.tf | xargs)
         echo "::debug::Got this version: $VERSION"
         echo "::set-output name=version::$VERSION"
