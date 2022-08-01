@@ -30,25 +30,24 @@ runs:
       with:
         ssh-private-key: ${{ inputs.ssh-private-key }}
     - uses: actions/checkout@v3
+    - name: Config Terraform plugin cache
+      shell: bash
+      run: |
+        echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >~/.terraformrc
+        mkdir --parents ~/.terraform.d/plugin-cache
+    - name: Cache Terraform
+      uses: actions/cache@v3
+      with:
+        path: ~/.terraform.d/plugin-cache
+        key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+        restore-keys: |
+          ${{ runner.os }}-terraform-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.tf-version }}
         cli_config_credentials_hostname: ${{ inputs.tfe-hostname }}
         cli_config_credentials_token: ${{ inputs.tfe-token }}
-    # - name: Config Terraform plugin cache
-    #   shell: bash
-    #   run: |
-    #     echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >~/.terraformrc
-    #     mkdir --parents ~/.terraform.d/plugin-cache
-    # - name: Cache Terraform
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: ~/.terraform.d/plugin-cache
-    #     key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-terraform-
-    # when the credentials changed it was not picking them up and using the old credentials
     - name: Terraform init
       id: init 
       shell: bash
@@ -62,16 +61,16 @@ runs:
     - name: Terraform plan
       id: plan
       shell: bash
-      run: terraform plan -no-color || true # continue on fail
+      run: terraform plan -no-color
       working-directory: ${{ inputs.working-dir }}
     - name: Write plan to PR
       uses: actions/github-script@v6
-      if: github.event_name == 'pull_request'
       env:
         PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
       with:
         github-token: ${{ inputs.github-token }}
         script: |
+          console.log(github.event_name)
           // 1. Retrieve existing bot comments for the PR
           const { data: comments } = await github.rest.issues.listComments({
             owner: context.repo.owner,
