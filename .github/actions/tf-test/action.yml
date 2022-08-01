@@ -71,6 +71,13 @@ runs:
         github-token: ${{ inputs.github-token }}
         script: |
           console.log(context)
+          const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+            owner,
+            repo,
+            context.sha,
+          });
+          console.log("prs")
+          console.log(prs)
           // 1. Retrieve existing bot comments for the PR
           const { data: comments } = await github.rest.issues.listComments({
             owner: context.repository.owner,
