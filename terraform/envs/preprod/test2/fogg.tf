@@ -171,19 +171,6 @@ data "terraform_remote_state" "global" {
 
   }
 }
-data "terraform_remote_state" "test1" {
-  backend = "remote"
-  config = {
-
-
-    hostname     = "si.prod.tfe.czi.technology"
-    organization = "shared-infra"
-    workspaces = {
-      name = "preprod-test1"
-    }
-
-  }
-}
 variable "aws_accounts" {
   type = map(string)
   default = {
