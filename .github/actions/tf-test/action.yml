@@ -70,7 +70,7 @@ runs:
       with:
         github-token: ${{ inputs.github-token }}
         script: |
-          console.log(github.event_name)
+          console.log(context)
           // 1. Retrieve existing bot comments for the PR
           const { data: comments } = await github.rest.issues.listComments({
             owner: context.repo.owner,
