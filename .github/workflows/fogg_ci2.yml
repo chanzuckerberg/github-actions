@@ -1,4 +1,7 @@
 on: 
+  push:
+    paths:
+        - '**.ts'
   pull_request:
     types:
       - opened
@@ -6,7 +9,7 @@ on:
       - reopened
     branches:
       - fogg-*
-      
+
 concurrency:
   group: ${{ github.ref }}
 
