@@ -72,8 +72,8 @@ runs:
         script: |
           console.log(context)
           const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-            owner,
-            repo,
+            context.repository.owner,
+            context.repository.repo,
             context.sha,
           });
           console.log("prs")
