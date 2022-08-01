@@ -25,17 +25,6 @@ defaults:
       version: 3.63.0
   terraform_version: 0.13.5
   tools:
-    github_actions_ci:
-      enabled: true
-      aws_iam_role_name: infraci
-      test_buckets: 5
-      command: lint
-      buildevents: true
-      providers:
-        aws:
-          disabled: true
-      ssh_key_secrets:
-        - SHARED_INFRA_DEPLOY_KEY
     tflint:
       enabled: true
 version: 2
