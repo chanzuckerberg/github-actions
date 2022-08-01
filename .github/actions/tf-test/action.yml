@@ -48,6 +48,7 @@ runs:
     #     key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
     #     restore-keys: |
     #       ${{ runner.os }}-terraform-
+    # when the credentials changed it was not picking them up and using the old credentials
     - name: Terraform init
       id: init 
       shell: bash
@@ -64,7 +65,8 @@ runs:
       run: terraform plan -no-color
       working-directory: ${{ inputs.working-dir }}
       continue-on-error: true
-    - uses: actions/github-script@v6
+    - name: Write plan to PR
+      uses: actions/github-script@v6
       if: github.event_name == 'pull_request'
       env:
         PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
