@@ -36,18 +36,18 @@ runs:
         terraform_version: ${{ inputs.tf-version }}
         cli_config_credentials_hostname: ${{ inputs.tfe-hostname }}
         cli_config_credentials_token: ${{ inputs.tfe-token }}
-    - name: Config Terraform plugin cache
-      shell: bash
-      run: |
-        echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >~/.terraformrc
-        mkdir --parents ~/.terraform.d/plugin-cache
-    - name: Cache Terraform
-      uses: actions/cache@v3
-      with:
-        path: ~/.terraform.d/plugin-cache
-        key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
-        restore-keys: |
-          ${{ runner.os }}-terraform-
+    # - name: Config Terraform plugin cache
+    #   shell: bash
+    #   run: |
+    #     echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >~/.terraformrc
+    #     mkdir --parents ~/.terraform.d/plugin-cache
+    # - name: Cache Terraform
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ~/.terraform.d/plugin-cache
+    #     key: ${{ runner.os }}-terraform-${{ hashFiles('**/.terraform.lock.hcl') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-terraform-
     - name: Terraform init
       id: init 
       shell: bash
