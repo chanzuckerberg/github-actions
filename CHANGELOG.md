@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.7.4](https://github.com/chanzuckerberg/github-actions/compare/v1.7.3...v1.7.4) (2022-09-23)
+
+
+### Bug Fixes
+
+* add PRDOSEC jira project to conventional commits regex ([#145](https://github.com/chanzuckerberg/github-actions/issues/145)) ([05ba60b](https://github.com/chanzuckerberg/github-actions/commit/05ba60b993e738bd39ee16031847f41d6cadf847))
+* conventional commit regex capture groups ([#143](https://github.com/chanzuckerberg/github-actions/issues/143)) ([74ed720](https://github.com/chanzuckerberg/github-actions/commit/74ed7201c9e92c32e2f7bcd8786cb9a194348269))
+* **ONCALL-229:** Fix Create-or-update behavior of the deploy-happy-stack ([#147](https://github.com/chanzuckerberg/github-actions/issues/147)) ([c1dc456](https://github.com/chanzuckerberg/github-actions/commit/c1dc45631bcfb206d01ebc52f6ca815f92669f12))
+
 ### [1.7.3](https://github.com/chanzuckerberg/github-actions/compare/v1.7.2...v1.7.3) (2022-07-13)
 
 
