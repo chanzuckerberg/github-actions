@@ -61,27 +61,17 @@ runs:
         echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
         HAPPY_DEPLOYMENT_FLAGS=""
         if [[ ${OPERATION} == "create-or-update" ]]; then
-          happy list --aws-profile "" --env=${ENV} &>out.txt
-          EXIT_CODE=$?
-          if [[ $EXIT_CODE -ne 0 ]]; then
-              cat out.txt
-              exit $EXIT_CODE
-          fi
-          STACKS=$(grep "^|\s*${STACK_NAME}\s*|" out.txt)
-         
-          if [[ -n "${STACKS}" ]]; then
-            OPERATION="update"
-          else
-            OPERATION="create"
-          fi
+          OPERATION="create" 
+          HAPPY_DEPLOYMENT_FLAGS="--force"
         fi
         
         if [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
-          HAPPY_DEPLOYMENT_FLAGS="--create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} --docker-compose-env-file=${ENV_FILE}"
+          HAPPY_DEPLOYMENT_FLAGS="${HAPPY_DEPLOYMENT_FLAGS} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} --docker-compose-env-file=${ENV_FILE}"
         fi
         
         if [[ ${SKIP_MIGRATIONS} == "true" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --skip-migrations"
         fi
         echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
+        echo "Running: '${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}'"
         happy ${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}
