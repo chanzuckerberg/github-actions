@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.5.4](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.5.3...deploy-happy-stack-v1.5.4) (2022-09-23)
+
+
+### Bug Fixes
+
+* **ONCALL-229:** Fix Create-or-update behavior of the deploy-happy-stack ([#147](https://github.com/chanzuckerberg/github-actions/issues/147)) ([c1dc456](https://github.com/chanzuckerberg/github-actions/commit/c1dc45631bcfb206d01ebc52f6ca815f92669f12))
+
 ### [1.5.3](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.5.2...deploy-happy-stack-v1.5.3) (2022-07-13)
 
 

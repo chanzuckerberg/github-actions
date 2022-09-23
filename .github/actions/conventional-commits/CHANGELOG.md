@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.0...conventional-commits-v1.3.1) (2022-09-23)
+
+
+### Bug Fixes
+
+* add PRDOSEC jira project to conventional commits regex ([#145](https://github.com/chanzuckerberg/github-actions/issues/145)) ([05ba60b](https://github.com/chanzuckerberg/github-actions/commit/05ba60b993e738bd39ee16031847f41d6cadf847))
+* conventional commit regex capture groups ([#143](https://github.com/chanzuckerberg/github-actions/issues/143)) ([74ed720](https://github.com/chanzuckerberg/github-actions/commit/74ed7201c9e92c32e2f7bcd8786cb9a194348269))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.0.1...conventional-commits-v1.1.0) (2022-04-23)
 
 
