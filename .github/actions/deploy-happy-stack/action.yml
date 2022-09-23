@@ -61,7 +61,7 @@ runs:
         echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
         HAPPY_DEPLOYMENT_FLAGS=""
         if [[ ${OPERATION} == "create-or-update" ]]; then
-          OPERATION="create" 
+          OPERATION="update" 
           HAPPY_DEPLOYMENT_FLAGS="--force"
         fi
         
