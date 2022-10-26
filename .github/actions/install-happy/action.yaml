@@ -24,7 +24,7 @@ runs:
         cd $(mktemp -d)
         if [ -z $HAPPY_VERSION ] || [ $HAPPY_VERSION == "latest" ]
         then
-          HAPPY_VERSION=$(wget --quiet -O - https://api.github.com/repos/chanzuckerberg/happy/releases/latest | jq -r ".. .tag_name? // empty" | sed -e "s/^v//")
+          HAPPY_VERSION=$(wget --quiet -O - https://api.github.com/repos/chanzuckerberg/happy/releases/latest | jq -r ".. .tag_name? // empty" | sed -e "s/^[a-z\-]*v//")
         fi
         wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_amd64.tar.gz -O happy.tar.gz
         tar -xf happy.tar.gz
