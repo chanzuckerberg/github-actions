@@ -22,7 +22,7 @@ inputs:
   happy_version:
     description: "Version of happy CLI to fetch"
     required: true
-    default: "0.23.0"
+    default: "latest"
   env:
     description: "The environment to update or create"
     required: false
