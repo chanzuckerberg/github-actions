@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/v1.7.4...v1.8.0) (2022-10-26)
+
+
+### Features
+
+* default to using latest version of happy ([#149](https://github.com/chanzuckerberg/github-actions/issues/149)) ([9ff663d](https://github.com/chanzuckerberg/github-actions/commit/9ff663d7ee1b309cc7040bdd06a9644b825a20d5))
+
 ### [1.7.4](https://github.com/chanzuckerberg/github-actions/compare/v1.7.3...v1.7.4) (2022-09-23)
 
 
