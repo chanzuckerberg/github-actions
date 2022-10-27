@@ -22,7 +22,7 @@ inputs:
   happy_version:
     description: "Version of happy CLI to fetch"
     required: true
-    default: "0.23.0"
+    default: "latest"
   env:
     description: "The environment to update or create"
     required: false
@@ -39,7 +39,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.3.1
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.0
       with:
         happy_version: ${{ inputs.happy_version }}
     - name: Create or update happy stack
