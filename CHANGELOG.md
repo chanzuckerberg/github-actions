@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/v1.8.0...v1.9.0) (2022-10-27)
+
+
+### Features
+
+* use new install-happy action ([#151](https://github.com/chanzuckerberg/github-actions/issues/151)) ([2b8d97a](https://github.com/chanzuckerberg/github-actions/commit/2b8d97a02357ccfd0252a40b686ef67021ec3f32))
+
 ## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/v1.7.4...v1.8.0) (2022-10-26)
 
 
