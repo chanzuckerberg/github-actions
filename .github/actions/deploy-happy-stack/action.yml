@@ -33,6 +33,10 @@ inputs:
     description: "Specify true to skip migrations"
     default: "false"
     required: false
+  working-directory:
+    description: "The happy project root"
+    default: "."
+    required: false
 
 runs:
   using: "composite"
@@ -53,22 +57,23 @@ runs:
         OPERATION: ${{ inputs.operation }}
         SKIP_MIGRATIONS: ${{ inputs.skip-migrations }}
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         set -ue
         set -o pipefail
-        
+
         IMAGE_TAG="${TAG:-sha-$GITHUB_SHA}"
         echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
         HAPPY_DEPLOYMENT_FLAGS=""
         if [[ ${OPERATION} == "create-or-update" ]]; then
-          OPERATION="update" 
+          OPERATION="update"
           HAPPY_DEPLOYMENT_FLAGS="--force"
         fi
-        
+
         if [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="${HAPPY_DEPLOYMENT_FLAGS} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} --docker-compose-env-file=${ENV_FILE}"
         fi
-        
+
         if [[ ${SKIP_MIGRATIONS} == "true" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --skip-migrations"
         fi
