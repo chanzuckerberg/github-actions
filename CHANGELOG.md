@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/chanzuckerberg/github-actions/compare/v1.9.0...v1.10.0) (2022-11-14)
+
+
+### Features
+
+* allow specifying working direcory in happy stack deploy ([#153](https://github.com/chanzuckerberg/github-actions/issues/153)) ([2d0836c](https://github.com/chanzuckerberg/github-actions/commit/2d0836ce2f7a99ad36e16226743032326ca938c0))
+
 ## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/v1.8.0...v1.9.0) (2022-10-27)
 
 
