@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.10.0](https://github.com/chanzuckerberg/github-actions/compare/v1.9.0...v1.10.0) (2022-11-14)
+
+
+### Features
+
+* allow specifying working direcory in happy stack deploy ([#153](https://github.com/chanzuckerberg/github-actions/issues/153)) ([2d0836c](https://github.com/chanzuckerberg/github-actions/commit/2d0836ce2f7a99ad36e16226743032326ca938c0))
+
+## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/v1.8.0...v1.9.0) (2022-10-27)
+
+
+### Features
+
+* use new install-happy action ([#151](https://github.com/chanzuckerberg/github-actions/issues/151)) ([2b8d97a](https://github.com/chanzuckerberg/github-actions/commit/2b8d97a02357ccfd0252a40b686ef67021ec3f32))
+
+## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/v1.7.4...v1.8.0) (2022-10-26)
+
+
+### Features
+
+* default to using latest version of happy ([#149](https://github.com/chanzuckerberg/github-actions/issues/149)) ([9ff663d](https://github.com/chanzuckerberg/github-actions/commit/9ff663d7ee1b309cc7040bdd06a9644b825a20d5))
+
 ### [1.7.4](https://github.com/chanzuckerberg/github-actions/compare/v1.7.3...v1.7.4) (2022-09-23)
 
 

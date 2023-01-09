@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.3.1...install-happy-v1.4.0) (2022-10-26)
+
+
+### Features
+
+* default to using latest version of happy ([#149](https://github.com/chanzuckerberg/github-actions/issues/149)) ([9ff663d](https://github.com/chanzuckerberg/github-actions/commit/9ff663d7ee1b309cc7040bdd06a9644b825a20d5))
+
 ### [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.3.0...install-happy-v1.3.1) (2022-06-01)
 
 
