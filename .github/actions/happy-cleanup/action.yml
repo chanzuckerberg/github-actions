@@ -34,7 +34,7 @@ runs:
         set -ue
         set -o pipefail
 
-        date=`date +%Y-%m-%d'T'%H:%M'Z' -d "$time ago"`
+        date=`date +%Y-%m-%d'T'%H:%M'Z' -d "$TIME ago"`
         for i in $(happy list --output json --env $ENV | jq -r --arg date "$date" '.[] | select(.properties.lastModified < $date)'); do
           happy delete $i --env $ENV
         done
