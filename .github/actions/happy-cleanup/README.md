@@ -17,17 +17,19 @@ on:
     - cron: '55 * * * *'
 jobs:
   build:
-    name: Trigger Site Rebuild
-    runs-on: ubuntu-20.04
+    name: Clean happy stacks
+    runs-on: ubuntu-20.04  
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
+          role-duration-seconds: 1200
+          role-session-name: HappyCleanup
       - name: Clean up stale happy stacks
         uses: chanzuckerberg/github-actions/.github/actions/happy-cleanup@happy-cleanup-v1.0.0
         with:
