@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/chanzuckerberg/github-actions/compare/v1.10.0...v1.11.0) (2023-01-19)
+
+
+### Features
+
+* reusable action to delete happy stacks ([#155](https://github.com/chanzuckerberg/github-actions/issues/155)) ([3563849](https://github.com/chanzuckerberg/github-actions/commit/356384951fc169afca975e1b806f33272fcb97ca))
+
 ## [1.10.0](https://github.com/chanzuckerberg/github-actions/compare/v1.9.0...v1.10.0) (2022-11-14)
 
 
