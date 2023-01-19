@@ -28,12 +28,13 @@ runs:
       env:
         ENV: ${{ inputs.env }}        
         TFE_TOKEN: ${{ inputs.tfe_token }}
+        TIME: ${{inputs.time}}
       shell: bash
       run: |
         set -ue
         set -o pipefail
 
-        date=`date +%Y-%m-%d'T'%H:%M'Z' -d "2 weeks ago"`
+        date=`date +%Y-%m-%d'T'%H:%M'Z' -d "$time ago"`
         for i in $(happy list --output json --env $ENV | jq -r --arg date "$date" '.[] | select(.properties.lastModified < $date)'); do
           happy delete $i --env $ENV
         done
