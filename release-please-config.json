@@ -44,6 +44,9 @@
 		".github/actions/retag-happy": {
 			"package-name": "retag-happy"
 		},
+		".github/actions/happy-cleanup": {
+			"package-name": "happy-cleanup"
+		},
 		".": {}
 	}
 }

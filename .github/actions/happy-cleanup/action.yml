@@ -1,0 +1,42 @@
+name: Happy Cleanup
+description: Will list happy stacks in an environment and delete those that have not been updated in a while.
+inputs:
+  env:
+    description: The environment to look for stacks
+    required: true
+    default: rdev
+  time:
+    description: The longest period before a stack should be considered stale. Should be something like '2 weeks' or '1 day'
+    required: true
+    default: 2 weeks
+  tfe_token:
+    description: A Terraform Enterprise API token to be used with your happy organization
+    required: true
+  happy_version:
+    description: The version of happy to use
+    required: true
+    default: latest
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v2
+    - name: Install happy
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.0
+      with:
+        happy_version: ${{ inputs.happy_version }}
+    - name: Delete stale stacks
+      env:
+        ENV: ${{ inputs.env }}        
+        TFE_TOKEN: ${{ inputs.tfe_token }}
+        TIME: ${{inputs.time}}
+      shell: bash
+      run: |
+        set -ue
+        set -o pipefail
+
+        date=`date +%Y-%m-%d'T'%H:%M'Z' -d "$TIME ago"`
+        for i in $(happy list --output json --env $ENV | jq -r --arg date "$date" '.[] | select(.properties.lastModified < $date)'); do
+          happy delete $i --env $ENV
+        done
+    
+
