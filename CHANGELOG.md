@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.11.3](https://github.com/chanzuckerberg/github-actions/compare/v1.11.2...v1.11.3) (2023-01-20)
+
+
+### Bug Fixes
+
+* bug with copy/paste wrong updated value ([436b568](https://github.com/chanzuckerberg/github-actions/commit/436b568e85e7daaf88437615ddbc0726de64d281))
+
 ### [1.11.2](https://github.com/chanzuckerberg/github-actions/compare/v1.11.1...v1.11.2) (2023-01-20)
 
 
