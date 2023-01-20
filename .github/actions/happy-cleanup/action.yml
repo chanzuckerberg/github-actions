@@ -35,7 +35,7 @@ runs:
         set -o pipefail
 
         date=`date +%Y-%m-%d'T'%H:%M'Z' -d "$TIME ago"`
-        for i in $(happy list --aws-profile "" --output json --env $ENV | jq -r --arg date "$date" '.[] | select(.properties.lastModified < $date)'); do
+        for i in $(happy list --aws-profile "" --output json --env $ENV | jq -r --arg date "$date" '.[] | select(.properties.lastModified < $date) | .Name'); do
           happy delete $i --env $ENV --aws-profile ""
         done
     
