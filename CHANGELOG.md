@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.11.2](https://github.com/chanzuckerberg/github-actions/compare/v1.11.1...v1.11.2) (2023-01-20)
+
+
+### Bug Fixes
+
+* grab the stack names from filter ([23dc728](https://github.com/chanzuckerberg/github-actions/commit/23dc728bc594ac16e24f4eba7f441120a2190b86))
+
 ### [1.11.1](https://github.com/chanzuckerberg/github-actions/compare/v1.11.0...v1.11.1) (2023-01-19)
 
 
