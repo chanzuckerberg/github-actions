@@ -26,6 +26,7 @@ runs:
       env:
         HAPPY_VERSION: ${{ steps.find_version.outputs.happy_version }}
         INSTALL_SYSTEMWIDE: ${{ inputs.install_globally }}
+        GH_TOKEN: ${{ github.token }}
       # TODO: cache as in:
       #       https://docs.github.com/en/actions/creating-actions/developing-a-third-party-cli-action
       run: |
