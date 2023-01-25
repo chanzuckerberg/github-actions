@@ -12,10 +12,19 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Determine Happy version
+      id: find_version
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const inputVersion = `${{ inputs.happy_version }}`;
+          const version = inputVersion; // TODO: update this
+          console.log(`Setting Happy version to: ${version}`);
+          core.setOutput("happy_version", version);
     - name: Install happy
       shell: bash
       env:
-        HAPPY_VERSION: ${{ inputs.happy_version }}
+        HAPPY_VERSION: ${{ steps.find_version.outputs.happy_version }}
         INSTALL_SYSTEMWIDE: ${{ inputs.install_globally }}
       # TODO: cache as in:
       #       https://docs.github.com/en/actions/creating-actions/developing-a-third-party-cli-action
