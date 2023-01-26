@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.11.5](https://github.com/chanzuckerberg/github-actions/compare/v1.11.4...v1.11.5) (2023-01-26)
+
+
+### Bug Fixes
+
+* upgrade to use fixed version of install-happy ([#162](https://github.com/chanzuckerberg/github-actions/issues/162)) ([057a65d](https://github.com/chanzuckerberg/github-actions/commit/057a65d3cd2ce807a34c4663d65a70ed69f680f7))
+
 ### [1.11.4](https://github.com/chanzuckerberg/github-actions/compare/v1.11.3...v1.11.4) (2023-01-26)
 
 
