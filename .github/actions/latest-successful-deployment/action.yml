@@ -25,7 +25,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.3.1
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.1
       with:
         happy_version: ${{ inputs.happy_version }}
     - name: Get the shorthand SHA of the last successful deployment, and return it in DEPLOY_SHA
