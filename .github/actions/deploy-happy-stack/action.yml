@@ -43,7 +43,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.0
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.1
       with:
         happy_version: ${{ inputs.happy_version }}
     - name: Create or update happy stack
