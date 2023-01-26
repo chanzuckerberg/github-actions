@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.7.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.7.0...deploy-happy-stack-v1.7.1) (2023-01-26)
+
+
+### Bug Fixes
+
+* upgrade to use fixed version of install-happy ([#162](https://github.com/chanzuckerberg/github-actions/issues/162)) ([057a65d](https://github.com/chanzuckerberg/github-actions/commit/057a65d3cd2ce807a34c4663d65a70ed69f680f7))
+
 ## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.6.0...deploy-happy-stack-v1.7.0) (2022-11-14)
 
 

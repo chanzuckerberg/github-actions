@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.4](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.1.3...happy-cleanup-v1.1.4) (2023-01-26)
+
+
+### Bug Fixes
+
+* upgrade to use fixed version of install-happy ([#162](https://github.com/chanzuckerberg/github-actions/issues/162)) ([057a65d](https://github.com/chanzuckerberg/github-actions/commit/057a65d3cd2ce807a34c4663d65a70ed69f680f7))
+
 ### [1.1.3](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.1.2...happy-cleanup-v1.1.3) (2023-01-20)
 
 
