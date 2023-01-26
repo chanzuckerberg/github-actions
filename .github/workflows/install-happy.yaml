@@ -3,9 +3,17 @@ on:
 
 name: Test Install Happy
 jobs:
-  test-install-happy:
+  test-install-happy-latest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install-happy
+      - run: happy version
+  test-install-happy-pinned:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-happy
+        with:
+          happy_version: 0.40.0 # nothing special about 0.40.0, this could be any older version
       - run: happy version
