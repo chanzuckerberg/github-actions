@@ -14,5 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install-happy
-        happy_version: 0.40.0 # nothing special about 0.40.0, this could be any older version
+        with:
+          happy_version: 0.40.0 # nothing special about 0.40.0, this could be any older version
       - run: happy version
