@@ -13,7 +13,7 @@ jobs:
         id: refs
       - name: Calculate Cache-From
         id: cache-from
-        uses: actions/github-script@v6
+        uses: actions/github-script@v6.3.0
         with:
           script: |
             let cacheFrom = [
