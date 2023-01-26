@@ -23,11 +23,12 @@ runs:
       run: |
         set -ue
         cd $(mktemp -d)
+        echo Input argument indicated to use Happy version: $HAPPY_VERSION
         if [ -z $HAPPY_VERSION ] || [ $HAPPY_VERSION == "latest" ]
         then
           HAPPY_VERSION=$(gh api -H "Accept: application/vnd.github.v3+json" /repos/chanzuckerberg/happy/releases -q "[.[] | select(.tag_name | startswith(\"cli-v\")) | .tag_name][0]" | sed -e "s/^[a-z\-]*v//")
         fi
-        echo Installing happy version $HAPPY_VERSION
+        echo Installing Happy version: $HAPPY_VERSION
         wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_amd64.tar.gz -O happy.tar.gz
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
