@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.11.4](https://github.com/chanzuckerberg/github-actions/compare/v1.11.3...v1.11.4) (2023-01-26)
+
+
+### Bug Fixes
+
+* find correct latest happy version ([#160](https://github.com/chanzuckerberg/github-actions/issues/160)) ([d8e43a0](https://github.com/chanzuckerberg/github-actions/commit/d8e43a08f5e1278c255e55107e9afd77924818b9))
+
 ### [1.11.3](https://github.com/chanzuckerberg/github-actions/compare/v1.11.2...v1.11.3) (2023-01-20)
 
 

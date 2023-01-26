@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.4.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.4.0...install-happy-v1.4.1) (2023-01-26)
+
+
+### Bug Fixes
+
+* find correct latest happy version ([#160](https://github.com/chanzuckerberg/github-actions/issues/160)) ([d8e43a0](https://github.com/chanzuckerberg/github-actions/commit/d8e43a08f5e1278c255e55107e9afd77924818b9))
+
 ## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.3.1...install-happy-v1.4.0) (2022-10-26)
 
 
