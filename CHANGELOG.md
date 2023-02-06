@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.11.7](https://github.com/chanzuckerberg/github-actions/compare/v1.11.6...v1.11.7) (2023-02-06)
+
+
+### Bug Fixes
+
+* update to use patched install-happy version ([#167](https://github.com/chanzuckerberg/github-actions/issues/167)) ([60c8231](https://github.com/chanzuckerberg/github-actions/commit/60c82314b1b6b416fb6a688e08bae47247bc640b))
+
 ### [1.11.6](https://github.com/chanzuckerberg/github-actions/compare/v1.11.5...v1.11.6) (2023-02-06)
 
 
