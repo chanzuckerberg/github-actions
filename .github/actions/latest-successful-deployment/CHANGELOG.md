@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.3](https://github.com/chanzuckerberg/github-actions/compare/latest-successful-deployment-v1.0.2...latest-successful-deployment-v1.0.3) (2023-02-06)
+
+
+### Bug Fixes
+
+* update to use patched install-happy version ([#167](https://github.com/chanzuckerberg/github-actions/issues/167)) ([60c8231](https://github.com/chanzuckerberg/github-actions/commit/60c82314b1b6b416fb6a688e08bae47247bc640b))
+
 ### [1.0.2](https://github.com/chanzuckerberg/github-actions/compare/latest-successful-deployment-v1.0.1...latest-successful-deployment-v1.0.2) (2023-01-26)
 
 
