@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.11.6](https://github.com/chanzuckerberg/github-actions/compare/v1.11.5...v1.11.6) (2023-02-06)
+
+
+### Bug Fixes
+
+* paginate latest happy version lookup ([#165](https://github.com/chanzuckerberg/github-actions/issues/165)) ([5407fc9](https://github.com/chanzuckerberg/github-actions/commit/5407fc98a773d6802b897c8faacca7f734129d78))
+
 ### [1.11.5](https://github.com/chanzuckerberg/github-actions/compare/v1.11.4...v1.11.5) (2023-01-26)
 
 
