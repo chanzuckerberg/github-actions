@@ -54,6 +54,7 @@ runs:
         TAG: ${{ inputs.tag }}
         ENV: ${{ inputs.env }}
         ENV_FILE: ${{ inputs.env-file }}
+        DOCKER_COMPOSE_PATH: ${{ inputs.docker-compose-path }}
         OPERATION: ${{ inputs.operation }}
         SKIP_MIGRATIONS: ${{ inputs.skip-migrations }}
       shell: bash
@@ -72,6 +73,10 @@ runs:
 
         if [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="${HAPPY_DEPLOYMENT_FLAGS} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} --docker-compose-env-file=${ENV_FILE}"
+        fi
+
+        if [[ ! -z ${DOCKER_COMPOSE_PATH} ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --docker-compose-config-path=${DOCKER_COMPOSE_PATH}"
         fi
 
         if [[ ${SKIP_MIGRATIONS} == "true" ]]; then
