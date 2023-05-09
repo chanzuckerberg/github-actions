@@ -23,6 +23,7 @@ inputs:
     required: false
     default: ""
   secret-files: 
+    type: sequence
     description: "A list of files to be copied into the build context."
     required: false
     default: []
