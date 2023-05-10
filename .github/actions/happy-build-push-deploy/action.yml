@@ -1,0 +1,184 @@
+name: "Happy Build, Push and Deploy"
+description: "Will build and push a docker image. Then deploy a happy stack"
+inputs:
+  operation:
+    description: "Operation we want this to perform. If not provided, happy will automatically create or update the stack with given name. Could be set to delete to delete the stack."
+    default: "create-or-update"
+    required: false
+  stack-name:
+    description: "Name of the stack to create, update, or delete"
+    required: true
+  tfe-token:
+    description: "TFE Token"
+    required: true
+  happy_version:
+    description: "Version of happy CLI to fetch"
+    required: true
+    default: "latest"
+  env:
+    description: "The environment to update or create"
+    required: false
+  env-file:
+    description: "Specify a docker env file to use when deploying"
+    required: false
+  docker-compose-config-path:
+    description: "Specify a docker compose config path"
+    required: false
+  skip-migrations:
+    description: "Specify true to skip migrations"
+    default: "false"
+    required: false
+  working-directory:
+    description: "The happy project root"
+    default: "."
+    required: false
+  name:
+    description: "Name of the built docker image."
+    required: true
+  registry:
+    description: "URI for your docker registry. Typically an ECR registry."
+    required: true
+  build_args:
+    description: "A list of build arguments to pass to the docker build."
+    required: false
+  custom_tag:
+    description: "A single custom tag to apply to the built image."
+    required: false
+    default: ""
+outputs:
+  tags:
+    description: "The tags we built and pushed"
+    value: ${{ steps.meta.outputs.tags }}
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v2
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: ${{ inputs.registry }}/${{ inputs.name }}
+        tags: |
+          type=ref,event=branch,prefix=branch-
+          type=ref,event=pr,prefix=pr-
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix=sha-
+          type=sha,format=long,prefix=sha-
+          ${{ inputs.custom_tag }}
+    - name: Login to ECR
+      uses: docker/login-action@v1
+      with:
+        registry: ${{ inputs.registry }}
+    - name: Calculate Branch and Base Names
+      id: refs
+      uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1.4.0
+    - name: Calculate Cache-From
+      id: cache-from
+      uses: actions/github-script@v6
+      with:
+        script: |
+          let cacheFrom = [
+            "${{ steps.refs.outputs.baseRef }}",
+            "${{ steps.refs.outputs.headRef }}",
+          ].map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
+            .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
+          console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
+          core.setOutput("cacheFrom", cacheFrom);
+    - uses: actions/checkout@v2
+    - name: Install happy
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+      with:
+        happy_version: ${{ inputs.happy_version }}
+    - name: Build and push using Happy
+      id: build-push
+      # NOTE: In looking at docker's homebuilt gha for this, it's not clear
+      # to me how exactly they're writign to outputs for `parse-tag` to pick up later
+      env:
+        TFE_TOKEN: ${{ inputs.tfe-token }}
+        STACK_NAME: ${{ inputs.stack-name }}
+        TAGS: ${{ steps.meta.outputs.tags }}
+        LABELS: ${{ steps.meta.outputs.labels }}
+        CACHE-FROM: ${{ steps.cache-from.outputs.cacheFrom }}
+        CACHE-TO: |
+          type=inline,mode=max
+        ENV: ${{ inputs.env }}
+        ENV_FILE: ${{ inputs.env-file }}
+        DOCKER_COMPOSE_CONFIG_PATH: ${{ inputs.docker-compose-config-path }}
+        OPERATION: ${{ inputs.operation }}
+        SKIP_MIGRATIONS: ${{ inputs.skip-migrations }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -ue
+        set -o pipefail
+
+        echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
+        HAPPY_BUILD_FLAGS=""
+
+        if [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="${HAPPY_DEPLOYMENT_FLAGS}  --tag ${IMAGE_TAG} --docker-compose-env-file=${ENV_FILE}"
+        fi
+
+        if [[ ! -z ${DOCKER_COMPOSE_CONFIG_PATH} ]]; then
+          HAPPY_BUILD_FLAGS="$HAPPY_BUILD_FLAGS --docker-compose-config-path=${DOCKER_COMPOSE_CONFIG_PATH}"
+        fi
+
+        echo "Starting to build docker image ${STACK_NAME} with additional flags: ${HAPPY_BUILD_FLAGS}"
+        echo "Running: '${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_BUILD_FLAGS} ${STACK_NAME}'"
+        # NOTE: there's more to do here around handling arguments etc etc
+        happy build --aws-profile "" --env=${ENV} ${HAPPY_BUILD_FLAGS}
+        happy push --aws-profile "" --env=${ENV} ${HAPPY_PUSH_FLAGS}
+        # This was just taking a stab at writing to an output that could be referenced by parse-tag
+        echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
+    - name: Parse tag
+        id: parse-tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const tags = `${{ steps.build.outputs.tags }}`
+            console.log(`The image was built with these tags: ${tags}`);
+            const branchTag = tags.split(/\s+/g).filter(s => s.includes("branch")).pop().split(":")[1]
+            core.setOutput("branch-tag", branchTag);
+    - name: Create or update happy stack
+      env:
+        TFE_TOKEN: ${{ inputs.tfe-token }}
+        STACK_NAME: ${{ inputs.stack-name }}
+        TAG: ${{ steps.parse-tag.outputs.branch-tag }}
+        ENV: ${{ inputs.env }}
+        ENV_FILE: ${{ inputs.env-file }}
+        DOCKER_COMPOSE_CONFIG_PATH: ${{ inputs.docker-compose-config-path }}
+        OPERATION: ${{ inputs.operation }}
+        SKIP_MIGRATIONS: ${{ inputs.skip-migrations }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -ue
+        set -o pipefail
+
+        IMAGE_TAG="${TAG:-sha-$GITHUB_SHA}"
+        echo "Targetting Stack ${STACK_NAME}, tagging with '${IMAGE_TAG}'"
+        HAPPY_DEPLOYMENT_FLAGS=""
+        if [[ ${OPERATION} == "create-or-update" ]]; then
+          OPERATION="update"
+          HAPPY_DEPLOYMENT_FLAGS="--force"
+        fi
+
+        if [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="${HAPPY_DEPLOYMENT_FLAGS}  --tag ${IMAGE_TAG} --docker-compose-env-file=${ENV_FILE}"
+        fi
+
+        if [[ ! -z ${DOCKER_COMPOSE_CONFIG_PATH} ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --docker-compose-config-path=${DOCKER_COMPOSE_CONFIG_PATH}"
+        fi
+
+        if [[ ${SKIP_MIGRATIONS} == "true" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --skip-migrations"
+        fi
+        echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
+        echo "Running: '${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}'"
+        happy ${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}
