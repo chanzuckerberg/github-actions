@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.12.0](https://github.com/chanzuckerberg/github-actions/compare/v1.11.7...v1.12.0) (2023-05-09)
+
+
+### Features
+
+* enable optional docker-compose-path argument ([#170](https://github.com/chanzuckerberg/github-actions/issues/170)) ([984f1dc](https://github.com/chanzuckerberg/github-actions/commit/984f1dcc78369c05f073af0887c94030cd36f21d))
+
+
+### Bug Fixes
+
+* .npm secrets not mounted ([#172](https://github.com/chanzuckerberg/github-actions/issues/172)) ([09ed5f8](https://github.com/chanzuckerberg/github-actions/commit/09ed5f8a9c17977fbceb71ca7d527ce761d963e6))
+
 ### [1.11.7](https://github.com/chanzuckerberg/github-actions/compare/v1.11.6...v1.11.7) (2023-02-06)
 
 

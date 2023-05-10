@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.7.2...deploy-happy-stack-v1.8.0) (2023-05-09)
+
+
+### Features
+
+* enable optional docker-compose-path argument ([#170](https://github.com/chanzuckerberg/github-actions/issues/170)) ([984f1dc](https://github.com/chanzuckerberg/github-actions/commit/984f1dcc78369c05f073af0887c94030cd36f21d))
+
 ### [1.7.2](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.7.1...deploy-happy-stack-v1.7.2) (2023-02-06)
 
 
