@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/chanzuckerberg/github-actions/compare/v1.12.0...v1.13.0) (2023-05-11)
+
+
+### Features
+
+* add happy dependencies to the install happy script ([#175](https://github.com/chanzuckerberg/github-actions/issues/175)) ([0c33d3c](https://github.com/chanzuckerberg/github-actions/commit/0c33d3c782cb6475fe9e8fbca4046ced74789e4a))
+
 ## [1.12.0](https://github.com/chanzuckerberg/github-actions/compare/v1.11.7...v1.12.0) (2023-05-09)
 
 

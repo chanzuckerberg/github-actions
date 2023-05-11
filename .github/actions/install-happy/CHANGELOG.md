@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.4.2...install-happy-v1.5.0) (2023-05-11)
+
+
+### Features
+
+* add happy dependencies to the install happy script ([#175](https://github.com/chanzuckerberg/github-actions/issues/175)) ([0c33d3c](https://github.com/chanzuckerberg/github-actions/commit/0c33d3c782cb6475fe9e8fbca4046ced74789e4a))
+
 ### [1.4.2](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.4.1...install-happy-v1.4.2) (2023-02-06)
 
 
