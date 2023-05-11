@@ -56,7 +56,15 @@ runs:
         PLATFORM=$(uname -m)
         echo Installing Happy version: $HAPPY_VERSION
         echo Installing Happy platform: $PLATFORM
-        wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_${PLATFORM}.tar.gz -O happy.tar.gz
+        ARM_CMD="wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_arm64.tar.gz -O happy.tar.gz"
+        AMD_CMD="wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_amd64.tar.gz -O happy.tar.gz"
+        if [[ $PLATFORM == "arm64" ]]; then
+            $($ARM_CMD)
+        elif [[ $PLATFORM == "aarch64" ]]; then
+            $($ARM_CMD)
+        else
+            $($AMD_CMD)
+        fi
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
