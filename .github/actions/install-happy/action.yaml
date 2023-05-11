@@ -53,8 +53,9 @@ runs:
         then
           HAPPY_VERSION=$(gh api -H "Accept: application/vnd.github.v3+json" /repos/chanzuckerberg/happy/releases --paginate -q "[.[] | select(.tag_name | startswith(\"cli-v\")) | .tag_name][0]" | sed -e "s/^[a-z\-]*v//" | head -n 1)
         fi
-        echo Installing Happy version: $HAPPY_VERSION
         PLATFORM=$(uname -m)
+        echo Installing Happy version: $HAPPY_VERSION
+        echo Installing Happy platform: $PLATFORM
         wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_${PLATFORM}.tar.gz -O happy.tar.gz
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
