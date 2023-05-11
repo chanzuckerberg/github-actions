@@ -27,11 +27,11 @@ runs:
         ARM_CMD="curl \"https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip\" -o /tmp/awscliv2.zip"
         PLATFORM=$(uname -m)
         if [[ $PLATFORM == "arm64" ]]; then
-            $(ARM_CMD)
+            $($ARM_CMD)
         elif [[ $PLATFORM == "aarch64" ]]; then
-            $(ARM_CMD)
+            $($ARM_CMD)
         else
-            $(AMD_CMD)
+            $($AMD_CMD)
         fi
         unzip -q /tmp/awscliv2.zip -d /tmp
         rm /tmp/awscliv2.zip
