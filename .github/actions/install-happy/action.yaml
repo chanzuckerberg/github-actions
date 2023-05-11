@@ -23,8 +23,8 @@ runs:
     - name: Install AWS CLI v2
       shell: bash
       run:  |
-        AMD_CMD="curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o /tmp/awscliv2.zip"
-        ARM_CMD="curl 'https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip' -o /tmp/awscliv2.zip"
+        AMD_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip"
+        ARM_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip"
         PLATFORM=$(uname -m)
         if [[ $PLATFORM == "arm64" ]]; then
             $($ARM_CMD)
