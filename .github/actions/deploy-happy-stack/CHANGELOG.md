@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.9.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.9.0...deploy-happy-stack-v1.9.1) (2023-05-11)
+
+
+### Bug Fixes
+
+* bump version of deploy-happy-stack ([8d0a0b3](https://github.com/chanzuckerberg/github-actions/commit/8d0a0b3f20059fbc70cd1beaaa9eab79e7cca569))
+
 ## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.8.0...deploy-happy-stack-v1.9.0) (2023-05-11)
 
 
