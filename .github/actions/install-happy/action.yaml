@@ -39,12 +39,14 @@ runs:
             URL=$AMD_URL
         fi
         echo "$URL"
-        curl $URL -L -o /tmp/ghcli.tar.gz -v
-        sudo mkdir /opt/ghcli/
-        sudo tar -xf /tmp/ghcli.tar.gz -C /opt/ghcli
-        echo "/opt/ghcli/bin" >> $GITHUB_PATH
-        /opt/ghcli/ghcli/bin/gh auth login --with-token < <(echo $GH_TOKEN)
-        /opt/ghcli/ghcli/bin/gh auth status
+        curl $URL -L -v
+        tar -xf -o ghcli.tar.gz -C 
+        echo "${PWD}/ghcli/bin" >> "${GITHUB_PATH}"
+        if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
+            cp happy /usr/local/bin/
+        fi
+        /usr/local/bin/gh auth login --with-token < <(echo $GH_TOKEN)
+        /usr/local/bin/gh auth status
     - name: Install terraform
       uses: hashicorp/setup-terraform@v2
       with:
