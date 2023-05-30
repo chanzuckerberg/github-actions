@@ -4,16 +4,18 @@ on:
 name: Test Install Happy
 jobs:
   test-install-happy-latest:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ARM64]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install-happy
       - run: happy version
+      - run: gh auth status
   test-install-happy-pinned:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ARM64]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install-happy
         with:
-          happy_version: 0.40.0 # nothing special about 0.40.0, this could be any older version
+          happy_version: "0.81.0"
       - run: happy version
+      - run: gh auth status

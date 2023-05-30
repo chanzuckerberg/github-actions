@@ -1,21 +1,54 @@
 name: Downloads and installs Happy CLI
-description: "Will download and install Happy CLI."
+description: Will download and install Happy CLI.
 inputs:
   happy_version:
-    description: "Version of happy CLI to fetch"
+    description: Version of happy CLI to fetch
     required: true
-    default: "latest"
+    default: latest
+  gh_cli_version:
+    description: The version of GH cli to use
+    required: false
+    default: 2.30.0
+  gh_token:
+    description: The GH token to authenticate the gh CLI with
+    required: false
+    default: ${{ github.token }}
   install_globally:
-    description: "Whether to add happy to the system bin directory"
+    description: Whether to add happy to the system bin directory
     required: false
     default: ""
 runs:
   using: "composite"
   steps:
     - name: Install gh CLI
-      uses: dev-hanz-ops/install-gh-cli-action@v0.1.0
-      with:
-        gh-cli-version: 2.14.2
+      shell: bash
+      env:
+        VERSION: ${{ inputs.gh_cli_version }}
+        GH_TOKEN_TMP: ${{ inputs.gh_token }}
+        INSTALL_SYSTEMWIDE: ${{ inputs.install_globally }}
+      run: |
+        set -ue
+        set -o pipefail
+        AMD_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_amd64.tar.gz"
+        ARM_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_arm64.tar.gz"
+        PLATFORM=$(uname -m)
+        if [[ $PLATFORM == "arm64" ]]; then
+            URL=$ARM_URL
+        elif [[ $PLATFORM == "aarch64" ]]; then
+            URL=$ARM_URL
+        else
+            URL=$AMD_URL
+        fi
+        curl $URL -L -v -o ghcli.tar.gz 
+        mkdir ghcli
+        tar -xf ghcli.tar.gz -C ghcli --strip-components 1
+        echo "${PWD}/ghcli/bin" >> "${GITHUB_PATH}"
+        if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
+            cp ${PWD}/ghcli/bin/gh /usr/local/bin/
+        fi
+
+        ${PWD}/ghcli/bin/gh auth login --with-token < <(echo $GH_TOKEN_TMP)
+        ${PWD}/ghcli/bin/gh auth status
     - name: Install terraform
       uses: hashicorp/setup-terraform@v2
       with:
@@ -23,8 +56,10 @@ runs:
     - name: Install AWS CLI v2
       shell: bash
       run:  |
-        AMD_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip"
-        ARM_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip"
+        set -ue
+        set -o pipefail
+        AMD_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip -v"
+        ARM_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip -v"
         PLATFORM=$(uname -m)
         if [[ $PLATFORM == "arm64" ]]; then
             $($ARM_CMD)
@@ -47,6 +82,7 @@ runs:
       #       https://docs.github.com/en/actions/creating-actions/developing-a-third-party-cli-action
       run: |
         set -ue
+        set -o pipefail
         cd $(mktemp -d)
         echo Input argument indicated to use Happy version: $HAPPY_VERSION
         if [ -z $HAPPY_VERSION ] || [ $HAPPY_VERSION == "latest" ]
