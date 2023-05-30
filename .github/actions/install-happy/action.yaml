@@ -13,9 +13,21 @@ runs:
   using: "composite"
   steps:
     - name: Install gh CLI
-      uses: dev-hanz-ops/install-gh-cli-action@v0.1.0
-      with:
-        gh-cli-version: 2.14.2
+      run: |
+        VERSION="2.30.0"
+        AMD_CMD="curl https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_amd64.tar.gz -o /tmp/ghcli.tar.gz"
+        ARM_CMD="curl https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_arm64.tar.gz -o /tmp/ghcli.tar.gz"
+        PLATFORM=$(uname -m)
+        if [[ $PLATFORM == "arm64" ]]; then
+            $($ARM_CMD)
+        elif [[ $PLATFORM == "aarch64" ]]; then
+            $($ARM_CMD)
+        else
+            $($AMD_CMD)
+        fi
+        sudo mkdir /opt/ghcli/
+        sudo tar -xf /tmp/ghcli.tar.gz -C /opt/ghcli
+        echo "/opt/ghcli/bin" >> $GITHUB_PATH
     - name: Install terraform
       uses: hashicorp/setup-terraform@v2
       with:
