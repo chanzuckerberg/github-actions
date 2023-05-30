@@ -19,7 +19,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.5.0
       with:
         happy_version: ${{ inputs.happy_version }}
     - name: Retag images

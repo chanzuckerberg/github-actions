@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.14.0](https://github.com/chanzuckerberg/github-actions/compare/v1.13.0...v1.14.0) (2023-05-11)
+
+
+### Features
+
+* use self-hosted gh runners ([#177](https://github.com/chanzuckerberg/github-actions/issues/177)) ([5987dbc](https://github.com/chanzuckerberg/github-actions/commit/5987dbcee55c9802453b73114eb7d758f33aca4c))
+
+
+### Bug Fixes
+
+* bump version of deploy-happy-stack ([8d0a0b3](https://github.com/chanzuckerberg/github-actions/commit/8d0a0b3f20059fbc70cd1beaaa9eab79e7cca569))
+
+## [1.13.0](https://github.com/chanzuckerberg/github-actions/compare/v1.12.0...v1.13.0) (2023-05-11)
+
+
+### Features
+
+* add happy dependencies to the install happy script ([#175](https://github.com/chanzuckerberg/github-actions/issues/175)) ([0c33d3c](https://github.com/chanzuckerberg/github-actions/commit/0c33d3c782cb6475fe9e8fbca4046ced74789e4a))
+
+## [1.12.0](https://github.com/chanzuckerberg/github-actions/compare/v1.11.7...v1.12.0) (2023-05-09)
+
+
+### Features
+
+* enable optional docker-compose-path argument ([#170](https://github.com/chanzuckerberg/github-actions/issues/170)) ([984f1dc](https://github.com/chanzuckerberg/github-actions/commit/984f1dcc78369c05f073af0887c94030cd36f21d))
+
+
+### Bug Fixes
+
+* .npm secrets not mounted ([#172](https://github.com/chanzuckerberg/github-actions/issues/172)) ([09ed5f8](https://github.com/chanzuckerberg/github-actions/commit/09ed5f8a9c17977fbceb71ca7d527ce761d963e6))
+
 ### [1.11.7](https://github.com/chanzuckerberg/github-actions/compare/v1.11.6...v1.11.7) (2023-02-06)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.2](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.3.1...docker-build-push-v1.3.2) (2023-05-09)
+
+
+### Bug Fixes
+
+* .npm secrets not mounted ([#172](https://github.com/chanzuckerberg/github-actions/issues/172)) ([09ed5f8](https://github.com/chanzuckerberg/github-actions/commit/09ed5f8a9c17977fbceb71ca7d527ce761d963e6))
+
 ### [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.3.0...docker-build-push-v1.3.1) (2022-07-01)
 
 

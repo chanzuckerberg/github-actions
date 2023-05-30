@@ -46,7 +46,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.5.0
       with:
         happy_version: ${{ inputs.happy_version }}
     - name: Create or update happy stack
@@ -88,3 +88,5 @@ runs:
         echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
         echo "Running: '${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}'"
         happy ${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}
+        
+    # BUMP

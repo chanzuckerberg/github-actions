@@ -1,5 +1,26 @@
 # Changelog
 
+### [1.9.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.9.0...deploy-happy-stack-v1.9.1) (2023-05-11)
+
+
+### Bug Fixes
+
+* bump version of deploy-happy-stack ([8d0a0b3](https://github.com/chanzuckerberg/github-actions/commit/8d0a0b3f20059fbc70cd1beaaa9eab79e7cca569))
+
+## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.8.0...deploy-happy-stack-v1.9.0) (2023-05-11)
+
+
+### Features
+
+* add happy dependencies to the install happy script ([#175](https://github.com/chanzuckerberg/github-actions/issues/175)) ([0c33d3c](https://github.com/chanzuckerberg/github-actions/commit/0c33d3c782cb6475fe9e8fbca4046ced74789e4a))
+
+## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.7.2...deploy-happy-stack-v1.8.0) (2023-05-09)
+
+
+### Features
+
+* enable optional docker-compose-path argument ([#170](https://github.com/chanzuckerberg/github-actions/issues/170)) ([984f1dc](https://github.com/chanzuckerberg/github-actions/commit/984f1dcc78369c05f073af0887c94030cd36f21d))
+
 ### [1.7.2](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.7.1...deploy-happy-stack-v1.7.2) (2023-02-06)
 
 
