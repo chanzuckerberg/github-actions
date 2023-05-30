@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/chanzuckerberg/github-actions/compare/latest-successful-deployment-v1.1.0...latest-successful-deployment-v1.2.0) (2023-05-30)
+
+
+### Features
+
+* pin install-happy to main ([#181](https://github.com/chanzuckerberg/github-actions/issues/181)) ([371fc16](https://github.com/chanzuckerberg/github-actions/commit/371fc16845bfb8dd4b1b13b5ec9a56e14e81203c))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/latest-successful-deployment-v1.0.3...latest-successful-deployment-v1.1.0) (2023-05-11)
 
 

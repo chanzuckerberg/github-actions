@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.5.0...install-happy-v1.6.0) (2023-05-30)
+
+
+### Features
+
+* update how to install gh cli ([#179](https://github.com/chanzuckerberg/github-actions/issues/179)) ([fba5b20](https://github.com/chanzuckerberg/github-actions/commit/fba5b2067236a576c8909d02fbd1a094059a8e8d))
+
 ## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.4.2...install-happy-v1.5.0) (2023-05-11)
 
 
