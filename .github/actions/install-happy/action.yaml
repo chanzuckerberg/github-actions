@@ -40,8 +40,8 @@ runs:
             URL=$AMD_URL
         fi
         echo "$URL"
-        curl $URL -L -v
-        tar -xf -o ghcli.tar.gz -C 
+        curl $URL -L -v -o ghcli.tar.gz 
+        tar -xf 
         echo "${PWD}/ghcli/bin" >> "${GITHUB_PATH}"
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
             cp happy /usr/local/bin/
