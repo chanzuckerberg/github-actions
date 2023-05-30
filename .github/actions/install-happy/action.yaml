@@ -43,8 +43,8 @@ runs:
         sudo mkdir /opt/ghcli/
         sudo tar -xf /tmp/ghcli.tar.gz -C /opt/ghcli
         echo "/opt/ghcli/bin" >> $GITHUB_PATH
-        /opt/ghcli/bin/gh auth login --with-token < <(echo $GH_TOKEN)
-        /opt/ghcli/bin/gh auth status
+        /opt/ghcli/ghcli/bin/gh auth login --with-token < <(echo $GH_TOKEN)
+        /opt/ghcli/ghcli/bin/gh auth status
     - name: Install terraform
       uses: hashicorp/setup-terraform@v2
       with:
