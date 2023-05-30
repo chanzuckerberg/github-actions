@@ -4,7 +4,7 @@ on:
 name: Test Install Happy
 jobs:
   test-install-happy-latest:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ARM64]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install-happy
