@@ -24,7 +24,7 @@ runs:
       shell: bash
       env:
         VERSION: ${{ inputs.gh_cli_version }}
-        GH_TOKEN: ${{ inputs.gh_token }}
+        GH_TOKEN_TMP: ${{ inputs.gh_token }}
         INSTALL_SYSTEMWIDE: ${{ inputs.install_globally }}
       run: |
         set -ue
@@ -46,6 +46,8 @@ runs:
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
             cp ${PWD}/ghcli/bin/gh /usr/local/bin/
         fi
+
+        ${PWD}/ghcli/bin/gh auth login --with-token < <(echo $GH_TOKEN_TMP)
         ${PWD}/ghcli/bin/gh auth status
     - name: Install terraform
       uses: hashicorp/setup-terraform@v2
