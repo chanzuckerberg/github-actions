@@ -21,8 +21,8 @@ runs:
       env:
         VERSION: ${{ inputs.gh_cli_version }}
       run: |
-        AMD_CMD="curl https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_amd64.tar.gz -o /tmp/ghcli.tar.gz -v"
-        ARM_CMD="curl https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_arm64.tar.gz -o /tmp/ghcli.tar.gz -v"
+        AMD_CMD="curl \"https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_amd64.tar.gz\" -o /tmp/ghcli.tar.gz -v"
+        ARM_CMD="curl \"https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_arm64.tar.gz\" -o /tmp/ghcli.tar.gz -v"
         PLATFORM=$(uname -m)
         if [[ $PLATFORM == "arm64" ]]; then
             $($ARM_CMD)
