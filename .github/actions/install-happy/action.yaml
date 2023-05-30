@@ -41,7 +41,7 @@ runs:
         fi
         echo "$URL"
         curl $URL -L -v -o ghcli.tar.gz 
-        tar -xf 
+        tar -xf ghcli.tar.gz 
         echo "${PWD}/ghcli/bin" >> "${GITHUB_PATH}"
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
             cp happy /usr/local/bin/
