@@ -25,6 +25,7 @@ runs:
       env:
         VERSION: ${{ inputs.gh_cli_version }}
         GH_TOKEN: ${{ inputs.gh_token }}
+        INSTALL_SYSTEMWIDE: ${{ inputs.install_globally }}
       run: |
         set -ue
         set -o pipefail
