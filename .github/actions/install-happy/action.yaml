@@ -21,8 +21,10 @@ runs:
       env:
         VERSION: ${{ inputs.gh_cli_version }}
       run: |
-        AMD_URL="https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_amd64.tar.gz"
-        ARM_URL="https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_arm64.tar.gz"
+        set -ue
+        set -o pipefail
+        AMD_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_amd64.tar.gz"
+        ARM_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_arm64.tar.gz"
         PLATFORM=$(uname -m)
         if [[ $PLATFORM == "arm64" ]]; then
             URL=$ARM_URL
@@ -43,6 +45,8 @@ runs:
     - name: Install AWS CLI v2
       shell: bash
       run:  |
+        set -ue
+        set -o pipefail
         AMD_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip -v"
         ARM_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip -v"
         PLATFORM=$(uname -m)
@@ -67,6 +71,7 @@ runs:
       #       https://docs.github.com/en/actions/creating-actions/developing-a-third-party-cli-action
       run: |
         set -ue
+        set -o pipefail
         cd $(mktemp -d)
         echo Input argument indicated to use Happy version: $HAPPY_VERSION
         if [ -z $HAPPY_VERSION ] || [ $HAPPY_VERSION == "latest" ]
