@@ -32,7 +32,6 @@ runs:
         AMD_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_amd64.tar.gz"
         ARM_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_arm64.tar.gz"
         PLATFORM=$(uname -m)
-        echo $PLATFORM
         if [[ $PLATFORM == "arm64" ]]; then
             URL=$ARM_URL
         elif [[ $PLATFORM == "aarch64" ]]; then
