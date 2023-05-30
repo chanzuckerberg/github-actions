@@ -1,20 +1,26 @@
 name: Downloads and installs Happy CLI
-description: "Will download and install Happy CLI."
+description: Will download and install Happy CLI.
 inputs:
   happy_version:
-    description: "Version of happy CLI to fetch"
+    description: Version of happy CLI to fetch
     required: true
-    default: "latest"
+    default: latest
+  gh_cli_version:
+    description: The version of GH cli to use
+    required: false
+    default: 2.30.0
   install_globally:
-    description: "Whether to add happy to the system bin directory"
+    description: Whether to add happy to the system bin directory
     required: false
     default: ""
 runs:
   using: "composite"
   steps:
     - name: Install gh CLI
+      shell: bash
+      env:
+        VERSION: ${{ inputs.gh_cli_version }}
       run: |
-        VERSION="2.30.0"
         AMD_CMD="curl https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_amd64.tar.gz -o /tmp/ghcli.tar.gz"
         ARM_CMD="curl https://github.com/cli/cli/releases/download/v$VERSION/gh_$VERSION_linux_arm64.tar.gz -o /tmp/ghcli.tar.gz"
         PLATFORM=$(uname -m)
