@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.2.0...happy-cleanup-v1.3.0) (2023-05-30)
+
+
+### Features
+
+* pin install-happy to main ([#181](https://github.com/chanzuckerberg/github-actions/issues/181)) ([371fc16](https://github.com/chanzuckerberg/github-actions/commit/371fc16845bfb8dd4b1b13b5ec9a56e14e81203c))
+
 ## [1.2.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.1.5...happy-cleanup-v1.2.0) (2023-05-11)
 
 

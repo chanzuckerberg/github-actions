@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.15.0](https://github.com/chanzuckerberg/github-actions/compare/v1.14.0...v1.15.0) (2023-05-30)
+
+
+### Features
+
+* pin install-happy to main ([#181](https://github.com/chanzuckerberg/github-actions/issues/181)) ([371fc16](https://github.com/chanzuckerberg/github-actions/commit/371fc16845bfb8dd4b1b13b5ec9a56e14e81203c))
+* update how to install gh cli ([#179](https://github.com/chanzuckerberg/github-actions/issues/179)) ([fba5b20](https://github.com/chanzuckerberg/github-actions/commit/fba5b2067236a576c8909d02fbd1a094059a8e8d))
+
 ## [1.14.0](https://github.com/chanzuckerberg/github-actions/compare/v1.13.0...v1.14.0) (2023-05-11)
 
 
