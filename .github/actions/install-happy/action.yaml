@@ -36,7 +36,7 @@ runs:
         if [[ $PLATFORM == "arm64" ]]; then
             URL=$ARM_URL
         elif [[ $PLATFORM == "aarch64" ]]; then
-            URL=$AMD_URL
+            URL=$ARM_CMD
         else
             URL=$AMD_URL
         fi
