@@ -40,6 +40,14 @@ inputs:
     description: "The happy project root"
     default: "."
     required: false
+  image_source_env:
+    description: "Optional environment to pull images from rather than building them (i.e. a staging environment to promote from)"
+    required: false
+    default: ""
+  image_source_stack:
+    description: "Optional stack to pull images from rather than building them (i.e. should be used with image_source_env)"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -60,6 +68,8 @@ runs:
         DOCKER_COMPOSE_CONFIG_PATH: ${{ inputs.docker-compose-config-path }}
         OPERATION: ${{ inputs.operation }}
         SKIP_MIGRATIONS: ${{ inputs.skip-migrations }}
+        IMAGE_SOURCE_ENV: ${{ inputs.image_source_env }}
+        IMAGE_SOURCE_STACK: ${{ inputs.image_source_stack }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
@@ -84,6 +94,14 @@ runs:
 
         if [[ ${SKIP_MIGRATIONS} == "true" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --skip-migrations"
+        fi
+
+        if [[ ${IMAGE_SOURCE_ENV} != "" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --image-src-env ${IMAGE_SOURCE_ENV}"
+        fi
+
+        if [[ ${IMAGE_SOURCE_STACK} != "" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --image-src-stack ${IMAGE_SOURCE_STACK}"
         fi
         echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
         echo "Running: '${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}'"
