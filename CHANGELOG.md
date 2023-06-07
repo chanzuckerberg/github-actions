@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/chanzuckerberg/github-actions/compare/v1.15.0...v1.16.0) (2023-06-07)
+
+
+### Features
+
+* allow to promote images from stack and env ([#182](https://github.com/chanzuckerberg/github-actions/issues/182)) ([c5147b3](https://github.com/chanzuckerberg/github-actions/commit/c5147b340be6c0ce75df2ae472c860e69d16ee61))
+
 ## [1.15.0](https://github.com/chanzuckerberg/github-actions/compare/v1.14.0...v1.15.0) (2023-05-30)
 
 
