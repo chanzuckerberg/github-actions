@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.10.0...deploy-happy-stack-v1.11.0) (2023-06-07)
+
+
+### Features
+
+* allow to promote images from stack and env ([#182](https://github.com/chanzuckerberg/github-actions/issues/182)) ([c5147b3](https://github.com/chanzuckerberg/github-actions/commit/c5147b340be6c0ce75df2ae472c860e69d16ee61))
+
 ## [1.10.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.9.1...deploy-happy-stack-v1.10.0) (2023-05-30)
 
 
