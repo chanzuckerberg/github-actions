@@ -56,7 +56,7 @@ runs:
     - name: Install happy
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
       with:
-        happy_version: ${{ inputs.happy_version }}
+        happy_version: ${{ inputs.happy-version }}
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
@@ -68,8 +68,8 @@ runs:
         DOCKER_COMPOSE_CONFIG_PATH: ${{ inputs.docker-compose-config-path }}
         OPERATION: ${{ inputs.operation }}
         SKIP_MIGRATIONS: ${{ inputs.skip-migrations }}
-        IMAGE_SOURCE_ENV: ${{ inputs.image_source_env }}
-        IMAGE_SOURCE_STACK: ${{ inputs.image_source_stack }}
+        IMAGE_SOURCE_ENV: ${{ inputs.image-source-env }}
+        IMAGE_SOURCE_STACK: ${{ inputs.image-source-stack }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
