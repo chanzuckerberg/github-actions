@@ -38,6 +38,9 @@
 		".github/actions/get-github-ref-names": {
 			"package-name": "get-github-ref-names"
 		},
+		".github/actions/jira-validate-reference": {
+			"package-name": "jira-validate-reference"
+		},
 		".github/actions/latest-successful-deployment": {
 			"package-name": "latest-successful-deployment"
 		},
