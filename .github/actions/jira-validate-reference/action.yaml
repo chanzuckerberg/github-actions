@@ -1,0 +1,175 @@
+name: Validate Jira Reference
+description: |
+  Finds the jira issue reference in the branch name, PR title, or PR body and 
+  validates it against the Jira API. If the reference is not found, the action
+  will fail. If the reference is found, the action will add a Jira summary to 
+  the PR body (or update the existing summary if it already exists).
+
+inputs:
+  projectKey:
+    description: The Jira project key
+    required: true
+    type: string
+  skipBranches:
+    description: Regex of branch names to skip
+    required: true
+    type: string
+    default: '^(dependabot\/.*|release-please--branches--main)$'
+secrets:
+  jiraToken:
+    description: Jira token
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Check If Job Should Run
+      id: checkIfJobShouldRun
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const skipBranchesRegex = new RegExp('${{ inputs.skipBranches }}');
+          const shouldRun = '${{ github.head_ref }}'.match(skipBranchesRegex) == null;
+          if (shouldRun) {
+            console.log('Job will run');
+          } else {
+            console.log('Job will be skipped because branch name matches skip regex');
+          }
+          return shouldRun;
+
+    - name: Get Pull Request
+      id: getPullRequest
+      if: steps.checkIfJobShouldRun.outputs.result == 'true'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const ownerAndRepo = '${{ github.repository }}';
+          const [owner, repo] = ownerAndRepo.split('/');
+          const issueResult = await github.rest.issues.get({
+            owner,
+            repo,
+            issue_number: ${{ github.event.pull_request.number }},
+          });
+          const pullRequest = issueResult.data;
+          console.log(`Got pull request #${pullRequest.number}: ${JSON.stringify(pullRequest, null, 2)}`);
+          core.setOutput('prBody', JSON.stringify(pullRequest.body));
+          core.setOutput('prTitle', JSON.stringify(pullRequest.title));
+
+    - name: Parse Jira Issue Reference
+      id: parseIssueRef
+      if: steps.checkIfJobShouldRun.outputs.result == 'true'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const prBody = ${{ steps.getPullRequest.outputs.prBody }};
+          const prTitle = ${{ steps.getPullRequest.outputs.prTitle }};
+
+          let jiraIssueRef = null;
+          const issueRegex = new RegExp(`${{ inputs.projectKey }}-\\d+`);
+          [
+            { label: 'branch', value: '${{ github.head_ref }}' },
+            { label: 'title', value: prTitle },
+            { label: 'body', value: prBody },
+          ].find(({label, value}) => {
+            const match = value.match(issueRegex);
+            if (match) {
+              jiraIssueRef = match[0];
+              console.log(`Found Jira issue reference in PR ${label}: ${jiraIssueRef}`);
+              return true;
+            }
+            return false;
+          });
+
+          if (!jiraIssueRef) {
+            throw new Error(`No Jira issue reference found in branch, title, or body of PR. Please add a reference to a Jira issue in the form of ${{ inputs.projectKey }}-#### to the branch name, title, or body of your PR.`);
+          }
+          return jiraIssueRef;
+
+    - name: Fetch Jira Issue Details
+      id: fetchJiraIssueDetails
+      if: steps.checkIfJobShouldRun.outputs.result == 'true'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const jiraIssueRef = ${{ steps.parseIssueRef.outputs.result }};
+          const response = await fetch(
+            `https://czi-tech.atlassian.net/rest/api/3/issue/${jiraIssueRef}?fields=summary,issuetype,status`,
+            {
+              headers: {
+                Authorization: `Basic ${{ secrets.jiraToken }}`
+              },
+            }
+          );
+          const responseJson = await response.json();
+          if (response.status !== 200) {
+            throw new Error(`Failed to fetch Jira issue details for ${jiraIssueRef}: ${responseJson.errorMessages.join(', ')}`);
+          }
+          return responseJson;
+
+    - name: Find Jira Marker
+      id: findJiraMarker
+      if: steps.checkIfJobShouldRun.outputs.result == 'true'
+      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@75527b8cdc39baf9226c20f9fb361ac599e45e60
+      with:
+        pullRequestBody: ${{ steps.getPullRequest.outputs.prBody }}
+        projectKey: ${{ inputs.projectKey }}
+
+    - name: Update PR Body
+      uses: actions/github-script@v6
+      if: steps.checkIfJobShouldRun.outputs.result == 'true'
+      with:
+        script: |
+          function getJiraIssueDetails(jiraIssueRef, jiraIssueDetails) {
+            return `<!--JIRA_VALIDATE_START:${jiraIssueRef}:do not remove this marker as it will break the jira validation functionality-->
+          <details open>
+            <summary><a href="https://czi-tech.atlassian.net/browse/${jiraIssueRef}" title="${jiraIssueRef}" target="_blank">${jiraIssueRef}</a></summary>
+            <br />
+            <table>
+              <tr>
+                <th>Summary</th>
+            <td>${jiraIssueDetails.fields.summary}</td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>
+                  <img alt="${jiraIssueDetails.fields.issuetype.name}" src="${jiraIssueDetails.fields.issuetype.iconUrl}" />
+                  ${jiraIssueDetails.fields.issuetype.name}
+                </td>
+              </tr>
+              <tr>
+                <th>Status</th>
+                <td>${jiraIssueDetails.fields.status.name}</td>
+              </tr>
+            </table>
+          </details>
+          <!--JIRA_VALIDATE_END:do not remove this marker as it will break the jira validation functionality-->
+
+          ---
+
+          `;
+          }
+
+          const jiraIssueRef = ${{ steps.parseIssueRef.outputs.result }};
+          const jiraIssueDetails = ${{ steps.fetchJiraIssueDetails.outputs.result }};
+          const jiraIssueMarker = getJiraIssueDetails(jiraIssueRef, jiraIssueDetails);
+
+          let body = ${{ steps.getPullRequest.outputs.prBody }};
+
+          const existingJiraIssueMarker = `${{ steps.findJiraMarker.outputs.jiraIssueMarker }}`;
+          if (existingJiraIssueMarker) {
+            console.log('Found existing Jira issue marker, replacing it with the new one');
+            body = body.replace(existingJiraIssueMarker, jiraIssueMarker);
+          } else {
+            console.log('No existing Jira issue marker found, adding a new one');
+            body = jiraIssueMarker + body;
+          }
+
+          const [owner, repo] = '${{ github.repository }}'.split('/');
+          const prNumber = ${{ github.event.pull_request.number }};
+          github.rest.issues.update({
+            owner,
+            repo,
+            issue_number: prNumber,
+            body,
+          });
