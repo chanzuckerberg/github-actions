@@ -15,6 +15,7 @@ inputs:
     required: true
     type: string
     default: '^(dependabot\/.*|release-please--branches--main)$'
+secrets:
   jiraToken:
     description: Jira token
     required: true
@@ -96,7 +97,7 @@ runs:
             `https://czi-tech.atlassian.net/rest/api/3/issue/${jiraIssueRef}?fields=summary,issuetype,status`,
             {
               headers: {
-                Authorization: `Basic ${{ inputs.jiraToken }}`
+                Authorization: `Basic ${{ secrets.jiraToken }}`
               },
             }
           );
@@ -112,7 +113,7 @@ runs:
     - name: Find Jira Marker
       id: findJiraMarker
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
-      uses: ./.github/actions/find-jira-marker
+      uses: chanzuckerberg/github-actions/.github/actions/find-jira-marker@bee78a37b1fec07268c820daa4ded366cac84d4b
       with:
         pullRequestBody: ${{ steps.getPullRequest.outputs.prBody }}
         projectKey: ${{ inputs.projectKey }}
