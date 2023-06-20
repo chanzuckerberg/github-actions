@@ -82,7 +82,7 @@ runs:
           });
 
           if (!jiraIssueRef) {
-            throw new Error(`No Jira issue reference found in branch, title, or body of PR. Please add a reference to a Jira issue in the form of ${{ inputs.projectKey }}-#### to the branch name, title, or body of your PR.`);
+            throw new Error(`No Jira issue reference found in branch, title, or body of PR. Please add a reference to a Jira issue in the form of ${{ inputs.projectKey }}-#### (eg: CCIE-1400) to the branch name, title, or body of your PR.`);
           }
           return jiraIssueRef;
 
