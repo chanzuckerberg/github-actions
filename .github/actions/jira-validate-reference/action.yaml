@@ -107,13 +107,10 @@ runs:
           }
           return responseJson;
 
-    - uses: actions/checkout@v3
-      if: steps.checkIfJobShouldRun.outputs.result == 'true'
-
     - name: Find Jira Marker
       id: findJiraMarker
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
-      uses: chanzuckerberg/github-actions/.github/actions/find-jira-marker@bee78a37b1fec07268c820daa4ded366cac84d4b
+      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@75527b8cdc39baf9226c20f9fb361ac599e45e60
       with:
         pullRequestBody: ${{ steps.getPullRequest.outputs.prBody }}
         projectKey: ${{ inputs.projectKey }}
