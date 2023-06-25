@@ -1,0 +1,172 @@
+name: Create and Release Jira Version
+
+on:
+  workflow_call:
+    inputs:
+      projectID:
+        description: 'The Jira Project ID'
+        required: true
+        type: string
+      projectKey:
+        description: 'The Jira Project Key'
+        required: true
+        type: string
+      jiraVersionPrefix:
+        description: 'The Jira Project Key'
+        required: true
+        type: string
+    secrets:
+      jiraToken:
+        required: true
+        description: 'The Jira API Token'
+
+jobs:
+  create_jira_version:
+    runs-on: ubuntu-latest
+    outputs:
+      prBodyArray: ${{ steps.fetchReleasedPRs.outputs.prBodyArray }}
+      jiraVersionName: ${{ steps.createJiraVersion.outputs.jiraVersionName }}
+      jiraVersionId: ${{ steps.createJiraVersion.outputs.jiraVersionId }}
+    steps:
+      - name: Create Jira Version
+        id: createJiraVersion
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const versionTag = '${{ github.event.release.tag_name }}';
+            const jiraVersion = `${{ inputs.jiraVersionPrefix }} - ${versionTag}`;
+            const projectId = ${{ inputs.projectID }};
+            // create the version but don't release it until after associating relevant issues because the Slack automation
+            // will be triggered when the version is released and it relies on the issues being associated with the release
+            const response = await fetch(
+              'https://czi-tech.atlassian.net/rest/api/3/version',
+              {
+                method: 'POST',
+                body: JSON.stringify({
+                  name: jiraVersion,
+                  projectId,
+                }),
+                headers: {
+                  Authorization: 'Basic ${{ secrets.jiraToken }}',
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+            const responseJson = await response.json();
+            if (response.status >= 400) {
+              throw new Error(`Failed to create Jira Version "${jiraVersion}" in project "${projectId}": ${responseJson.errorMessages.join(', ')}`);
+            }
+            console.log(`Created Jira Version "${jiraVersion}" in project "${projectId}"`);
+            core.setOutput('jiraVersionName', jiraVersion);
+            core.setOutput('jiraVersionId', responseJson.id);
+
+      - name: Fetch PRs with Jira References
+        id: fetchReleasedPRs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const releaseBody = `${{ github.event.release.body }}`;
+            const ownerAndRepo = '${{ github.repository }}';
+            const regex = new RegExp(`\\(\\[#(\\d+)\\]\\(https:\\/\\/github\\.com\\/${ownerAndRepo}\\/issues\\/\\d+\\)\\)`, 'g')
+            const issueMatches = [...releaseBody.matchAll(regex)];
+
+            const prNumbers = issueMatches.map((match) => match[1]);
+            const [owner, repo] = ownerAndRepo.split('/');
+
+            const results = await Promise.all(prNumbers.map(pullNumber => {
+              return github.rest.issues.get({
+                owner,
+                repo,
+                issue_number: pullNumber,
+              });
+            }));
+
+            core.setOutput('prBodyArray', results.filter(r => r.data.body != null).map(r => JSON.stringify(r.data.body)));
+
+  update_issue_fix_version:
+    runs-on: ubuntu-latest
+    needs: create_jira_version
+    strategy:
+      matrix:
+        pullRequestBody: ${{ fromJson(needs.create_jira_version.outputs.prBodyArray) }}
+    if: ${{ needs.create_jira_version.outputs.prBodyArray != '[]' }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Find Jira Marker
+        id: findJiraMarker
+        uses: ./.github/actions/find-jira-marker
+        with:
+          pullRequestBody: ${{ matrix.pullRequestBody }}
+          projectKey: ${{ inputs.projectKey }}
+
+      - name: Update Fix Version of Referenced Jira Issue
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const jiraIssueRef = '${{ steps.findJiraMarker.outputs.jiraIssueReference }}'
+            if (!jiraIssueRef) {
+              return;
+            }
+
+            const jiraVersionName = '${{ needs.create_jira_version.outputs.jiraVersionName }}';
+            console.log(`Updating Jira issue ${jiraIssueRef} with Fix Version: ${jiraVersionName}`)
+            const response = await fetch(
+              `https://czi-tech.atlassian.net/rest/api/3/issue/${jiraIssueRef}`,
+              {
+                method: 'PUT',
+                body: JSON.stringify({
+                  update: {
+                    fixVersions: [{
+                      add: {
+                        name: jiraVersionName,
+                      },
+                    }],
+                  },
+                }),
+                headers: {
+                  Authorization: 'Basic ${{ secrets.jiraToken }}',
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+            if (response.status >= 400) {
+              const responseJson = await response.json();
+              throw new Error(`Failed to update Fix Version in Jira issue ${jiraIssueRef}: ${responseJson.errorMessages.join(', ')}`);
+            }
+            console.log(`Successfully updated Fix Version in Jira issue ${jiraIssueRef}, response code: ${response.status}`);
+
+  release_jira_version:
+    needs:
+      - create_jira_version
+      - update_issue_fix_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release Jira Version
+        id: createJiraVersion
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const releaseDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+            const jiraVersionId = '${{ needs.create_jira_version.outputs.jiraVersionId }}';
+            const jiraVersionName = '${{ needs.create_jira_version.outputs.jiraVersionName }}';
+            const projectId = ${{ inputs.projectID }};
+
+            const response = await fetch(
+              `https://czi-tech.atlassian.net/rest/api/3/version/${jiraVersionId}`,
+              {
+                method: 'PUT',
+                body: JSON.stringify({
+                  released: true,
+                  releaseDate,
+                }),
+                headers: {
+                  Authorization: 'Basic ${{ secrets.jiraToken }}',
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+            const responseJson = await response.json();
+            if (response.status >= 400) {
+              throw new Error(`Failed to release Jira Version "${jiraVersionName}" in project "${projectId}": ${responseJson.errorMessages.join(', ')}`);
+            }
+            console.log(`Released Jira Version "${jiraVersionName}" in project "${projectId}", release date: ${releaseDate}`);
