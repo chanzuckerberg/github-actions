@@ -44,6 +44,9 @@
 		".github/actions/jira-validate-reference": {
 			"package-name": "jira-validate-reference"
 		},
+		".github/workflows/jira-release-version.yaml": {
+			"package-name": "jira-release-version"
+		},
 		".github/actions/latest-successful-deployment": {
 			"package-name": "latest-successful-deployment"
 		},
