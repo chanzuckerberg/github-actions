@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/chanzuckerberg/github-actions/compare/v1.17.0...v1.18.0) (2023-06-27)
+
+
+### Features
+
+* add workflow to create and release Jira versions ([#188](https://github.com/chanzuckerberg/github-actions/issues/188)) ([538b276](https://github.com/chanzuckerberg/github-actions/commit/538b27673ac9b21c270948a0177fd533d8740ed6))
+
 ## [1.17.0](https://github.com/chanzuckerberg/github-actions/compare/v1.16.0...v1.17.0) (2023-06-20)
 
 
