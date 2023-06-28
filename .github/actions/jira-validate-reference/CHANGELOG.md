@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.1](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.0.0...jira-validate-reference-v1.0.1) (2023-06-28)
+
+
+### Bug Fixes
+
+* use tagged jira-find-marker version ([#191](https://github.com/chanzuckerberg/github-actions/issues/191)) ([480abb0](https://github.com/chanzuckerberg/github-actions/commit/480abb06ed1f11e82bf71aa56be44f04e79073dc))
+
 ## 1.0.0 (2023-06-20)
 
 
