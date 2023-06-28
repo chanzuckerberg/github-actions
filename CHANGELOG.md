@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.18.1](https://github.com/chanzuckerberg/github-actions/compare/v1.18.0...v1.18.1) (2023-06-28)
+
+
+### Bug Fixes
+
+* use tagged jira-find-marker version ([#191](https://github.com/chanzuckerberg/github-actions/issues/191)) ([480abb0](https://github.com/chanzuckerberg/github-actions/commit/480abb06ed1f11e82bf71aa56be44f04e79073dc))
+
 ## [1.18.0](https://github.com/chanzuckerberg/github-actions/compare/v1.17.0...v1.18.0) (2023-06-27)
 
 
