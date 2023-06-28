@@ -109,7 +109,7 @@ runs:
     - name: Find Jira Marker
       id: findJiraMarker
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
-      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@75527b8cdc39baf9226c20f9fb361ac599e45e60
+      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@jira-find-marker-v1.0.0
       with:
         pullRequestBody: ${{ steps.getPullRequest.outputs.prBody }}
         projectKey: ${{ inputs.projectKey }}
