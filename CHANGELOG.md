@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.19.0](https://github.com/chanzuckerberg/github-actions/compare/v1.18.1...v1.19.0) (2023-07-10)
+
+
+### Features
+
+* comment on PR when jira validation fails ([#195](https://github.com/chanzuckerberg/github-actions/issues/195)) ([9267926](https://github.com/chanzuckerberg/github-actions/commit/92679264f2432018b7d3696492ca8d72cdbba5af))
+
+
+### Bug Fixes
+
+* add SECENG jira space to conventional-commits title ([#193](https://github.com/chanzuckerberg/github-actions/issues/193)) ([eb339eb](https://github.com/chanzuckerberg/github-actions/commit/eb339ebd691f08393f9dc6d8012858074f7beea9))
+
 ### [1.18.1](https://github.com/chanzuckerberg/github-actions/compare/v1.18.0...v1.18.1) (2023-06-28)
 
 

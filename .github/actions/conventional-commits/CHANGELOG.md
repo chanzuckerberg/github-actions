@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.2](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.1...conventional-commits-v1.3.2) (2023-07-10)
+
+
+### Bug Fixes
+
+* add SECENG jira space to conventional-commits title ([#193](https://github.com/chanzuckerberg/github-actions/issues/193)) ([eb339eb](https://github.com/chanzuckerberg/github-actions/commit/eb339ebd691f08393f9dc6d8012858074f7beea9))
+
 ### [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.0...conventional-commits-v1.3.1) (2022-09-23)
 
 
