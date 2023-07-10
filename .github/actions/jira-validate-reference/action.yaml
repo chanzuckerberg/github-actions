@@ -81,7 +81,14 @@ runs:
           });
 
           if (!jiraIssueRef) {
-            throw new Error(`No Jira issue reference found in branch, title, or body of PR. Please add a reference to a Jira issue in the form of ${{ inputs.projectKey }}-#### (eg: CCIE-1400) to the branch name, title, or body of your PR.`);
+            const message = `No Jira issue reference found in branch, title, or body of PR.\n\nPlease add a reference to a Jira issue in the form of ${{ inputs.projectKey }}-#### (eg: CCIE-1400) to the branch name, title, or body of your PR.`;
+            await github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message,
+            });
+            throw new Error(message);
           }
           return jiraIssueRef;
 
