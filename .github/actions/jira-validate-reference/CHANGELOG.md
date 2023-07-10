@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.0.1...jira-validate-reference-v1.1.0) (2023-07-10)
+
+
+### Features
+
+* comment on PR when jira validation fails ([#195](https://github.com/chanzuckerberg/github-actions/issues/195)) ([9267926](https://github.com/chanzuckerberg/github-actions/commit/92679264f2432018b7d3696492ca8d72cdbba5af))
+
 ### [1.0.1](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.0.0...jira-validate-reference-v1.0.1) (2023-06-28)
 
 
