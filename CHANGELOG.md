@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.20.0](https://github.com/chanzuckerberg/github-actions/compare/v1.19.0...v1.20.0) (2023-07-24)
+
+
+### Features
+
+* upgrade actions/checkout to v3 ([#196](https://github.com/chanzuckerberg/github-actions/issues/196)) ([8bd4cbe](https://github.com/chanzuckerberg/github-actions/commit/8bd4cbe77bd5d616f90bf539bb11b97109cfa510))
+
 ## [1.19.0](https://github.com/chanzuckerberg/github-actions/compare/v1.18.1...v1.19.0) (2023-07-10)
 
 

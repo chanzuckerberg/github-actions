@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.11.0...deploy-happy-stack-v1.12.0) (2023-07-24)
+
+
+### Features
+
+* upgrade actions/checkout to v3 ([#196](https://github.com/chanzuckerberg/github-actions/issues/196)) ([8bd4cbe](https://github.com/chanzuckerberg/github-actions/commit/8bd4cbe77bd5d616f90bf539bb11b97109cfa510))
+
 ## [1.11.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.10.0...deploy-happy-stack-v1.11.0) (2023-06-07)
 
 
