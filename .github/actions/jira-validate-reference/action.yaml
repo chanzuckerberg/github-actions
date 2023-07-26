@@ -118,7 +118,7 @@ runs:
     - name: Find Jira Marker
       id: findJiraMarker
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
-      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@c55eb5ec130bd3779adbcb54f27fb2054290d12c
+      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@956153265cf9e3864fd109d4fb08d60e95920c10
       with:
         pullRequestBody: ${{ steps.getPullRequest.outputs.prBody }}
         projectKey: ${{ inputs.projectKey }}
@@ -164,7 +164,7 @@ runs:
 
           let body = ${{ steps.getPullRequest.outputs.prBody }};
 
-          const existingJiraIssueMarker = JSON.parse(${{ steps.findJiraMarker.outputs.jiraIssueMarker }});
+          const existingJiraIssueMarker = unescape(${{ steps.findJiraMarker.outputs.jiraIssueMarker }});
           if (existingJiraIssueMarker) {
             console.log('Found existing Jira issue marker, replacing it with the new one');
             body = body.replace(existingJiraIssueMarker, jiraIssueMarker);
