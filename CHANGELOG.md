@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.20.2](https://github.com/chanzuckerberg/github-actions/compare/v1.20.1...v1.20.2) (2023-07-26)
+
+
+### Bug Fixes
+
+* handle backticks in jira ticket title ([#200](https://github.com/chanzuckerberg/github-actions/issues/200)) ([8e3aadc](https://github.com/chanzuckerberg/github-actions/commit/8e3aadc4f8a8e5f67ffd067e53544df4d5141bf2))
+
 ### [1.20.1](https://github.com/chanzuckerberg/github-actions/compare/v1.20.0...v1.20.1) (2023-07-26)
 
 
