@@ -39,7 +39,7 @@ runs:
             return;
           }
 
-          const jiraIssueMarker = markerMatch[0];
+          const jiraIssueMarker = JSON.stringify(markerMatch[0]);
           console.log('Setting jiraIssueMarker to:', jiraIssueMarker);
           core.setOutput('jiraIssueMarker', jiraIssueMarker);
 
