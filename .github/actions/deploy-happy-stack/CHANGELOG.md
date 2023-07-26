@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.12.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.12.0...deploy-happy-stack-v1.12.1) (2023-07-26)
+
+
+### Bug Fixes
+
+* install ghcli in tmp directory ([24fcf4f](https://github.com/chanzuckerberg/github-actions/commit/24fcf4fc7a56c5e18c99fa3b3b81f13d35a16235))
+
 ## [1.12.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.11.0...deploy-happy-stack-v1.12.0) (2023-07-24)
 
 
