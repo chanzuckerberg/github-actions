@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.1.1](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.1.0...jira-validate-reference-v1.1.1) (2023-07-26)
+
+
+### Bug Fixes
+
+* handle backticks in jira ticket title ([#200](https://github.com/chanzuckerberg/github-actions/issues/200)) ([8e3aadc](https://github.com/chanzuckerberg/github-actions/commit/8e3aadc4f8a8e5f67ffd067e53544df4d5141bf2))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.0.1...jira-validate-reference-v1.1.0) (2023-07-10)
 
 
