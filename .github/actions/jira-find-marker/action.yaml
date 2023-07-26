@@ -39,9 +39,9 @@ runs:
             return;
           }
 
-          const jiraIssueMarker = escape(markerMatch[0]);
+          const jiraIssueMarker = markerMatch[0];
           console.log('Setting jiraIssueMarker to:', jiraIssueMarker);
-          core.setOutput('jiraIssueMarker', jiraIssueMarker);
+          core.setOutput('jiraIssueMarker', escape(jiraIssueMarker));
 
           const jiraIssueReference = markerMatch[1];
           console.log('Setting jiraIssueReference to:', jiraIssueReference);
