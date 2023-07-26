@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.20.3](https://github.com/chanzuckerberg/github-actions/compare/v1.20.2...v1.20.3) (2023-07-26)
+
+
+### Bug Fixes
+
+* install ghcli in tmp directory ([24fcf4f](https://github.com/chanzuckerberg/github-actions/commit/24fcf4fc7a56c5e18c99fa3b3b81f13d35a16235))
+
 ### [1.20.2](https://github.com/chanzuckerberg/github-actions/compare/v1.20.1...v1.20.2) (2023-07-26)
 
 
