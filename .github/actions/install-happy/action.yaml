@@ -41,6 +41,7 @@ runs:
         fi
         GHCLI_TOOL_PATH="/tmp/ghcli"
         mkdir -p $GHCLI_TOOL_PATH
+        cd /tmp/
         curl $URL -L -v -o ghcli.tar.gz 
         tar -xf ghcli.tar.gz -C $GHCLI_TOOL_PATH --strip-components 1
         echo "${GHCLI_TOOL_PATH}/bin" >> "${GITHUB_PATH}"
