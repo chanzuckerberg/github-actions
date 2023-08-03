@@ -1,5 +1,15 @@
 # Changelog
 
+### [1.20.4](https://github.com/chanzuckerberg/github-actions/compare/v1.20.3...v1.20.4) (2023-08-03)
+
+
+### Bug Fixes
+
+* ghcli pathing ([5a32319](https://github.com/chanzuckerberg/github-actions/commit/5a323192ace4eec4c4f62c912f983b505ad0140b))
+* only create jira version if gh release has PR references ([#205](https://github.com/chanzuckerberg/github-actions/issues/205)) ([1e54db0](https://github.com/chanzuckerberg/github-actions/commit/1e54db0344767dea53a62fd7525a4bd344ffc7e2))
+* tarball left behind on curl ([ddc5ade](https://github.com/chanzuckerberg/github-actions/commit/ddc5adee380b7032b3f5eda6f288a1027d8e8e7b))
+* wrong location for ghcli tar file ([a3a29e8](https://github.com/chanzuckerberg/github-actions/commit/a3a29e8940416871089cc349fe9990831e607339))
+
 ### [1.20.3](https://github.com/chanzuckerberg/github-actions/compare/v1.20.2...v1.20.3) (2023-07-26)
 
 
