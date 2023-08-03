@@ -21,10 +21,39 @@ on:
         description: 'The Jira API Token'
 
 jobs:
-  create_jira_version:
+  find_released_prs:
     runs-on: ubuntu-latest
     outputs:
       prBodyArray: ${{ steps.fetchReleasedPRs.outputs.prBodyArray }}
+    steps:
+      - name: Fetch PRs with Jira References
+        id: fetchReleasedPRs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const releaseBody = `${{ github.event.release.body }}`;
+            const ownerAndRepo = '${{ github.repository }}';
+            const regex = new RegExp(`\\(\\[#(\\d+)\\]\\(https:\\/\\/github\\.com\\/${ownerAndRepo}\\/issues\\/\\d+\\)\\)`, 'g')
+            const issueMatches = [...releaseBody.matchAll(regex)];
+
+            const prNumbers = issueMatches.map((match) => match[1]);
+            const [owner, repo] = ownerAndRepo.split('/');
+
+            const results = await Promise.all(prNumbers.map(pullNumber => {
+              return github.rest.issues.get({
+                owner,
+                repo,
+                issue_number: pullNumber,
+              });
+            }));
+
+            core.setOutput('prBodyArray', results.filter(r => r.data.body != null).map(r => JSON.stringify(r.data.body)));
+
+  create_jira_version:
+    runs-on: ubuntu-latest
+    needs: find_released_prs
+    if: ${{ needs.find_released_prs.outputs.prBodyArray != '[]' }}
+    outputs:
       jiraVersionName: ${{ steps.createJiraVersion.outputs.jiraVersionName }}
       jiraVersionId: ${{ steps.createJiraVersion.outputs.jiraVersionId }}
     steps:
@@ -60,36 +89,13 @@ jobs:
             core.setOutput('jiraVersionName', jiraVersion);
             core.setOutput('jiraVersionId', responseJson.id);
 
-      - name: Fetch PRs with Jira References
-        id: fetchReleasedPRs
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const releaseBody = `${{ github.event.release.body }}`;
-            const ownerAndRepo = '${{ github.repository }}';
-            const regex = new RegExp(`\\(\\[#(\\d+)\\]\\(https:\\/\\/github\\.com\\/${ownerAndRepo}\\/issues\\/\\d+\\)\\)`, 'g')
-            const issueMatches = [...releaseBody.matchAll(regex)];
-
-            const prNumbers = issueMatches.map((match) => match[1]);
-            const [owner, repo] = ownerAndRepo.split('/');
-
-            const results = await Promise.all(prNumbers.map(pullNumber => {
-              return github.rest.issues.get({
-                owner,
-                repo,
-                issue_number: pullNumber,
-              });
-            }));
-
-            core.setOutput('prBodyArray', results.filter(r => r.data.body != null).map(r => JSON.stringify(r.data.body)));
-
   update_issue_fix_version:
     runs-on: ubuntu-latest
-    needs: create_jira_version
+    needs: [find_released_prs, create_jira_version]
     strategy:
       matrix:
-        pullRequestBody: ${{ fromJson(needs.create_jira_version.outputs.prBodyArray) }}
-    if: ${{ needs.create_jira_version.outputs.prBodyArray != '[]' }}
+        pullRequestBody: ${{ fromJson(needs.find_released_prs.outputs.prBodyArray) }}
+    if: ${{ needs.find_released_prs.outputs.prBodyArray != '[]' }}
     steps:
       - uses: actions/checkout@v3
       - name: Find Jira Marker
