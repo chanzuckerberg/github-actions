@@ -47,7 +47,9 @@ jobs:
               });
             }));
 
-            core.setOutput('prBodyArray', results.filter(r => r.data.body != null).map(r => JSON.stringify(r.data.body)));
+            const prBodyArray = results.filter(r => r.data.body != null).map(r => JSON.stringify(r.data.body));
+            console.log(`Found ${prBodyArray.length} PRs referenced in release body`);
+            core.setOutput('prBodyArray', prBodyArray);
 
   create_jira_version:
     runs-on: ubuntu-latest
