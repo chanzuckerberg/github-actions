@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.6.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.6.0...install-happy-v1.6.1) (2023-08-03)
+
+
+### Bug Fixes
+
+* ghcli pathing ([5a32319](https://github.com/chanzuckerberg/github-actions/commit/5a323192ace4eec4c4f62c912f983b505ad0140b))
+* tarball left behind on curl ([ddc5ade](https://github.com/chanzuckerberg/github-actions/commit/ddc5adee380b7032b3f5eda6f288a1027d8e8e7b))
+* wrong location for ghcli tar file ([a3a29e8](https://github.com/chanzuckerberg/github-actions/commit/a3a29e8940416871089cc349fe9990831e607339))
+
 ## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.5.0...install-happy-v1.6.0) (2023-05-30)
 
 
