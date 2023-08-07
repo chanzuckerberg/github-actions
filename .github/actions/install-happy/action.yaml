@@ -42,7 +42,7 @@ runs:
         GHCLI_TOOL_PATH="/tmp/ghcli"
         mkdir -p $GHCLI_TOOL_PATH
         cd /tmp/
-        curl $URL -L -v -o ghcli.tar.gz 
+        curl $URL -L -v -o ghcli.tar.gz
         tar -xf ghcli.tar.gz -C $GHCLI_TOOL_PATH --strip-components 1
         echo "${GHCLI_TOOL_PATH}/bin" >> "${GITHUB_PATH}"
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
@@ -87,8 +87,13 @@ runs:
         set -o pipefail
         cd $(mktemp -d)
         echo Input argument indicated to use Happy version: $HAPPY_VERSION
-        if [ -z $HAPPY_VERSION ] || [ $HAPPY_VERSION == "latest" ]
+        if [ -z $HAPPY_VERSION ] && [ -e ".happy/version.lock" ]
         then
+          echo "Happy version was not specified, but project has a .happy/version.lock. Getting version from there."
+          HAPPY_VERSION=$(cat .happy/version.lock| jq -r '.Require."chanzuckerberg/happy"')
+        elif [ -z HAPPY_VERSION ] || [ $HAPPY_VERSION == "latest" ]
+        then
+          echo "Happy version was not specified, or specified as 'latest'. Will install latest version."
           HAPPY_VERSION=$(gh api -H "Accept: application/vnd.github.v3+json" /repos/chanzuckerberg/happy/releases --paginate -q "[.[] | select(.tag_name | startswith(\"cli-v\")) | .tag_name][0]" | sed -e "s/^[a-z\-]*v//" | head -n 1)
         fi
         PLATFORM=$(uname -m)
