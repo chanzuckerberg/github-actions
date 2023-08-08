@@ -78,6 +78,8 @@ runs:
     - name: Determine happy version to use
       id: getReleases
       uses: cardinalby/git-get-release-action@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       with:
         releaseNameRegEx: '^v[0-9]+\.[0-9]+\.[0-9]+$'
     - name: Print releases
