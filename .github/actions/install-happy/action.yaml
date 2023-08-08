@@ -83,7 +83,7 @@ runs:
           let latestHappyCli = undefined;
           let page = 1;
           while (!latestHappyCli) {
-            const releases = await github.repos.listReleases({
+            const releases = await github.rest.repos.listReleases({
               owner: 'chanzuckerberg',
               repo: 'happy',
               per_page: 100,
