@@ -83,6 +83,7 @@ runs:
       with:
         script: |
           if (process.env.HAPPY_VERSION && process.env.HAPPY_VERSION !== 'latest') {
+            console.log(`Using happy version ${process.env.HAPPY_VERSION} from input instead of checking for latest version...`);
             return process.env.HAPPY_VERSION;
           }
           let latestHappyCli = undefined;
