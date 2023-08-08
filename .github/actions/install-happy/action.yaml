@@ -76,7 +76,7 @@ runs:
         rm -rf /tmp/aws/
 
     - name: Determine happy version to use
-      id: getReleases
+      id: determineLatestHappyCli
       uses: actions/github-script@v6
       with:
         script: |
@@ -104,12 +104,13 @@ runs:
             }
             page += 1;
           }
+          console.log('Latest happy CLI version:', latestHappyCli)
           return latestHappyCli
 
     - name: Print releases
       shell: bash
       run: |
-        echo "Releases: ${{ steps.getReleases.outputs }}"
+        echo "Releases: ${{ steps.determineLatestHappyCli.outputs.result }}"
 
     - name: Install happy
       shell: bash
