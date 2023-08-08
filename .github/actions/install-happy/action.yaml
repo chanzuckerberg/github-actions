@@ -77,11 +77,35 @@ runs:
 
     - name: Determine happy version to use
       id: getReleases
-      uses: cardinalby/git-get-release-action@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+      uses: actions/github-script@v6
       with:
-        releaseNameRegEx: '^v[0-9]+\.[0-9]+\.[0-9]+$'
+        script: |
+          let latestHappyCli = undefined;
+          let page = 1;
+          while (!latestHappyCli) {
+            const releases = await github.repos.listReleases({
+              owner: 'chanzuckerberg',
+              repo: 'happy',
+              per_page: 100,
+              page,
+            });
+            console.log(`Releases for page=${page}:`, releases.data)
+            const latestRelease = releases.data.find(release => {
+              if (!release.tag_name.match(/^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
+                return false;
+              }
+              const version = release.tag_name.replace(/^v/, '');
+              return release.assets.find(asset => {
+                return asset.name === `happy_${version}_checksums.txt`;
+              });
+            });
+            if (latestRelease) {
+              latestHappyCli = latestRelease.tag_name.replace(/^v/, '');
+            }
+            page += 1;
+          }
+          return latestHappyCli
+
     - name: Print releases
       shell: bash
       run: |
