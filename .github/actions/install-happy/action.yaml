@@ -76,10 +76,15 @@ runs:
         rm -rf /tmp/aws/
 
     - name: Determine happy version to use
-      id: determineLatestHappyCli
+      id: determineHappyCliVersion
       uses: actions/github-script@v6
+      env:
+        HAPPY_VERSION: ${{ inputs.happy_version }}
       with:
         script: |
+          if (process.env.HAPPY_VERSION && process.env.HAPPY_VERSION !== 'latest') {
+            return process.env.HAPPY_VERSION;
+          }
           let latestHappyCli = undefined;
           let page = 1;
           while (!latestHappyCli) {
@@ -110,7 +115,7 @@ runs:
     - name: Print releases
       shell: bash
       run: |
-        echo "Releases: ${{ steps.determineLatestHappyCli.outputs.result }}"
+        echo "Releases: ${{ steps.determineHappyCliVersion.outputs.result }}"
 
     - name: Install happy
       shell: bash
