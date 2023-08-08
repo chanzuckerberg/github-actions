@@ -74,6 +74,16 @@ runs:
         rm /tmp/awscliv2.zip
         sudo /tmp/aws/install --update
         rm -rf /tmp/aws/
+
+    - name: Determine happy version to use
+      id: getReleases
+      uses: cardinalby/git-get-release-action@v1
+      with:
+        releaseNameRegEx: '^v[0-9]+\.[0-9]+\.[0-9]+$'
+    - name: Print releases
+      run: |
+        echo "Releases: ${{ steps.getReleases.outputs }}"
+
     - name: Install happy
       shell: bash
       env:
