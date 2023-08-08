@@ -100,9 +100,8 @@ runs:
                 return false;
               }
               const version = release.tag_name.replace(/^v/, '');
-              return release.assets.find(asset => {
-                return asset.name === `happy_${version}_checksums.txt`;
-              });
+              console.log(`Found candidate release version=${version}. Checking for assets...`);
+              return release.assets.find(asset => asset.name === `happy_${version}_checksums.txt`);
             });
             if (latestRelease) {
               latestHappyCli = latestRelease.tag_name.replace(/^v/, '');
