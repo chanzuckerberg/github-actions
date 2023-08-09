@@ -75,6 +75,21 @@ runs:
         sudo /tmp/aws/install --update
         rm -rf /tmp/aws/
 
+    - name: Determine sun platform
+      shell: bash
+      with:
+        script: |
+          set -ue
+          set -o pipefail
+          PLATFORM=$(uname -m)
+          if [[ $PLATFORM == "arm64" ]]; then
+              echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
+          elif [[ $PLATFORM == "aarch64" ]]; then
+              echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
+          else
+              echo "PLATFORM=linux_amd64" >> $GITHUB_ENV
+          fi
+
     - name: Determine happy version to use
       id: determineHappyCliVersion
       uses: actions/github-script@v6
@@ -82,34 +97,38 @@ runs:
         HAPPY_VERSION: ${{ inputs.happy_version }}
       with:
         script: |
+          console.log(`HAPPY_VERSION=${process.env.HAPPY_VERSION}`);
+          console.log(`PLATFORM=${process.env.PLATFORM}`);
+
+          let latestHappyCli = undefined;
           if (process.env.HAPPY_VERSION && process.env.HAPPY_VERSION !== 'latest') {
             console.log(`Using happy version ${process.env.HAPPY_VERSION} from input instead of checking for latest version...`);
-            return process.env.HAPPY_VERSION;
-          }
-          let latestHappyCli = undefined;
-          let page = 1;
-          while (!latestHappyCli) {
-            const releases = await github.rest.repos.listReleases({
-              owner: 'chanzuckerberg',
-              repo: 'happy',
-              per_page: 100,
-              page,
-            });
-            console.log(`Releases for page=${page}:`, releases.data)
-            const latestRelease = releases.data.find(release => {
-              if (!release.tag_name.match(/^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
-                return false;
+            latestHappyCli = process.env.HAPPY_VERSION;
+          } else {
+            let page = 1;
+            while (!latestHappyCli) {
+              const releases = await github.rest.repos.listReleases({
+                owner: 'chanzuckerberg',
+                repo: 'happy',
+                per_page: 100,
+                page,
+              });
+              console.log(`Releases for page=${page}:`, releases.data)
+              const latestRelease = releases.data.find(release => {
+                if (!release.tag_name.match(/^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
+                  return false;
+                }
+                const version = release.tag_name.replace(/^v/, '');
+                console.log(`Found candidate release version=${version}. Checking for assets...`);
+                return release.assets.find(asset => asset.name === `happy_${version}_checksums.txt`);
+              });
+              if (latestRelease) {
+                latestHappyCli = latestRelease.tag_name.replace(/^v/, '');
               }
-              const version = release.tag_name.replace(/^v/, '');
-              console.log(`Found candidate release version=${version}. Checking for assets...`);
-              return release.assets.find(asset => asset.name === `happy_${version}_checksums.txt`);
-            });
-            if (latestRelease) {
-              latestHappyCli = latestRelease.tag_name.replace(/^v/, '');
+              page += 1;
             }
-            page += 1;
+            console.log('Latest happy CLI version:', latestHappyCli)
           }
-          console.log('Latest happy CLI version:', latestHappyCli)
           return latestHappyCli
 
     - name: Print releases
