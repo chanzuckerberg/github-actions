@@ -22,6 +22,7 @@ jobs:
   test-install-happy-x64:
     runs-on: [self-hosted, linux, X64]
     steps:
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/install-happy
       - run: happy version
       - run: gh auth status
