@@ -57,7 +57,7 @@ runs:
         terraform_version: 1.3.0
     - name: Install AWS CLI v2
       shell: bash
-      run:  |
+      run: |
         set -ue
         set -o pipefail
         AMD_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip -v"
@@ -75,7 +75,7 @@ runs:
         sudo /tmp/aws/install --update
         rm -rf /tmp/aws/
 
-    - name: Determine sun platform
+    - name: Determine platform
       shell: bash
       run: |
         set -ue
@@ -99,46 +99,53 @@ runs:
           console.log(`HAPPY_VERSION=${process.env.HAPPY_VERSION}`);
           console.log(`PLATFORM=${process.env.PLATFORM}`);
 
-          let latestHappyCli = undefined;
           if (process.env.HAPPY_VERSION && process.env.HAPPY_VERSION !== 'latest') {
             console.log(`Using happy version ${process.env.HAPPY_VERSION} from input instead of checking for latest version...`);
-            latestHappyCli = process.env.HAPPY_VERSION;
-          } else {
-            let page = 1;
-            while (!latestHappyCli) {
-              const releases = await github.rest.repos.listReleases({
-                owner: 'chanzuckerberg',
-                repo: 'happy',
-                per_page: 100,
-                page,
-              });
-              console.log(`Releases for page=${page}:`, releases.data)
-              const latestRelease = releases.data.find(release => {
-                if (!release.tag_name.match(/^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
-                  return false;
-                }
-                const version = release.tag_name.replace(/^v/, '');
-                console.log(`Found candidate release version=${version}. Checking for assets...`);
-                return release.assets.find(asset => asset.name === `happy_${version}_checksums.txt`);
-              });
-              if (latestRelease) {
-                latestHappyCli = latestRelease.tag_name.replace(/^v/, '');
-              }
-              page += 1;
-            }
-            console.log('Latest happy CLI version:', latestHappyCli)
+            core.setOutput('happyVersion', process.env.HAPPY_VERSION);
+            core.setOutput('happyReleaseAsset', `happy_${process.env.HAPPY_VERSION}_${process.env.PLATFORM}.tar.gz`);
+            return;
           }
-          return latestHappyCli
+          
+          let latestHappyCli = undefined;
+          let releaseAsset = undefined;
+          let page = 1;
+          while (!latestHappyCli) {
+            const releases = await github.rest.repos.listReleases({
+              owner: 'chanzuckerberg',
+              repo: 'happy',
+              per_page: 100,
+              page,
+            });
+            console.log(`Releases for page=${page}:`, releases.data)
+            const latestRelease = releases.data.find(release => {
+              if (!release.tag_name.match(/^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
+                return false;
+              }
+              const version = release.tag_name.replace(/^v/, '');
+              releaseAsset = `happy_${version}_${process.env.PLATFORM}.tar.gz`;
+              console.log(`Found candidate release version=${version}. Checking for asset ${releaseAsset} ...`);
+              return release.assets.find(asset => asset.name === releaseAsset);
+            });
+            if (latestRelease) {
+              latestHappyCli = latestRelease.tag_name.replace(/^v/, '');
+            }
+            page += 1;
+          }
+          console.log(`Latest happy CLI version=${latestHappyCli}, releaseAsset=${releaseAsset}`)
+          core.setOutput('happyVersion', latestHappyCli);
+          core.setOutput('happyReleaseAsset', releaseAsset);
 
     - name: Print releases
       shell: bash
       run: |
-        echo "Releases: ${{ steps.determineHappyCliVersion.outputs.result }}"
+        echo "Releases: ${{ steps.determineHappyCliVersion.outputs.happyVersion }}"
+        echo "Releases: ${{ steps.determineHappyCliVersion.outputs.happyReleaseAsset }}"
 
     - name: Install happy
       shell: bash
       env:
-        HAPPY_VERSION: ${{ inputs.happy_version }}
+        HAPPY_VERSION: ${{ steps.determineHappyCliVersion.outputs.happyVersion }}
+        HAPPY_RELEASE_ASSET: ${{ steps.determineHappyCliVersion.outputs.happyReleaseAsset }}
         INSTALL_SYSTEMWIDE: ${{ inputs.install_globally }}
         GH_TOKEN: ${{ github.token }}
       # TODO: cache as in:
@@ -147,23 +154,10 @@ runs:
         set -ue
         set -o pipefail
         cd $(mktemp -d)
-        echo Input argument indicated to use Happy version: $HAPPY_VERSION
-        if [ -z $HAPPY_VERSION ] || [ $HAPPY_VERSION == "latest" ]
-        then
-          HAPPY_VERSION=$(gh api -H "Accept: application/vnd.github.v3+json" /repos/chanzuckerberg/happy/releases --paginate -q "[.[] | select(.tag_name | startswith(\"cli-v\")) | .tag_name][0]" | sed -e "s/^[a-z\-]*v//" | head -n 1)
-        fi
-        PLATFORM=$(uname -m)
-        echo Installing Happy version: $HAPPY_VERSION
-        echo Installing Happy platform: $PLATFORM
-        ARM_CMD="wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_arm64.tar.gz -O happy.tar.gz"
-        AMD_CMD="wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_amd64.tar.gz -O happy.tar.gz"
-        if [[ $PLATFORM == "arm64" ]]; then
-            $($ARM_CMD)
-        elif [[ $PLATFORM == "aarch64" ]]; then
-            $($ARM_CMD)
-        else
-            $($AMD_CMD)
-        fi
+        echo Installing Happy version: $HAPPY_VERSION ($HAPPY_RELEASE_ASSET)
+
+        wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/${HAPPY_RELEASE_ASSET}.tar.gz -O happy.tar.gz
+
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
