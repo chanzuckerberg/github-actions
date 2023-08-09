@@ -19,3 +19,9 @@ jobs:
           happy_version: "0.81.0"
       - run: happy version
       - run: gh auth status
+  test-install-happy-x64:
+    runs-on: [self-hosted, linux, X64]
+    steps:
+      - uses: ./.github/actions/install-happy
+      - run: happy version
+      - run: gh auth status
