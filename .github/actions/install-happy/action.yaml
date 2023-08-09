@@ -110,20 +110,14 @@ runs:
           let releaseAsset = undefined;
           let page = 1;
           while (!latestHappyCli) {
-            const releases = await github.rest.repos.listReleases({
-              owner: 'chanzuckerberg',
-              repo: 'happy',
-              per_page: 100,
-              page,
-            });
-            console.log(`Releases for page=${page}:`, releases.data)
+            const releases = await github.rest.repos.listReleases({ owner: 'chanzuckerberg', repo: 'happy', per_page: 100, page });
             const latestRelease = releases.data.find(release => {
               if (!release.tag_name.match(/^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
                 return false;
               }
               const version = release.tag_name.replace(/^v/, '');
               releaseAsset = `happy_${version}_${process.env.PLATFORM}.tar.gz`;
-              console.log(`Found candidate release version=${version}. Checking for asset ${releaseAsset} ...`);
+              console.log(`Found candidate release version=${version}. Checking for asset ${releaseAsset}...`);
               return release.assets.find(asset => asset.name === releaseAsset);
             });
             if (latestRelease) {
@@ -134,12 +128,6 @@ runs:
           console.log(`Latest happy CLI version=${latestHappyCli}, releaseAsset=${releaseAsset}`)
           core.setOutput('happyVersion', latestHappyCli);
           core.setOutput('happyReleaseAsset', releaseAsset);
-
-    - name: Print releases
-      shell: bash
-      run: |
-        echo "Releases: ${{ steps.determineHappyCliVersion.outputs.happyVersion }}"
-        echo "Releases: ${{ steps.determineHappyCliVersion.outputs.happyReleaseAsset }}"
 
     - name: Install happy
       shell: bash
@@ -155,9 +143,7 @@ runs:
         set -o pipefail
         cd $(mktemp -d)
         echo Installing Happy from asset: $HAPPY_RELEASE_ASSET
-
         wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/${HAPPY_RELEASE_ASSET} -O happy.tar.gz
-
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
