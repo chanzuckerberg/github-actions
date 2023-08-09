@@ -20,6 +20,20 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Determine platform
+      shell: bash
+      run: |
+        set -ue
+        set -o pipefail
+        PLATFORM=$(uname -m)
+        if [[ $PLATFORM == "arm64" ]]; then
+            echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
+        elif [[ $PLATFORM == "aarch64" ]]; then
+            echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
+        else
+            echo "PLATFORM=linux_amd64" >> $GITHUB_ENV
+        fi
+
     - name: Install gh CLI
       shell: bash
       env:
@@ -29,16 +43,7 @@ runs:
       run: |
         set -ue
         set -o pipefail
-        AMD_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_amd64.tar.gz"
-        ARM_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_arm64.tar.gz"
-        PLATFORM=$(uname -m)
-        if [[ $PLATFORM == "arm64" ]]; then
-            URL=$ARM_URL
-        elif [[ $PLATFORM == "aarch64" ]]; then
-            URL=$ARM_URL
-        else
-            URL=$AMD_URL
-        fi
+        URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_${PLATFORM}.tar.gz"
         GHCLI_TOOL_PATH="/tmp/ghcli"
         mkdir -p $GHCLI_TOOL_PATH
         cd /tmp/
@@ -57,27 +62,68 @@ runs:
         terraform_version: 1.3.0
     - name: Install AWS CLI v2
       shell: bash
-      run:  |
+      run: |
         set -ue
         set -o pipefail
-        AMD_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip -v"
-        ARM_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip -v"
-        PLATFORM=$(uname -m)
-        if [[ $PLATFORM == "arm64" ]]; then
-            $($ARM_CMD)
-        elif [[ $PLATFORM == "aarch64" ]]; then
-            $($ARM_CMD)
+        AMD_URL="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+        ARM_URL="https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"
+        if [[ $PLATFORM == "linux_arm64" ]]; then
+            URL=$ARM_URL
         else
-            $($AMD_CMD)
+            URL=$AMD_URL
         fi
+
+        curl $URL -o /tmp/awscliv2.zip -v
         unzip -q /tmp/awscliv2.zip -d /tmp
         rm /tmp/awscliv2.zip
         sudo /tmp/aws/install --update
         rm -rf /tmp/aws/
+
+    - name: Determine happy version to use
+      id: determineHappyCliVersion
+      uses: actions/github-script@v6
+      env:
+        HAPPY_VERSION: ${{ inputs.happy_version }}
+      with:
+        script: |
+          console.log(`HAPPY_VERSION=${process.env.HAPPY_VERSION}`);
+          console.log(`PLATFORM=${process.env.PLATFORM}`);
+
+          if (process.env.HAPPY_VERSION && process.env.HAPPY_VERSION !== 'latest') {
+            console.log(`Using happy version ${process.env.HAPPY_VERSION} from input instead of checking for latest version...`);
+            core.setOutput('happyVersion', process.env.HAPPY_VERSION);
+            core.setOutput('happyReleaseAsset', `happy_${process.env.HAPPY_VERSION}_${process.env.PLATFORM}.tar.gz`);
+            return;
+          }
+          
+          let latestHappyCli = undefined;
+          let releaseAsset = undefined;
+          let page = 1;
+          while (!latestHappyCli) {
+            const releases = await github.rest.repos.listReleases({ owner: 'chanzuckerberg', repo: 'happy', per_page: 100, page });
+            const latestRelease = releases.data.find(release => {
+              if (!release.tag_name.match(/^v[0-9]+\.[0-9]+\.[0-9]+$/)) {
+                return false;
+              }
+              const version = release.tag_name.replace(/^v/, '');
+              releaseAsset = `happy_${version}_${process.env.PLATFORM}.tar.gz`;
+              console.log(`Found candidate release version=${version}. Checking for asset ${releaseAsset}...`);
+              return release.assets.find(asset => asset.name === releaseAsset);
+            });
+            if (latestRelease) {
+              latestHappyCli = latestRelease.tag_name.replace(/^v/, '');
+            }
+            page += 1;
+          }
+          console.log(`Latest happy CLI version=${latestHappyCli}, releaseAsset=${releaseAsset}`)
+          core.setOutput('happyVersion', latestHappyCli);
+          core.setOutput('happyReleaseAsset', releaseAsset);
+
     - name: Install happy
       shell: bash
       env:
-        HAPPY_VERSION: ${{ inputs.happy_version }}
+        HAPPY_VERSION: ${{ steps.determineHappyCliVersion.outputs.happyVersion }}
+        HAPPY_RELEASE_ASSET: ${{ steps.determineHappyCliVersion.outputs.happyReleaseAsset }}
         INSTALL_SYSTEMWIDE: ${{ inputs.install_globally }}
         GH_TOKEN: ${{ github.token }}
       # TODO: cache as in:
@@ -86,23 +132,8 @@ runs:
         set -ue
         set -o pipefail
         cd $(mktemp -d)
-        echo Input argument indicated to use Happy version: $HAPPY_VERSION
-        if [ -z $HAPPY_VERSION ] || [ $HAPPY_VERSION == "latest" ]
-        then
-          HAPPY_VERSION=$(gh api -H "Accept: application/vnd.github.v3+json" /repos/chanzuckerberg/happy/releases --paginate -q "[.[] | select(.tag_name | startswith(\"cli-v\")) | .tag_name][0]" | sed -e "s/^[a-z\-]*v//" | head -n 1)
-        fi
-        PLATFORM=$(uname -m)
-        echo Installing Happy version: $HAPPY_VERSION
-        echo Installing Happy platform: $PLATFORM
-        ARM_CMD="wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_arm64.tar.gz -O happy.tar.gz"
-        AMD_CMD="wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/happy_${HAPPY_VERSION}_linux_amd64.tar.gz -O happy.tar.gz"
-        if [[ $PLATFORM == "arm64" ]]; then
-            $($ARM_CMD)
-        elif [[ $PLATFORM == "aarch64" ]]; then
-            $($ARM_CMD)
-        else
-            $($AMD_CMD)
-        fi
+        echo Installing Happy from version $HAPPY_VERSION, asset: $HAPPY_RELEASE_ASSET
+        wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/${HAPPY_RELEASE_ASSET} -O happy.tar.gz
         tar -xf happy.tar.gz
         echo "${PWD}" >> "${GITHUB_PATH}"
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
