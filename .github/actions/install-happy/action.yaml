@@ -77,18 +77,17 @@ runs:
 
     - name: Determine sun platform
       shell: bash
-      with:
-        script: |
-          set -ue
-          set -o pipefail
-          PLATFORM=$(uname -m)
-          if [[ $PLATFORM == "arm64" ]]; then
-              echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
-          elif [[ $PLATFORM == "aarch64" ]]; then
-              echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
-          else
-              echo "PLATFORM=linux_amd64" >> $GITHUB_ENV
-          fi
+      run: |
+        set -ue
+        set -o pipefail
+        PLATFORM=$(uname -m)
+        if [[ $PLATFORM == "arm64" ]]; then
+            echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
+        elif [[ $PLATFORM == "aarch64" ]]; then
+            echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
+        else
+            echo "PLATFORM=linux_amd64" >> $GITHUB_ENV
+        fi
 
     - name: Determine happy version to use
       id: determineHappyCliVersion
