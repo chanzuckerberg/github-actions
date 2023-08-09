@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/chanzuckerberg/github-actions/compare/v1.20.5...v1.21.0) (2023-08-09)
+
+
+### Features
+
+* Allow the github ref specification ([#209](https://github.com/chanzuckerberg/github-actions/issues/209)) ([c7c2ad7](https://github.com/chanzuckerberg/github-actions/commit/c7c2ad7a226e51e636e888c118919ad44519cf92))
+
 ### [1.20.5](https://github.com/chanzuckerberg/github-actions/compare/v1.20.4...v1.20.5) (2023-08-09)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.12.1...deploy-happy-stack-v1.13.0) (2023-08-09)
+
+
+### Features
+
+* Allow the github ref specification ([#209](https://github.com/chanzuckerberg/github-actions/issues/209)) ([c7c2ad7](https://github.com/chanzuckerberg/github-actions/commit/c7c2ad7a226e51e636e888c118919ad44519cf92))
+
 ### [1.12.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.12.0...deploy-happy-stack-v1.12.1) (2023-07-26)
 
 
