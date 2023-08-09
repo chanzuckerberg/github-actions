@@ -20,6 +20,20 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Determine platform
+      shell: bash
+      run: |
+        set -ue
+        set -o pipefail
+        PLATFORM=$(uname -m)
+        if [[ $PLATFORM == "arm64" ]]; then
+            echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
+        elif [[ $PLATFORM == "aarch64" ]]; then
+            echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
+        else
+            echo "PLATFORM=linux_amd64" >> $GITHUB_ENV
+        fi
+
     - name: Install gh CLI
       shell: bash
       env:
@@ -29,16 +43,7 @@ runs:
       run: |
         set -ue
         set -o pipefail
-        AMD_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_amd64.tar.gz"
-        ARM_URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_linux_arm64.tar.gz"
-        PLATFORM=$(uname -m)
-        if [[ $PLATFORM == "arm64" ]]; then
-            URL=$ARM_URL
-        elif [[ $PLATFORM == "aarch64" ]]; then
-            URL=$ARM_URL
-        else
-            URL=$AMD_URL
-        fi
+        URL="https://github.com/cli/cli/releases/download/v${VERSION}/gh_${VERSION}_${PLATFORM}.tar.gz"
         GHCLI_TOOL_PATH="/tmp/ghcli"
         mkdir -p $GHCLI_TOOL_PATH
         cd /tmp/
@@ -60,34 +65,19 @@ runs:
       run: |
         set -ue
         set -o pipefail
-        AMD_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip -v"
-        ARM_CMD="curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip -v"
-        PLATFORM=$(uname -m)
-        if [[ $PLATFORM == "arm64" ]]; then
-            $($ARM_CMD)
-        elif [[ $PLATFORM == "aarch64" ]]; then
-            $($ARM_CMD)
+        AMD_URL="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+        ARM_URL="https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"
+        if [[ $PLATFORM == "linux_arm64" ]]; then
+            URL=$ARM_URL
         else
-            $($AMD_CMD)
+            URL=$AMD_URL
         fi
+
+        curl $URL -o /tmp/awscliv2.zip -v
         unzip -q /tmp/awscliv2.zip -d /tmp
         rm /tmp/awscliv2.zip
         sudo /tmp/aws/install --update
         rm -rf /tmp/aws/
-
-    - name: Determine platform
-      shell: bash
-      run: |
-        set -ue
-        set -o pipefail
-        PLATFORM=$(uname -m)
-        if [[ $PLATFORM == "arm64" ]]; then
-            echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
-        elif [[ $PLATFORM == "aarch64" ]]; then
-            echo "PLATFORM=linux_arm64" >> $GITHUB_ENV
-        else
-            echo "PLATFORM=linux_amd64" >> $GITHUB_ENV
-        fi
 
     - name: Determine happy version to use
       id: determineHappyCliVersion
