@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.20.5](https://github.com/chanzuckerberg/github-actions/compare/v1.20.4...v1.20.5) (2023-08-09)
+
+
+### Bug Fixes
+
+* ensure happy asset exists when selecting latest release ([#207](https://github.com/chanzuckerberg/github-actions/issues/207)) ([99f597f](https://github.com/chanzuckerberg/github-actions/commit/99f597f118e999f34715ce72d4faf38fb4b36765))
+
 ### [1.20.4](https://github.com/chanzuckerberg/github-actions/compare/v1.20.3...v1.20.4) (2023-08-03)
 
 

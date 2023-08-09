@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.6.2](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.6.1...install-happy-v1.6.2) (2023-08-09)
+
+
+### Bug Fixes
+
+* ensure happy asset exists when selecting latest release ([#207](https://github.com/chanzuckerberg/github-actions/issues/207)) ([99f597f](https://github.com/chanzuckerberg/github-actions/commit/99f597f118e999f34715ce72d4faf38fb4b36765))
+
 ### [1.6.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.6.0...install-happy-v1.6.1) (2023-08-03)
 
 
