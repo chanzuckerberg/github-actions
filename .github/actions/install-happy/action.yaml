@@ -154,7 +154,7 @@ runs:
         set -ue
         set -o pipefail
         cd $(mktemp -d)
-        echo Installing Happy version: $HAPPY_VERSION ($HAPPY_RELEASE_ASSET)
+        echo Installing Happy from asset: $HAPPY_RELEASE_ASSET
 
         wget --quiet https://github.com/chanzuckerberg/happy/releases/download/v${HAPPY_VERSION}/${HAPPY_RELEASE_ASSET}.tar.gz -O happy.tar.gz
 
