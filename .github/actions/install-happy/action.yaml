@@ -47,7 +47,7 @@ runs:
         GHCLI_TOOL_PATH="/tmp/ghcli"
         mkdir -p $GHCLI_TOOL_PATH
         cd /tmp/
-        curl $URL -L -v -o ghcli.tar.gz 
+        curl $URL -L -v -o ghcli.tar.gz
         tar -xf ghcli.tar.gz -C $GHCLI_TOOL_PATH --strip-components 1
         echo "${GHCLI_TOOL_PATH}/bin" >> "${GITHUB_PATH}"
         if [ -n "${INSTALL_SYSTEMWIDE}" ]; then
@@ -84,6 +84,7 @@ runs:
       uses: actions/github-script@v6
       env:
         HAPPY_VERSION: ${{ inputs.happy_version }}
+        VERSION_LOCK_FILE: ${{ inputs.version_lock_file }}
       with:
         script: |
           console.log(`HAPPY_VERSION=${process.env.HAPPY_VERSION}`);
@@ -95,7 +96,36 @@ runs:
             core.setOutput('happyReleaseAsset', `happy_${process.env.HAPPY_VERSION}_${process.env.PLATFORM}.tar.gz`);
             return;
           }
-          
+
+          if (! process.env.HAPPY_VERSION ) {
+
+            var version_lock_file = ".happy/version.lock";
+            if (process.env.VERSION_LOCK_FILE ) {
+              version_lock_file = process.env.VERSION_LOCK_FILE
+            }
+
+            const fs = require('fs');
+
+            let raw_lockfile = fs.readFileSync(version_lock_file);
+            let lock_file = JSON.parse(raw_lockfile);
+
+            let requires = lock_file['Require'];
+
+            if (requires) {
+
+              let happy_version = requires['chanzuckerberg/happy'];
+
+              if (happy_version) {
+                core.setOutput('happyVersion', happy_version);
+                core.setOutput('happyReleaseAsset', `happy_${happy_version}_${process.env.PLATFORM}.tar.gz`);
+                return;
+              }
+            }
+
+            // If we can't find 'Require' key or 'chanzuckerberg/happy' key within it, just fall through to find latest.
+
+          }
+
           let latestHappyCli = undefined;
           let releaseAsset = undefined;
           let page = 1;
