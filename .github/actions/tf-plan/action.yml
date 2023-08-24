@@ -41,7 +41,7 @@ runs:
     - name: Config Terraform plugin cache
       shell: bash
       run: |      
-        echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >~/.terraformrc
+        echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >> ~/.terraformrc
         mkdir --parents ~/.terraform.d/plugin-cache
     - name: Cache Terraform
       uses: actions/cache@v3
