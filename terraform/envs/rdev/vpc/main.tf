@@ -1,5 +1,5 @@
 terraform {
-  remote {
+  backend "remote" {
     hostname     = "si.prod.tfe.czi.technology"
     organization = "shared-infra"
 
