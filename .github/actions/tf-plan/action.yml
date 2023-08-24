@@ -77,14 +77,6 @@ runs:
       with:
         github-token: ${{ inputs.github-token }}
         script: |
-          //console.log(context)
-          /*const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-          });
-          console.log("prs")
-          console.log(prs)*/
           // 1. Retrieve existing bot comments for the PR
           const { data: comments } = await github.rest.issues.listComments({
             owner: context.repo.owner,
@@ -96,7 +88,10 @@ runs:
           })
 
           // 2. Prepare format of the comment
-          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\ \`${{ inputs.working-dir }}\`
+          const output = `
+          ## Terraform Testing: \`${{ inputs.working-dir }}\`
+          
+          #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
           #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
           <details><summary>Validation Output</summary>
@@ -117,7 +112,7 @@ runs:
 
           </details>
 
-          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ inputs.working-dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
           // 3. If we have a comment, update it, otherwise create a new one
           if (botComment) {
