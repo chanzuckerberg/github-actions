@@ -43,8 +43,8 @@ runs:
       run: |      
         echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >> ~/.terraformrc
         mkdir --parents ~/.terraform.d/plugin-cache
-    - name: Cache Terraform
-      uses: actions/cache@v3
+    - name: Cache Terraform Restore
+      uses: actions/cache/restore@v3
       with:
         path: ~/.terraform.d/plugin-cache
         key: terraform-plan
@@ -137,4 +137,9 @@ runs:
               body: output
             })
           }
+    - name: Cache Terraform Save
+      uses: actions/cache/save@v3
+      with:
+        path: ~/.terraform.d/plugin-cache
+        key: terraform-plan
     
