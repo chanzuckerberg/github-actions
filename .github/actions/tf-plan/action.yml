@@ -114,10 +114,12 @@ runs:
 
           Plan details:
           * Pusher: @${{ github.actor }
-          * Action: \`${{ github.event_name }}\`;
-          * Working Directory: \`${{ inputs.working-dir }}\`;
-          * Workflow: \`${{ github.workflow }}\`;
-          * Ref: \`${{ github.ref }}\`;
+          * Action: \`${{ github.event_name }}\`
+          * Working Directory: \`${{ inputs.working-dir }}\`
+          * Workflow: \`${{ github.workflow }}\`
+          * Ref: \`${{ github.ref }}\`
+          * SHA: \`${{ github.sha }}\`
+          `
 
           // 3. If we have a comment, update it, otherwise create a new one
           if (botComment) {
