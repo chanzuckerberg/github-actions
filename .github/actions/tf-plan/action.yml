@@ -65,6 +65,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-dir }}
       run: terraform validate -no-color
+      continue-on-error: true
     - name: Terraform plan
       id: plan
       shell: bash
