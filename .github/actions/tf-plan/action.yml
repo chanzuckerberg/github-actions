@@ -41,7 +41,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ~/.terraform.d/plugin-cache
-        key: ${{ runner.os }}-terraform-${{ hashFiles(format('{0}/.terraform.lock.hcl', inputs.working-dir)) }}
+        key: ${{ runner.os }}-terraform-${{ hashFiles(format('{0}/.terraform.lock.hcl', ${{ inputs.working-dir }})) }}
         restore-keys: ${{ runner.os }}-terraform-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
