@@ -72,6 +72,7 @@ runs:
       shell: bash
       run: terraform plan -no-color
       working-directory: ${{ inputs.working-dir }}
+      continue-on-error: true
     - name: Write plan to PR
       uses: actions/github-script@v6
       env:
