@@ -40,11 +40,12 @@ runs:
       run: |      
         echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >> ~/.terraformrc
         mkdir --parents ~/.terraform.d/plugin-cache
-    - name: Cache Terraform Restore
-      uses: actions/cache/restore@v3
+    - name: Cache Terraform
+      uses: actions/cache@v3
       with:
         path: ~/.terraform.d/plugin-cache
-        key: terraform-plan
+        key: ${{runner.os}}-terraform-plan-${{ hashFiles('**/.terraform.lock.hcl') }}
+        restore-keys: ${{runner.os}}-terraform-plan-
     - name: Terraform init
       id: init 
       shell: bash
@@ -128,9 +129,4 @@ runs:
               body: output
             })
           }
-    - name: Cache Terraform Save
-      uses: actions/cache/save@v3
-      with:
-        path: ~/.terraform.d/plugin-cache
-        key: terraform-plan
     
