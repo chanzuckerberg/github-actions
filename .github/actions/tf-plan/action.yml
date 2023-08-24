@@ -89,7 +89,7 @@ runs:
             return comment.user.type === 'Bot' && comment.body.includes('${{ inputs.working-dir }}')
           })
 
-          const links = /https://(.*)\n/.exec(${{ steps.validate.outputs.stdout }})
+          const links = /https:\/\/(.*)\n/.exec(${{ steps.validate.outputs.stdout }})
           // 2. Prepare format of the comment
           const output = `
           ## Terraform Testing: \`${{ inputs.working-dir }}\`
