@@ -35,13 +35,14 @@ runs:
     - name: Config Terraform plugin cache
       shell: bash
       run: |
-        DIR="$(pwd)/.terraform.d/plugin-cache"
+        DIR="${{inputs.working-dir}}/.terraform.d.new/plugin-cache"
         mkdir -p ${DIR}
+        echo "plugin_cache_dir = ${DIR}"
         echo "plugin_cache_dir = ${DIR}" > ~/.terraformrc
     - name: Cache Terraform
       uses: actions/cache@v3
       with:
-        path: ~/.terraform.d/plugin-cache
+        path: ${{inputs.working-dir}}/.terraform.d.new/plugin-cache
         key: ${{ runner.os }}-terraform-${{ hashFiles(format('{0}/*.tf', inputs.working-dir )) }}
         restore-keys: ${{ runner.os }}-terraform-
     - name: Setup Terraform
@@ -88,6 +89,7 @@ runs:
             return comment.user.type === 'Bot' && comment.body.includes('${{ inputs.working-dir }}')
           })
 
+          const links = /https://(.*)\n/.exec(${{ steps.validate.outputs.stdout }})
           // 2. Prepare format of the comment
           const output = `
           ## Terraform Testing: \`${{ inputs.working-dir }}\`
@@ -97,6 +99,7 @@ runs:
           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
           <details><summary>Validation Output</summary>
 
+          [${links[0]}">Validation Output</a>
           \`\`\`\n
           ${{ steps.validate.outputs.stdout }}
           \`\`\`
