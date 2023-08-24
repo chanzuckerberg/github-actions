@@ -35,13 +35,14 @@ runs:
     - name: Config Terraform plugin cache
       shell: bash
       run: |
-        echo 'plugin_cache_dir = "$HOME/.terraform.d/plugin-cache"' > ~/.terraformrc
-        mkdir -p ~/.terraform.d/plugin-cache
+        DIR="$(pwd)/.terraform.d/plugin-cache"
+        mkdir -p ${DIR}
+        echo "plugin_cache_dir = ${DIR}" > ~/.terraformrc
     - name: Cache Terraform
       uses: actions/cache@v3
       with:
         path: ~/.terraform.d/plugin-cache
-        key: ${{ runner.os }}-terraform-${{ hashFiles(format('{0}/.terraform.lock.hcl', inputs.working-dir )) }}
+        key: ${{ runner.os }}-terraform-${{ hashFiles(format('{0}/*.tf', inputs.working-dir )) }}
         restore-keys: ${{ runner.os }}-terraform-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
