@@ -79,9 +79,9 @@ runs:
         script: |
           console.log(context)
           const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-            context.repository.owner,
-            context.repository.repo,
-            context.sha,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
           });
           console.log("prs")
           console.log(prs)
@@ -108,17 +108,17 @@ runs:
           </details>
 
           #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-          
+
           <details><summary>Show Plan</summary>
-          
+
           \`\`\`\n
           ${process.env.PLAN}
           \`\`\`
-          
+
           </details>
-          
+
           *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-          
+
           // 3. If we have a comment, update it, otherwise create a new one
           if (botComment) {
             github.rest.issues.updateComment({
