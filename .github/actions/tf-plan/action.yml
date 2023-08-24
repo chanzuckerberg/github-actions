@@ -48,7 +48,7 @@ runs:
       with:
         path: |
           ~/.terraform.d/plugin-cache
-        key: ${{ runner.os }}-terraform-${{ hashFiles('${{inputs.working-dir}}/.terraform.lock.hcl') }}
+        key: ${{ runner.os }}-terraform-new-${{ hashFiles('${{inputs.working-dir}}/.terraform.lock.hcl') }}
         restore-keys: |
           ${{ runner.os }}-terraform-new
     - name: Terraform fmt
