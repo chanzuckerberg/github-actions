@@ -67,6 +67,7 @@ runs:
       run: terraform validate -no-color
       continue-on-error: true
     - name: Terraform plan
+      if: ${{ success() }}
       id: plan
       shell: bash
       run: terraform plan -no-color
