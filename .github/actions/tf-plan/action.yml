@@ -42,7 +42,7 @@ runs:
       with:
         path: |
           ~/.terraform.d/plugin-cache
-        key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
+        key: ${{ runner.os }}-terraform-${{ hashFiles('${{inputs.working-dir}}/.terraform.lock.hcl') }}
         restore-keys: |
           ${{ runner.os }}-terraform-
     - name: Setup Terraform
