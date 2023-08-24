@@ -34,17 +34,17 @@ runs:
         ssh-private-key: ${{ inputs.ssh-private-key }}
     - name: Config Terraform plugin cache
       shell: bash
-      run: |
-        DIR="${{inputs.working-dir}}/.terraform.d.new/plugin-cache"
-        mkdir -p ${DIR}
-        echo "plugin_cache_dir = ${DIR}"
-        echo "plugin_cache_dir = ${DIR}" > ~/.terraformrc
+      run: |      
+        echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >~/.terraformrc
+        mkdir --parents ~/.terraform.d/plugin-cache
     - name: Cache Terraform
       uses: actions/cache@v3
       with:
-        path: ${{inputs.working-dir}}/.terraform.d.new/plugin-cache
-        key: ${{ runner.os }}-terraform-${{ hashFiles(format('{0}/*.tf', inputs.working-dir )) }}
-        restore-keys: ${{ runner.os }}-terraform-
+        path: |
+          ~/.terraform.d/plugin-cache
+        key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
+        restore-keys: |
+          ${{ runner.os }}-terraform-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
       with:
@@ -106,11 +106,10 @@ runs:
 
           </details>
 
-          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+          #### [Terraform Plan](https://${links[1]}) 📖\`${{ steps.plan.outcome }}\`
 
           <details><summary>Show Plan</summary>
 
-          [Link to Plan](https://${links[1]})
           \`\`\`\n
           ${process.env.PLAN}
           \`\`\`
