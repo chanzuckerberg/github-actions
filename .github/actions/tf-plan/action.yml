@@ -99,7 +99,7 @@ runs:
           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
           <details><summary>Validation Output</summary>
 
-          [${links[0]}">Validation Output</a>
+          [Link to plan](${links[0]})
           \`\`\`\n
           ${{ steps.validate.outputs.stdout }}
           \`\`\`
