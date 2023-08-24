@@ -113,7 +113,7 @@ runs:
           </details>
 
           Plan details:
-          * Pusher: @${{ github.actor }
+          * Pusher: @${{ github.actor }}
           * Action: \`${{ github.event_name }}\`
           * Working Directory: \`${{ inputs.working-dir }}\`
           * Workflow: \`${{ github.workflow }}\`
