@@ -32,6 +32,12 @@ runs:
       uses: webfactory/ssh-agent@v0.4.1
       with:
         ssh-private-key: ${{ inputs.ssh-private-key }}
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.tf-version }}
+        cli_config_credentials_hostname: ${{ inputs.tfe-hostname }}
+        cli_config_credentials_token: ${{ inputs.tfe-token }}
     - name: Config Terraform plugin cache
       shell: bash
       run: |      
@@ -45,12 +51,6 @@ runs:
         key: ${{ runner.os }}-terraform-${{ hashFiles('${{inputs.working-dir}}/.terraform.lock.hcl') }}
         restore-keys: |
           ${{ runner.os }}-terraform-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: ${{ inputs.tf-version }}
-        cli_config_credentials_hostname: ${{ inputs.tfe-hostname }}
-        cli_config_credentials_token: ${{ inputs.tfe-token }}
     - name: Terraform fmt
       id: fmt
       shell: bash
