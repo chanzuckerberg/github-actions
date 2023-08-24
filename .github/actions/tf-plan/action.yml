@@ -50,7 +50,7 @@ runs:
           ~/.terraform.d/plugin-cache
         key: ${{ runner.os }}-terraform-${{ hashFiles('${{inputs.working-dir}}/.terraform.lock.hcl') }}
         restore-keys: |
-          ${{ runner.os }}-terraform-
+          ${{ runner.os }}-terraform-new
     - name: Terraform fmt
       id: fmt
       shell: bash
