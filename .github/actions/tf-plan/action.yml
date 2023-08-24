@@ -89,7 +89,7 @@ runs:
             return comment.user.type === 'Bot' && comment.body.includes('${{ inputs.working-dir }}')
           })
 
-          const links = /https:\/\/(.*)\n/.exec(${process.env.PLAN})
+          const links = /https:\/\/(.*)\n/.exec(process.env.PLAN)
           console.log(links)
           // 2. Prepare format of the comment
           const output = `
