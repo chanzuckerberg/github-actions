@@ -90,6 +90,7 @@ runs:
           })
 
           const links = /https:\/\/(.*)\n/.exec(${process.env.PLAN})
+          console.log(links)
           // 2. Prepare format of the comment
           const output = `
           ## Terraform Testing: \`${{ inputs.working-dir }}\`
@@ -99,7 +100,6 @@ runs:
           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
           <details><summary>Validation Output</summary>
 
-          [Link to plan](${links[0]})
           \`\`\`\n
           ${{ steps.validate.outputs.stdout }}
           \`\`\`
