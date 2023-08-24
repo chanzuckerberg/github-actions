@@ -47,7 +47,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ~/.terraform.d/plugin-cache
-        key: ${{ runner.os }}-terraform-plan-${{ hashFiles('${{inputs.working-dir}}/.terraform.lock.hcl') }}
+        key: ${{ runner.os }}-terraform-plan-${{ hashFiles(format({0}/.terraform.lock.hcl',inputs.working-dir)) }}
     - name: Terraform fmt
       id: fmt
       shell: bash
