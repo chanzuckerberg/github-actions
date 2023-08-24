@@ -87,7 +87,6 @@ runs:
           })
 
           const links = /https:\/\/(.*)\n/.exec(process.env.PLAN)
-          console.log(links)
           // 2. Prepare format of the comment
           const output = `
           ## Terraform Testing: \`${{ inputs.working-dir }}\`
