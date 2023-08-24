@@ -110,6 +110,7 @@ runs:
 
           <details><summary>Show Plan</summary>
 
+          [Link to Plan](https://${links[1]})
           \`\`\`\n
           ${process.env.PLAN}
           \`\`\`
