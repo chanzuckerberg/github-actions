@@ -64,7 +64,7 @@ runs:
       id: validate 
       shell: bash
       working-directory: ${{ inputs.working-dir }}
-      run: terraform validate
+      run: terraform validate -no-color
     - name: Terraform plan
       id: plan
       shell: bash
@@ -112,7 +112,12 @@ runs:
 
           </details>
 
-          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ inputs.working-dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+          Plan details:
+          * Pusher: @${{ github.actor }
+          * Action: \`${{ github.event_name }}\`;
+          * Working Directory: \`${{ inputs.working-dir }}\`;
+          * Workflow: \`${{ github.workflow }}\`;
+          * Ref: \`${{ github.ref }}\`;
 
           // 3. If we have a comment, update it, otherwise create a new one
           if (botComment) {
