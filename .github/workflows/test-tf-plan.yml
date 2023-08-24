@@ -53,5 +53,5 @@ jobs:
       with:
         ssh-private-key: ${{secrets.SHARED_INFRA_DEPLOY_KEY}}
         working-dir: ${{matrix.workspace}}
-        tf-version: ${{steps.get-tf-version-fogg.outputs.version}}
+        tf-version: 1.5.2
         tfe-token: ${{secrets.TFE_TOKEN}}
