@@ -1,0 +1,81 @@
+name: TF Test
+description: Init, validate, and plan a Terraform workspace. Outputs from the plan are placed in the PR. Terraform plugins and modules are cached using actions/cache.
+inputs:
+  ssh-private-key:
+    description: An SSH key to run `terraform init`
+    required: true
+  tf-version:
+    description: The version of Terraform to use
+    required: true
+  tfe-hostname:
+    description: The hostname of where Terraform Enterprise is located
+    default: si.prod.tfe.czi.technology
+    required: false
+  tfe-token:
+    description: An API token to connect to Terraform Enterprise
+    required: true
+  github-token:
+    description: A Github token to use to comment on this PR
+    required: false
+    default: ${{ github.token }}
+  terragrunt_version:
+    description: The version of Terragrunt to use
+    required: true
+    default: 0.50.8
+  terragrunt_platform:
+    description: The platform to use for Terragrunt
+    required: true
+    default: arm64
+  terraform_plugin_cache_path:
+    description: The path to the Terraform plugin cache
+    required: true
+    default: $HOME/.terraform.d/plugin-cache
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Github SSH known hosts
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh/
+        ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+    - name: Install SSH key
+      uses: webfactory/ssh-agent@v0.4.1
+      with:
+        ssh-private-key: ${{ inputs.ssh-private-key }}
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.tf-version }}
+        cli_config_credentials_hostname: ${{ inputs.tfe-hostname }}
+        cli_config_credentials_token: ${{ inputs.tfe-token }}
+    - name: Config Terraform plugin cache
+      shell: bash
+      run: |      
+        echo 'plugin_cache_dir="${{inputs.terraform_plugin_cache_path}}"' >> ~/.terraformrc
+        mkdir --parents ${{inputs.terraform_plugin_cache_path}}
+    - name: Setup terragrunt
+      id: terragrunt
+      shell: bash
+      run: |
+        GHCLI_TOOL_PATH="/tmp/terragrunt"
+        curl https://github.com/gruntwork-io/terragrunt/releases/download/${{ inputs.terragrunt_version }}/terragrunt_linux_${{ inputs.platform }} -o terragrunt
+        mv ./terragrunt ${GHCLI_TOOL_PATH}
+        echo "${GHCLI_TOOL_PATH}" >> "${GITHUB_PATH}"
+    - name: Terraform init
+      id: init 
+      shell: bash
+      run: |
+        #  terraform init for all accounts
+        terragrunt run-all init --terragrunt-working-dir terraform/accounts  --terragrunt-ignore-dependency-errors --terragrunt-ignore-dependency-order --terragrunt-non-interactive
+        # terraform init for all envs
+        for i in $(ls terraform/envs); do terragrunt run-all init --terragrunt-working-dir "terraform/envs/$i"  --terragrunt-ignore-dependency-errors --terragrunt-ignore-dependency-order --terragrunt-non-interactive; done
+    - name: Cache Terraform
+      uses: actions/cache/save@v3
+      with:
+        path: ${{inputs.terraform_plugin_cache_path}}
+        key: ${{runner.os}}-terraform-main-cache
+    

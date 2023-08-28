@@ -1,0 +1,21 @@
+on:
+  pull_request:
+      branches:
+        - "heathj/cache*"
+      types:
+      - edited
+      - opened
+      - synchronize
+      - reopened
+  
+jobs:
+  tf-test-cache:
+    runs-on: [ARM64,self-hosted,Linux]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Terraform plan
+      uses: ./.github/actions/tf-plan
+      with:
+        ssh-private-key: ${{secrets.SHARED_INFRA_DEPLOY_KEY}}
+        tf-version: 1.3.0
+        tfe-token: ${{secrets.TFE_TOKEN}}
