@@ -1,0 +1,143 @@
+name: TF Test
+description: Init, validate, and plan a Terraform workspace. Outputs from the plan are placed in the PR. Terraform plugins and modules are cached using actions/cache.
+inputs:
+  ssh-private-key:
+    description: An SSH key to run `terraform init`
+    required: true
+  tf-version:
+    description: The version of Terraform to use
+    required: true
+  tfe-hostname:
+    description: The hostname of where Terraform Enterprise is located
+    default: si.prod.tfe.czi.technology
+    required: false
+  tfe-token:
+    description: An API token to connect to Terraform Enterprise
+    required: true
+  github-token:
+    description: A Github token to use to comment on this PR
+    required: false
+    default: ${{ github.token }}
+  working-dir:
+    description: The current working directory of the TFE workspace
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Github SSH known hosts
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh/
+        ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+    - name: Install SSH key
+      uses: webfactory/ssh-agent@v0.4.1
+      with:
+        ssh-private-key: ${{ inputs.ssh-private-key }}
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.tf-version }}
+        cli_config_credentials_hostname: ${{ inputs.tfe-hostname }}
+        cli_config_credentials_token: ${{ inputs.tfe-token }}
+    - name: Config Terraform plugin cache
+      shell: bash
+      run: |      
+        echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >> ~/.terraformrc
+        mkdir --parents ~/.terraform.d/plugin-cache
+    ## TODO: Ideally, there would be a parent workflow that would populate
+    ## a cache of providers that are required by the whole repo. It might run
+    ## on a schedule
+    - name: Cache Terraform
+      uses: actions/cache@v3
+      with:
+        path: ~/.terraform.d/plugin-cache
+        key: ${{runner.os}}-terraform-plan-${{ hashFiles('**/.terraform.lock.hcl') }}
+        restore-keys: ${{runner.os}}-terraform-plan-
+    - name: Terraform init
+      id: init 
+      shell: bash
+      working-directory: ${{ inputs.working-dir }}
+      run: terraform init
+    - name: Terraform validate
+      id: validate 
+      shell: bash
+      working-directory: ${{ inputs.working-dir }}
+      run: terraform validate -no-color
+    - name: Terraform plan
+      if: ${{ success() }}
+      id: plan
+      shell: bash
+      run: terraform plan -no-color
+      working-directory: ${{ inputs.working-dir }}
+    - name: Write plan to PR
+      uses: actions/github-script@v6
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          // 1. Retrieve existing bot comments for the PR
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          })
+          const botComment = comments.find(comment => {
+            return comment.user.type === 'Bot' && comment.body.includes('${{ inputs.working-dir }}')
+          })
+
+          const links = /https:\/\/(.*)\n/.exec(process.env.PLAN)
+          // 2. Prepare format of the comment
+          const output = `
+          ## Terraform Testing: \`${{ inputs.working-dir }}\`
+          
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+          <details><summary>Validation Output</summary>
+
+          \`\`\`\n
+          ${{ steps.validate.outputs.stdout }}
+          \`\`\`
+
+          </details>
+
+          #### [Terraform Plan](https://${links[1]}) 📖\`${{ steps.plan.outcome }}\`
+
+          <details><summary>Show Plan</summary>
+
+          \`\`\`\n
+          ${process.env.PLAN}
+          \`\`\`
+
+          </details>
+
+          Plan details:
+          * Pusher: @${{ github.actor }}
+          * Action: \`${{ github.event_name }}\`
+          * Working Directory: \`${{ inputs.working-dir }}\`
+          * Workflow: \`${{ github.workflow }}\`
+          * Ref: \`${{ github.ref }}\`
+          * SHA: \`${{ github.sha }}\`
+          `
+
+          // 3. If we have a comment, update it, otherwise create a new one
+          if (botComment) {
+            github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: output
+            })
+          } else {
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+          }
+    
