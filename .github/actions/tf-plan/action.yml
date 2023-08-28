@@ -1,5 +1,5 @@
-name: TF Test
-description: Init, validate, and plan a Terraform workspace. Outputs from the plan are placed in the PR. Terraform plugins and modules are cached using actions/cache.
+name: Terraform Plan and Validate
+description: Execute a terraform plan and validation on the PR
 inputs:
   ssh-private-key:
     description: An SSH key to run `terraform init`

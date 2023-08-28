@@ -1,5 +1,5 @@
-name: TF Test
-description: Init, validate, and plan a Terraform workspace. Outputs from the plan are placed in the PR. Terraform plugins and modules are cached using actions/cache.
+name: Cache Terraform Providers
+description: Run through a fogg provider installing all the providers and storing them in a Github Action cache location that can be shared by other jobs
 inputs:
   ssh-private-key:
     description: An SSH key to run `terraform init`
