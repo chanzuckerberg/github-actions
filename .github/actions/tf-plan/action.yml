@@ -28,6 +28,11 @@ runs:
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
+    - name: Github SSH known hosts
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh/
+        ssh-keyscan -H github.com >> ~/.ssh/known_hosts
     - name: Install SSH key
       uses: webfactory/ssh-agent@v0.4.1
       with:
