@@ -1,7 +1,7 @@
 on:
   pull_request:
       branches:
-        - "heathj/cache*"
+        - "heathj/cache-providers"
       types:
       - edited
       - opened
