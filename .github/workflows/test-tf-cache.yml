@@ -11,7 +11,7 @@ jobs:
     runs-on: [ARM64,self-hosted,Linux]
     steps:
     - uses: actions/checkout@v3
-    - name: Terraform plan
+    - name: Terraform build cache
       uses: ./.github/actions/tf-cache-providers
       with:
         ssh-private-key: ${{secrets.SHARED_INFRA_DEPLOY_KEY}}
