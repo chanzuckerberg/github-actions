@@ -21,7 +21,7 @@ inputs:
   terragrunt_version:
     description: The version of Terragrunt to use
     required: true
-    default: 0.50.8
+    default: v0.50.8
   terragrunt_platform:
     description: The platform to use for Terragrunt
     required: true
