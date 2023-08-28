@@ -2,7 +2,7 @@ name: Happy Cleanup
 description: Will list happy stacks in an environment and delete those that have not been updated in a while.
 inputs:
   env:
-    description: The environment to look for stacks
+    description: The environment in which to delete stacks
     required: true
     default: rdev
   time:
