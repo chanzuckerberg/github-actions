@@ -29,7 +29,7 @@ inputs:
   terraform_plugin_cache_path:
     description: The path to the Terraform plugin cache
     required: true
-    default: ~/.terraform.d/plugin-cache
+    default: /tmp/.terraform.d/plugin-cache
 
 runs:
   using: "composite"
