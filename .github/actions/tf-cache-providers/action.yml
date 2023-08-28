@@ -62,6 +62,7 @@ runs:
       shell: bash
       run: |
         GHCLI_TOOL_PATH="/tmp/terragrunt"
+        mkdir -p "${GHCLI_TOOL_PATH}"
         curl -L -v -o "${GHCLI_TOOL_PATH}/terragrunt" https://github.com/gruntwork-io/terragrunt/releases/download/${{ inputs.terragrunt_version }}/terragrunt_linux_${{ inputs.terragrunt_platform }}
         echo "${GHCLI_TOOL_PATH}" >> "${GITHUB_PATH}"
         echo "done"
