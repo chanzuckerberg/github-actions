@@ -1,5 +1,5 @@
-name: TF Test
-description: Init, validate, and plan a Terraform workspace. Outputs from the plan are placed in the PR. Terraform plugins and modules are cached using actions/cache.
+name: Terraform Plan and Validate
+description: Execute a terraform plan and validation on the PR
 inputs:
   ssh-private-key:
     description: An SSH key to run `terraform init`
@@ -21,6 +21,10 @@ inputs:
   working-dir:
     description: The current working directory of the TFE workspace
     required: true
+  terraform_plugin_cache_path:
+    description: The path to the Terraform plugin cache
+    required: true
+    default: /tmp/.terraform.d/plugin-cache
 
 runs:
   using: "composite"
@@ -46,17 +50,16 @@ runs:
     - name: Config Terraform plugin cache
       shell: bash
       run: |      
-        echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >> ~/.terraformrc
-        mkdir --parents ~/.terraform.d/plugin-cache
+        echo 'plugin_cache_dir="${{inputs.terraform_plugin_cache_path}}"' >> ~/.terraformrc
+        mkdir --parents ${{inputs.terraform_plugin_cache_path}}
     ## TODO: Ideally, there would be a parent workflow that would populate
     ## a cache of providers that are required by the whole repo. It might run
     ## on a schedule
     - name: Cache Terraform
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v3
       with:
-        path: ~/.terraform.d/plugin-cache
-        key: ${{runner.os}}-terraform-plan-${{ hashFiles('**/.terraform.lock.hcl') }}
-        restore-keys: ${{runner.os}}-terraform-plan-
+        path: ${{inputs.terraform_plugin_cache_path}}
+        key: ${{runner.os}}-terraform-main-cache
     - name: Terraform init
       id: init 
       shell: bash
