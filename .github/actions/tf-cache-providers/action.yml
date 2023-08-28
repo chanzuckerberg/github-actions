@@ -65,6 +65,9 @@ runs:
         curl -L -v -o terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/${{ inputs.terragrunt_version }}/terragrunt_linux_${{ inputs.terragrunt_platform }}
         mv ./terragrunt ${GHCLI_TOOL_PATH}
         echo "${GHCLI_TOOL_PATH}" >> "${GITHUB_PATH}"
+        echo "done"
+        ls /tmp/terragrunt
+        cat "${GITHUB_PATH}"
     - name: Terraform init
       id: init 
       shell: bash
