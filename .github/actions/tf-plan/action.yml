@@ -25,6 +25,7 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: actions/setup-node@v3
     - name: Install SSH key
       uses: webfactory/ssh-agent@v0.4.1
       with:
@@ -40,6 +41,9 @@ runs:
       run: |      
         echo 'plugin_cache_dir="$HOME/.terraform.d/plugin-cache"' >> ~/.terraformrc
         mkdir --parents ~/.terraform.d/plugin-cache
+    ## TODO: Ideally, there would be a parent workflow that would populate
+    ## a cache of providers that are required by the whole repo. It might run
+    ## on a schedule
     - name: Cache Terraform
       uses: actions/cache@v3
       with:
