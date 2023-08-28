@@ -21,8 +21,3 @@ terraform {
 resource "random_id" "server" {
   byte_length = 8
 }
-
-module "name" {
-  source = "git@github.com:chanzuckerberg/shared-infra//terraform/modules/k8s-core?ref=k8s-core-v4.10.1"
-
-}
