@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.22.0](https://github.com/chanzuckerberg/github-actions/compare/v1.21.0...v1.22.0) (2023-08-28)
+
+
+### Features
+
+* add caching for tf providers ([#215](https://github.com/chanzuckerberg/github-actions/issues/215)) ([7979abe](https://github.com/chanzuckerberg/github-actions/commit/7979abef655f4b15a917bb23d642c595d1e7e164))
+* terraform plan github action ([#213](https://github.com/chanzuckerberg/github-actions/issues/213)) ([ffd2276](https://github.com/chanzuckerberg/github-actions/commit/ffd22760628d7987df9928b6007e768e17a89d32))
+
 ## [1.21.0](https://github.com/chanzuckerberg/github-actions/compare/v1.20.5...v1.21.0) (2023-08-09)
 
 
