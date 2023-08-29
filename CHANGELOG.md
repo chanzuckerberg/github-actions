@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.22.1](https://github.com/chanzuckerberg/github-actions/compare/v1.22.0...v1.22.1) (2023-08-29)
+
+
+### Bug Fixes
+
+* wording update to happy stack cleanup ([#216](https://github.com/chanzuckerberg/github-actions/issues/216)) ([d79a00b](https://github.com/chanzuckerberg/github-actions/commit/d79a00be4fc3909c51a27115bc3c09adf191d27c))
+
 ## [1.22.0](https://github.com/chanzuckerberg/github-actions/compare/v1.21.0...v1.22.0) (2023-08-28)
 
 
