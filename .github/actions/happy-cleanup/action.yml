@@ -9,6 +9,9 @@ inputs:
     description: The longest period before a stack should be considered stale. Should be something like '2 weeks' or '1 day'
     required: true
     default: 2 weeks
+  exclude:
+    description: Exclude stacks with these substrings in the stackname
+    required: false
   tfe_token:
     description: A Terraform Enterprise API token to be used with your happy organization
     required: true
@@ -29,12 +32,19 @@ runs:
         ENV: ${{ inputs.env }}        
         TFE_TOKEN: ${{ inputs.tfe_token }}
         TIME: ${{inputs.time}}
+        EXCLUDE: ${{ inputs.exclude }}
       shell: bash
       run: |
         set -ue
         set -o pipefail
 
         date=`date +%Y-%m-%d'T'%H:%M'Z' -d "$TIME ago"`
+        if [[ ! -z ${EXCLUDE} ]]; then
+          for i in $(happy list --aws-profile "" --output json --env $ENV | jq -r --arg date "$date" --arg exclude "$EXCLUDE" '.[] | select(.last_updated < $date) | select(any(.stack; contains($exclude))|not) | .stack'); do
+            happy delete $i --env $ENV --aws-profile ""
+          done
+          exit
+        fi
         for i in $(happy list --aws-profile "" --output json --env $ENV | jq -r --arg date "$date" '.[] | select(.last_updated < $date) | .stack'); do
           happy delete $i --env $ENV --aws-profile ""
         done
