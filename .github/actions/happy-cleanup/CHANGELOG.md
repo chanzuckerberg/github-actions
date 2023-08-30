@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.4.1...happy-cleanup-v1.5.0) (2023-08-30)
+
+
+### Features
+
+* exclude stacknames ([#219](https://github.com/chanzuckerberg/github-actions/issues/219)) ([b236d7c](https://github.com/chanzuckerberg/github-actions/commit/b236d7c84fadb43e11c0a3f8f291df28b4d17a2e))
+
 ### [1.4.1](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.4.0...happy-cleanup-v1.4.1) (2023-08-29)
 
 

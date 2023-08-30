@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.0](https://github.com/chanzuckerberg/github-actions/compare/v1.22.1...v1.23.0) (2023-08-30)
+
+
+### Features
+
+* exclude stacknames ([#219](https://github.com/chanzuckerberg/github-actions/issues/219)) ([b236d7c](https://github.com/chanzuckerberg/github-actions/commit/b236d7c84fadb43e11c0a3f8f291df28b4d17a2e))
+
 ### [1.22.1](https://github.com/chanzuckerberg/github-actions/compare/v1.22.0...v1.22.1) (2023-08-29)
 
 
