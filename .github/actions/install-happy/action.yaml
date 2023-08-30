@@ -17,6 +17,10 @@ inputs:
     description: Whether to add happy to the system bin directory
     required: false
     default: ""
+  version_lock_file:
+    description: Path to version.json file
+    required: false
+    default: ".happy/version.lock"
 runs:
   using: "composite"
   steps:
