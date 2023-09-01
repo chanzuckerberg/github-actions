@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.6.2...install-happy-v1.7.0) (2023-09-01)
+
+
+### Features
+
+* allow deploy-happy-stack to sync with lock file ([#222](https://github.com/chanzuckerberg/github-actions/issues/222)) ([5f94a46](https://github.com/chanzuckerberg/github-actions/commit/5f94a4601e9548dc20fb9d015ae332b1d314c51d))
+
 ### [1.6.2](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.6.1...install-happy-v1.6.2) (2023-08-09)
 
 
