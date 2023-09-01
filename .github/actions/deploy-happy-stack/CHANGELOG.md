@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.13.0...deploy-happy-stack-v1.14.0) (2023-09-01)
+
+
+### Features
+
+* allow deploy-happy-stack to sync with lock file ([#222](https://github.com/chanzuckerberg/github-actions/issues/222)) ([5f94a46](https://github.com/chanzuckerberg/github-actions/commit/5f94a4601e9548dc20fb9d015ae332b1d314c51d))
+
 ## [1.13.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.12.1...deploy-happy-stack-v1.13.0) (2023-08-09)
 
 
