@@ -23,7 +23,7 @@ inputs:
     description: "Version of happy CLI to fetch"
     required: false
     default: "latest"
-  version_lock_file:
+  version-lock-file:
     description: "Lock file to utilize for happy version"
     required: false
   env:
