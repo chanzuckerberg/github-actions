@@ -62,7 +62,7 @@ runs:
       with:
           ref: ${{ inputs.github-repo-branch || github.event.pull_request && github.head_ref || github.ref_name }}
     - name: Install happy
-      uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
+      uses: chanzuckerberg/github-actions/.github/actions/install-happy@jakeyheath-patch-1
       with:
         happy_version: ${{ inputs.happy-version }}
         version_lock_file: ${{ inputs.version-lock-file }}
