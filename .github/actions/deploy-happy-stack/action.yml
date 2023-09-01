@@ -65,7 +65,7 @@ runs:
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
       with:
         happy_version: ${{ inputs.happy-version }}
-        version_lock_file: ${{ inputs.version_lock_file }}
+        version_lock_file: ${{ inputs.version-lock-file }}
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
