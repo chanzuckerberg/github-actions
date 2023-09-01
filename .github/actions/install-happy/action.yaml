@@ -20,7 +20,6 @@ inputs:
   version_lock_file:
     description: Path to version.json file
     required: false
-    default: ".happy/version.lock"
 runs:
   using: "composite"
   steps:
@@ -101,13 +100,8 @@ runs:
             return;
           }
 
-          if (! process.env.HAPPY_VERSION ) {
-
-            var version_lock_file = ".happy/version.lock";
-            if (process.env.VERSION_LOCK_FILE ) {
-              version_lock_file = process.env.VERSION_LOCK_FILE
-            }
-
+          if ( process.env.VERSION_LOCK_FILE ) {
+            const version_lock_file = process.env.VERSION_LOCK_FILE
             const fs = require('fs');
 
             let raw_lockfile = fs.readFileSync(version_lock_file);
