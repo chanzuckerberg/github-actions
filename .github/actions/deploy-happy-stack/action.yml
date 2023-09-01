@@ -21,8 +21,11 @@ inputs:
     required: true
   happy-version:
     description: "Version of happy CLI to fetch"
-    required: true
+    required: false
     default: "latest"
+  version_lock_file:
+    description: "Lock file to utilize for happy version"
+    required: false
   env:
     description: "The environment to update or create"
     required: false
@@ -62,6 +65,7 @@ runs:
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
       with:
         happy_version: ${{ inputs.happy-version }}
+        version_lock_file: ${{ inputs.version_lock_file }}
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
