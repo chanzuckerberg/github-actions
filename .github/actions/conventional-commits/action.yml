@@ -15,7 +15,6 @@ runs:
               title: title,
               valid_syntax: validator.toString(),
             })
-            core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. See more details: ${details}
-            Make sure you use ! after chore/feat/fix/revert/docs/style for breaking changes.`)
+            core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. Start with chore, feat, fix, revert, or docs and add an ! if the change is breaking. Title must satisfy this regex: ${details.valid_syntax}.`)
           }
 # bump
