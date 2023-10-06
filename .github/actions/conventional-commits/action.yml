@@ -11,10 +11,7 @@ runs:
           const is_valid = validator.test(title)
 
           if (!is_valid) {
-            const details = JSON.stringify({
-              title: title,
-              valid_syntax: validator.toString(),
-            })
-            core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. See more details: ${details}`)
+            const regex = validator.toString()
+            core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. Start with chore, feat, fix, revert, or docs and add an ! if the change is breaking. Title must satisfy this regex: ${regex}.`)
           }
 # bump
