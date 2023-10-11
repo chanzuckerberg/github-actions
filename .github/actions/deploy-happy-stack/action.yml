@@ -54,11 +54,9 @@ inputs:
   repository:
     description: "Github repo to deploy"
     required: false
-    default: ""
   github-token:
     description: "Github token to use for checkout"
     required: false
-    default: ""
   github-repo-branch:
     description: "Branch of Github repo to deploy"
     required: false
