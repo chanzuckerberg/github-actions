@@ -51,6 +51,12 @@ inputs:
     description: "Optional stack to pull images from rather than building them (i.e. should be used with image_source_env)"
     required: false
     default: ""
+  repository:
+    description: "Github repo to deploy"
+    required: false
+  github-token:
+    description: "Github token to use for checkout"
+    required: false
   github-repo-branch:
     description: "Branch of Github repo to deploy"
     required: false
@@ -60,7 +66,9 @@ runs:
   steps:
     - uses: actions/checkout@v3
       with:
+          repository: ${{ inputs.repository || github.repository }}
           ref: ${{ inputs.github-repo-branch || github.event.pull_request && github.head_ref || github.ref_name }}
+          token: ${{ inputs.github-token || github.token }}
     - name: Install happy
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
       with:
