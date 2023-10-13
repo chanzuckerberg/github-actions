@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.14.0...deploy-happy-stack-v1.15.0) (2023-10-13)
+
+
+### Features
+
+* pass along args to allow a happy deploy from a diff repo ([#227](https://github.com/chanzuckerberg/github-actions/issues/227)) ([b358d74](https://github.com/chanzuckerberg/github-actions/commit/b358d74b04a30a1f5b0751d4859eeb97e50a56f0))
+
 ## [1.14.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.13.0...deploy-happy-stack-v1.14.0) (2023-09-01)
 
 

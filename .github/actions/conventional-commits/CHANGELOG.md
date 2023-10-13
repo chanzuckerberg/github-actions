@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.3](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.2...conventional-commits-v1.3.3) (2023-10-13)
+
+
+### Bug Fixes
+
+* make message more 'human' and add a note about adding ! for breaking changes ([#225](https://github.com/chanzuckerberg/github-actions/issues/225)) ([489cb0a](https://github.com/chanzuckerberg/github-actions/commit/489cb0a19cfec0f5c0bbc279282e6350222b5fd2))
+
 ### [1.3.2](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.1...conventional-commits-v1.3.2) (2023-07-10)
 
 

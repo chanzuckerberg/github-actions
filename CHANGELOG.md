@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.25.0](https://github.com/chanzuckerberg/github-actions/compare/v1.24.0...v1.25.0) (2023-10-13)
+
+
+### Features
+
+* pass along args to allow a happy deploy from a diff repo ([#227](https://github.com/chanzuckerberg/github-actions/issues/227)) ([b358d74](https://github.com/chanzuckerberg/github-actions/commit/b358d74b04a30a1f5b0751d4859eeb97e50a56f0))
+
+
+### Bug Fixes
+
+* make message more 'human' and add a note about adding ! for breaking changes ([#225](https://github.com/chanzuckerberg/github-actions/issues/225)) ([489cb0a](https://github.com/chanzuckerberg/github-actions/commit/489cb0a19cfec0f5c0bbc279282e6350222b5fd2))
+
 ## [1.24.0](https://github.com/chanzuckerberg/github-actions/compare/v1.23.0...v1.24.0) (2023-09-01)
 
 
