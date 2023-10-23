@@ -51,6 +51,10 @@ inputs:
     description: "Optional stack to pull images from rather than building them (i.e. should be used with image_source_env)"
     required: false
     default: ""
+  image-source-role-arn:
+    description: "Optional role-arn to pull images from rather than building them (i.e. should be used with image_source_env and image_source_stack)"
+    required: false
+    default: ""
   repository:
     description: "Github repo to deploy"
     required: false
@@ -87,6 +91,7 @@ runs:
         SKIP_MIGRATIONS: ${{ inputs.skip-migrations }}
         IMAGE_SOURCE_ENV: ${{ inputs.image-source-env }}
         IMAGE_SOURCE_STACK: ${{ inputs.image-source-stack }}
+        IMAGE_SOURCE_ROLE_ARN: ${{ inputs.image-source-role-arn }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
@@ -119,6 +124,10 @@ runs:
 
         if [[ ${IMAGE_SOURCE_STACK} != "" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --image-src-stack ${IMAGE_SOURCE_STACK}"
+        fi
+
+        if [[ ${IMAGE_SOURCE_ROLE_ARN} != "" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --image-src-role-arn ${IMAGE_SOURCE_ROLE_ARN}"
         fi
         echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
         echo "Running: '${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}'"
