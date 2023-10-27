@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.0](https://github.com/chanzuckerberg/github-actions/compare/v1.25.0...v1.26.0) (2023-10-27)
+
+
+### Features
+
+* include image-source-role-arn input for deploy happy ([#228](https://github.com/chanzuckerberg/github-actions/issues/228)) ([4168f8c](https://github.com/chanzuckerberg/github-actions/commit/4168f8c33d6d85d68c847da7a443969ed1cb5061))
+
 ## [1.25.0](https://github.com/chanzuckerberg/github-actions/compare/v1.24.0...v1.25.0) (2023-10-13)
 
 
