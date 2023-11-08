@@ -12,20 +12,52 @@ inputs:
   happy_version:
     description: "Version of happy CLI to fetch"
     required: true
-    default: "0.23.0"
+    default: "latest"
+  stack-name:
+    description: "Name of the stack to update the image for"
+    required: true
+  docker-compose-config-path:
+    description: "Specify a docker compose config path"
+    required: false
+  repository:
+    description: "Github repo to deploy"
+    required: false
+  github-repo-branch:
+    description: "Branch of Github repo to check out"
+    required: false
+  github-token:
+    description: "Github token to use for checkout"
+    required: false    
+  tfe-token:
+    description: "TFE Token"
+    required: true
+  env:
+    description: "The environment to update the tag in"
+    required: false
 
 runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
+      with:
+        repository: ${{ inputs.repository || github.repository }}
+        ref: ${{ inputs.github-repo-branch || github.event.pull_request && github.head_ref || github.ref_name }}
+        token: ${{ inputs.github-token || github.token }}
     - name: Install happy
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
       with:
         happy_version: ${{ inputs.happy_version }}
     - name: Retag images
+      env:
+        TFE_TOKEN: ${{ inputs.tfe-token }}
+        STACK_NAME: ${{ inputs.stack-name }}
+        SOURCE_TAG: ${{ inputs.source-tag }}
+        DEST_TAG: ${{ inputs.dest-tag }}
+        ENV: ${{ inputs.env }}
+        DOCKER_COMPOSE_CONFIG_PATH: ${{ inputs.docker-compose-config-path }}
       shell: bash
       run: |
         set -ue
         set -o pipefail
 
-        happy --aws-profile="" addtags --source-tag ${{ inputs.source-tag }} --dest-tag ${{ inputs.dest-tag }}
+        happy --aws-profile="" addtags ${STACK_NAME} --source-tag=${SOURCE_TAG} --dest-tag=${DEST_TAG} --docker-compose-config-path=${DOCKER_COMPOSE_CONFIG_PATH} --env=${ENV}
