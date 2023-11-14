@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Fetch PRs with Jira References
         id: fetchReleasedPRs
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const releaseBody = `${{ github.event.release.body }}`;
@@ -61,7 +61,7 @@ jobs:
     steps:
       - name: Create Jira Version
         id: createJiraVersion
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const versionTag = '${{ github.event.release.tag_name }}';
@@ -108,7 +108,7 @@ jobs:
           projectKey: ${{ inputs.projectKey }}
 
       - name: Update Fix Version of Referenced Jira Issue
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const jiraIssueRef = '${{ steps.findJiraMarker.outputs.jiraIssueReference }}'
@@ -151,7 +151,7 @@ jobs:
     steps:
       - name: Release Jira Version
         id: createJiraVersion
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const releaseDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
