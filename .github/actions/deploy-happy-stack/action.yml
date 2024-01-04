@@ -64,6 +64,9 @@ inputs:
   github-repo-branch:
     description: "Branch of Github repo to deploy"
     required: false
+  slice:
+    description: "Slice to deploy"
+    required: false
 
 runs:
   using: "composite"
@@ -92,6 +95,7 @@ runs:
         IMAGE_SOURCE_ENV: ${{ inputs.image-source-env }}
         IMAGE_SOURCE_STACK: ${{ inputs.image-source-stack }}
         IMAGE_SOURCE_ROLE_ARN: ${{ inputs.image-source-role-arn }}
+        SLICE: ${{ inputs.slice }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
@@ -128,6 +132,10 @@ runs:
 
         if [[ ${IMAGE_SOURCE_ROLE_ARN} != "" ]]; then
           HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --image-src-role-arn ${IMAGE_SOURCE_ROLE_ARN}"
+        fi
+
+        if [[ ${SLICE} != "" ]]; then
+          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --slice ${SLICE}"
         fi
         echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
         echo "Running: '${OPERATION} --aws-profile "" --env=${ENV} ${HAPPY_DEPLOYMENT_FLAGS} ${STACK_NAME}'"
