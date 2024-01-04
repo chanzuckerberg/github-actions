@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.16.0...deploy-happy-stack-v1.17.0) (2024-01-04)
+
+
+### Features
+
+* add slice to happy deploy stack action ([#236](https://github.com/chanzuckerberg/github-actions/issues/236)) ([04dbac6](https://github.com/chanzuckerberg/github-actions/commit/04dbac6485f7644dd3c0fe189d0b9aa11cb7c77e))
+
 ## [1.16.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.15.0...deploy-happy-stack-v1.16.0) (2023-10-27)
 
 
