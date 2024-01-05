@@ -69,7 +69,6 @@ runs:
             .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
           console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
           core.setOutput("cacheFrom", cacheFrom);
-
     - name: Build and push
       uses: docker/build-push-action@v5
       with:
