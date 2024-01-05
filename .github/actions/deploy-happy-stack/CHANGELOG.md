@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.17.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.17.0...deploy-happy-stack-v1.17.1) (2024-01-05)
+
+
+### Bug Fixes
+
+* only use slice flags when slice is set ([b10aa97](https://github.com/chanzuckerberg/github-actions/commit/b10aa97de100f0726e77015a1f7a492795dd645c))
+
 ## [1.17.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v1.16.0...deploy-happy-stack-v1.17.0) (2024-01-04)
 
 
