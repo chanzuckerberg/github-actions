@@ -140,11 +140,7 @@ runs:
         fi
 
         if [[ ${SLICE} != "" ]]; then
-          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --slice ${SLICE}"
-        fi
-
-        if [[ ${SLICE_DEFAULT_TAG} != "" ]]; then
-          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --slice-default-tag ${SLICE_DEFAULT_TAG}"
+          HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --slice ${SLICE} --slice-default-tag ${SLICE_DEFAULT_TAG}"
         fi
 
         echo "Starting to ${OPERATION} stack ${STACK_NAME} with additional flags: ${HAPPY_DEPLOYMENT_FLAGS}"
