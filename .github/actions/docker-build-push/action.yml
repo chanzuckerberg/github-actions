@@ -30,6 +30,9 @@ outputs:
   tags:
     description: "The tags we built and pushed"
     value: ${{ steps.meta.outputs.tags }}
+  json:
+    description: "The tags JSON we built and pushed"
+    value: ${{ steps.meta.outputs.json }}
 runs:
   using: "composite"
   steps:
