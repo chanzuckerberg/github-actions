@@ -1,5 +1,24 @@
 # Changelog
 
+### [1.27.1](https://github.com/chanzuckerberg/github-actions/compare/v1.27.0...v1.27.1) (2024-01-05)
+
+
+### Bug Fixes
+
+* only use slice flags when slice is set ([b10aa97](https://github.com/chanzuckerberg/github-actions/commit/b10aa97de100f0726e77015a1f7a492795dd645c))
+
+## [1.27.0](https://github.com/chanzuckerberg/github-actions/compare/v1.26.0...v1.27.0) (2024-01-04)
+
+
+### Features
+
+* add slice to happy deploy stack action ([#236](https://github.com/chanzuckerberg/github-actions/issues/236)) ([04dbac6](https://github.com/chanzuckerberg/github-actions/commit/04dbac6485f7644dd3c0fe189d0b9aa11cb7c77e))
+
+
+### Bug Fixes
+
+* happy addtags github action ([#230](https://github.com/chanzuckerberg/github-actions/issues/230)) ([0b740d8](https://github.com/chanzuckerberg/github-actions/commit/0b740d81436af68cb9af1011cab89199823c0161))
+
 ## [1.26.0](https://github.com/chanzuckerberg/github-actions/compare/v1.25.0...v1.26.0) (2023-10-27)
 
 
