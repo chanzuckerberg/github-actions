@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.4.1](https://github.com/chanzuckerberg/github-actions/compare/retag-happy-v1.4.0...retag-happy-v1.4.1) (2024-01-04)
+
+
+### Bug Fixes
+
+* happy addtags github action ([#230](https://github.com/chanzuckerberg/github-actions/issues/230)) ([0b740d8](https://github.com/chanzuckerberg/github-actions/commit/0b740d81436af68cb9af1011cab89199823c0161))
+
 ## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/retag-happy-v1.3.0...retag-happy-v1.4.0) (2023-07-24)
 
 
