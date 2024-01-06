@@ -1,0 +1,29 @@
+name: Set app configs with happy config
+description: This workflow will set an app config in a given environment using happy config
+inputs:
+  app_config_name:
+    description: The name of the app config to set
+    required: true
+    type: string
+  app_config_value:
+    description: The value to set for the app config
+    required: true
+    type: string
+  happy_env:
+    description: The happy environment to set the app config in
+    required: true
+    type: string
+runs:
+  using: "composite"
+  steps:
+    - name: Get Id Token
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const id_token = await core.getIDToken()
+          core.setOutput('id_token', id_token)
+          core.exportVariable('id_token', id_token);
+    - name: Set env var
+      shell: bash
+      run: |
+        HAPPY_OIDC_ID_TOKEN=${{env.id_token}} happy config set ${{ inputs.env_var_name }} ${{ inputs.env_var_value }} --env ${{ inputs.happy_env }} --aws-profile ""
