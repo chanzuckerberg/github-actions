@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.28.0](https://github.com/chanzuckerberg/github-actions/compare/v1.27.1...v1.28.0) (2024-01-10)
+
+
+### Features
+
+* Add resusable action to set app config with happy config ([#233](https://github.com/chanzuckerberg/github-actions/issues/233)) ([b2a74da](https://github.com/chanzuckerberg/github-actions/commit/b2a74da378496645bb6ebe3a820fa6b19cba05f9))
+* upgrade deps on composite actions ([#239](https://github.com/chanzuckerberg/github-actions/issues/239)) ([3387a66](https://github.com/chanzuckerberg/github-actions/commit/3387a66d03e19a1a01163a3dc8717f58c2c70c56))
+
+
+### Bug Fixes
+
+* conventional-commits: handle dependabot hyphen ([#1](https://github.com/chanzuckerberg/github-actions/issues/1)) ([#235](https://github.com/chanzuckerberg/github-actions/issues/235)) ([f997e84](https://github.com/chanzuckerberg/github-actions/commit/f997e8414703f00e3163b108ca9e89876d62055d))
+
 ### [1.27.1](https://github.com/chanzuckerberg/github-actions/compare/v1.27.0...v1.27.1) (2024-01-05)
 
 
