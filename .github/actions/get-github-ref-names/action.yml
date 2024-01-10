@@ -19,7 +19,7 @@ runs:
   steps:
     - name: Calculate Refs
       id: refs
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           let eventName = context.eventName;
@@ -49,4 +49,3 @@ runs:
           core.setOutput("headRef", head);
           core.setOutput("baseRef", base);
           console.log(`Calculated the following ${JSON.stringify({eventName,base,head}, null, 2)}`);
-# bump3
