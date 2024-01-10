@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.3.4](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.3...conventional-commits-v1.3.4) (2024-01-10)
+
+
+### Bug Fixes
+
+* conventional-commits: handle dependabot hyphen ([#1](https://github.com/chanzuckerberg/github-actions/issues/1)) ([#235](https://github.com/chanzuckerberg/github-actions/issues/235)) ([f997e84](https://github.com/chanzuckerberg/github-actions/commit/f997e8414703f00e3163b108ca9e89876d62055d))
+
 ### [1.3.3](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.2...conventional-commits-v1.3.3) (2023-10-13)
 
 

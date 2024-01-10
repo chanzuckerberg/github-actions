@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.4.0...docker-build-push-v1.5.0) (2024-01-10)
+
+
+### Features
+
+* upgrade deps on composite actions ([#239](https://github.com/chanzuckerberg/github-actions/issues/239)) ([3387a66](https://github.com/chanzuckerberg/github-actions/commit/3387a66d03e19a1a01163a3dc8717f58c2c70c56))
+
 ## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.3.2...docker-build-push-v1.4.0) (2023-07-24)
 
 
