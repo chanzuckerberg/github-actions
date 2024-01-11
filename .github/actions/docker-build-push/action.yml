@@ -39,6 +39,9 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Print platforms
+      shell: bash
+      run: echo ${{ inputs.platforms }}
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx
