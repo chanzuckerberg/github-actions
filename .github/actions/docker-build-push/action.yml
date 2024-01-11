@@ -26,6 +26,9 @@ inputs:
     description: "A list of files to be copied into the build context."
     required: false
     default: ""
+  platforms:
+    description: "A list of target platforms for build (comma delimited)"
+    required: false
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -85,3 +88,4 @@ runs:
           type=inline,mode=max
         build-args: ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret-files }}
+        platforms: ${{ inputs.platforms }}
