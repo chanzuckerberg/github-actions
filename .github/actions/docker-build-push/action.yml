@@ -29,6 +29,7 @@ inputs:
   platforms:
     description: "A list of target platforms for build (comma delimited)"
     required: false
+    default: ""
 outputs:
   tags:
     description: "The tags we built and pushed"
