@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.29.0](https://github.com/chanzuckerberg/github-actions/compare/v1.28.0...v1.29.0) (2024-01-12)
+
+
+### Features
+
+* add platforms input to docker-build-push ([#240](https://github.com/chanzuckerberg/github-actions/issues/240)) ([6a68b28](https://github.com/chanzuckerberg/github-actions/commit/6a68b28d569eeabf08399236fa39127dfd62569f))
+* additional logging for happy-cleanup ([#241](https://github.com/chanzuckerberg/github-actions/issues/241)) ([6dcbbb0](https://github.com/chanzuckerberg/github-actions/commit/6dcbbb001452371cb1e528abb2bca5e0f2bfb746))
+
 ## [1.28.0](https://github.com/chanzuckerberg/github-actions/compare/v1.27.1...v1.28.0) (2024-01-10)
 
 
