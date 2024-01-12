@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.5.0...docker-build-push-v1.6.0) (2024-01-12)
+
+
+### Features
+
+* add platforms input to docker-build-push ([#240](https://github.com/chanzuckerberg/github-actions/issues/240)) ([6a68b28](https://github.com/chanzuckerberg/github-actions/commit/6a68b28d569eeabf08399236fa39127dfd62569f))
+
 ## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.4.0...docker-build-push-v1.5.0) (2024-01-10)
 
 

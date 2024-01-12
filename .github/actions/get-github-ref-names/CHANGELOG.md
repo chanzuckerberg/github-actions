@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.5.0...get-github-ref-names-v1.6.0) (2024-01-12)
+
+
+### Features
+
+* (CCIE-308) Adding delete action ([#129](https://github.com/chanzuckerberg/github-actions/issues/129)) ([1bd8689](https://github.com/chanzuckerberg/github-actions/commit/1bd86899281d23e1a05f7726f22a45e4e110663c))
+* **get-github-ref-names:** Add support for release event ([#28](https://github.com/chanzuckerberg/github-actions/issues/28)) ([b234d6e](https://github.com/chanzuckerberg/github-actions/commit/b234d6e2dd14b58b1cf8f03a3acf046175a449a2))
+* upgrade deps on composite actions ([#239](https://github.com/chanzuckerberg/github-actions/issues/239)) ([3387a66](https://github.com/chanzuckerberg/github-actions/commit/3387a66d03e19a1a01163a3dc8717f58c2c70c56))
+* version bump ([8f24ce6](https://github.com/chanzuckerberg/github-actions/commit/8f24ce67498d7f2eef6f6902854f1d6568090636))
+
+
+### Bug Fixes
+
+* only tag get-github-ref-names ([#49](https://github.com/chanzuckerberg/github-actions/issues/49)) ([110bf8f](https://github.com/chanzuckerberg/github-actions/commit/110bf8f705d931947df5eb1772bce3d9236f0b17))
+* test get-github ([6f0b5f1](https://github.com/chanzuckerberg/github-actions/commit/6f0b5f17897122721a841303c2779119477b6540))
+* the test code so that PRs are back to where they were ([#43](https://github.com/chanzuckerberg/github-actions/issues/43)) ([4c53d19](https://github.com/chanzuckerberg/github-actions/commit/4c53d1923a16b14174efc4a749c63ff4cf06004c))
+* version bump ([6691a5a](https://github.com/chanzuckerberg/github-actions/commit/6691a5ae1282d1869096bbe7a35e97efde504a07))
+* version bump ([931198a](https://github.com/chanzuckerberg/github-actions/commit/931198a3d01023001ce41326dcd4c460a9a00d06))
+* version bump ([c908b5b](https://github.com/chanzuckerberg/github-actions/commit/c908b5b232fa5e57b5a2ec15405e69b2ed1c9e3c))
+
 ## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.4.0...get-github-ref-names-v1.5.0) (2024-01-10)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.5.0...happy-cleanup-v1.6.0) (2024-01-12)
+
+
+### Features
+
+* additional logging for happy-cleanup ([#241](https://github.com/chanzuckerberg/github-actions/issues/241)) ([6dcbbb0](https://github.com/chanzuckerberg/github-actions/commit/6dcbbb001452371cb1e528abb2bca5e0f2bfb746))
+
 ## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.4.1...happy-cleanup-v1.5.0) (2023-08-30)
 
 
