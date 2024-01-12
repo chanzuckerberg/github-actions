@@ -41,11 +41,13 @@ runs:
         date=`date +%Y-%m-%d'T'%H:%M'Z' -d "$TIME ago"`
         if [[ ! -z ${EXCLUDE} ]]; then
           for i in $(happy list --aws-profile "" --output json --env $ENV | jq -r --arg date "$date" --arg exclude "$EXCLUDE" '.[] | select(.last_updated < $date) | select(any(.stack; contains($exclude))|not) | .stack'); do
+            echo "Deleting stack: $i"
             happy delete $i --env $ENV --aws-profile ""
           done
           exit
         fi
         for i in $(happy list --aws-profile "" --output json --env $ENV | jq -r --arg date "$date" '.[] | select(.last_updated < $date) | .stack'); do
+          echo "Deleting stack: $i"
           happy delete $i --env $ENV --aws-profile ""
         done
     
