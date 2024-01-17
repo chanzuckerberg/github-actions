@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/chanzuckerberg/github-actions/compare/v1.29.0...v2.0.0) (2024-01-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* don't checkout ref every time (#243)
+
+### Bug Fixes
+
+* don't checkout ref every time ([#243](https://github.com/chanzuckerberg/github-actions/issues/243)) ([94a4c59](https://github.com/chanzuckerberg/github-actions/commit/94a4c59a6e5c779a51deb42a042aea6c04c460ec))
+
 ## [1.29.0](https://github.com/chanzuckerberg/github-actions/compare/v1.28.0...v1.29.0) (2024-01-12)
 
 
