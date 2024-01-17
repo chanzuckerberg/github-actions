@@ -75,10 +75,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
           repository: ${{ inputs.repository || github.repository }}
-          ref: ${{ inputs.github-repo-branch || github.event.pull_request && github.head_ref || github.ref_name }}
+          ref: ${{ inputs.github-repo-branch || github.event.pull_request && github.head_ref || github.sha }}
           token: ${{ inputs.github-token || github.token }}
     - name: Install happy
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
