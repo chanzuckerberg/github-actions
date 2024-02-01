@@ -27,12 +27,21 @@ runs:
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
       with:
         happy_version: ${{ inputs.happy_version }}
+    - name: Get Id Token
+      uses: actions/github-script@v6
+      id: idtoken
+      with:
+        script: |
+          const id_token = await core.getIDToken()
+          core.setOutput('id_token', id_token)
+          core.exportVariable('id_token', id_token);
     - name: Delete stale stacks
       env:
         ENV: ${{ inputs.env }}        
         TFE_TOKEN: ${{ inputs.tfe_token }}
         TIME: ${{inputs.time}}
         EXCLUDE: ${{ inputs.exclude }}
+        HAPPY_OIDC_ID_TOKEN: ${{steps.idtoken.outputs.id_token}}
       shell: bash
       run: |
         set -ue
