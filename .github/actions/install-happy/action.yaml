@@ -20,6 +20,7 @@ inputs:
   version_lock_file:
     description: Path to version.json file
     required: false
+    default: ".happy/version.lock"
 runs:
   using: "composite"
   steps:
@@ -100,28 +101,29 @@ runs:
             return;
           }
 
-          if ( process.env.VERSION_LOCK_FILE ) {
-            const version_lock_file = process.env.VERSION_LOCK_FILE
+          if (process.env.VERSION_LOCK_FILE) {
             const fs = require('fs');
 
-            let raw_lockfile = fs.readFileSync(version_lock_file);
-            let lock_file = JSON.parse(raw_lockfile);
+            try {
+              const rawLockfile = fs.readFileSync(process.env.VERSION_LOCK_FILE);
+              const lockFile = JSON.parse(rawLockfile);
 
-            let requires = lock_file['Require'];
+              const requires = lockFile['Require'];
 
-            if (requires) {
+              if (requires) {
+                const happyVersion = requires['chanzuckerberg/happy'];
 
-              let happy_version = requires['chanzuckerberg/happy'];
-
-              if (happy_version) {
-                core.setOutput('happyVersion', happy_version);
-                core.setOutput('happyReleaseAsset', `happy_${happy_version}_${process.env.PLATFORM}.tar.gz`);
-                return;
+                if (happyVersion) {
+                  core.setOutput('happyVersion', happyVersion);
+                  core.setOutput('happyReleaseAsset', `happy_${happyVersion}_${process.env.PLATFORM}.tar.gz`);
+                  return;
+                }
               }
+              // If we can't find 'Require' key or 'chanzuckerberg/happy' key within it, just fall through to find latest.
+
+            } catch (error) {
+              console.log(`Error reading version lock file: ${error}. Using latest version of happy instead...`);
             }
-
-            // If we can't find 'Require' key or 'chanzuckerberg/happy' key within it, just fall through to find latest.
-
           }
 
           let latestHappyCli = undefined;
