@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.1.0](https://github.com/chanzuckerberg/github-actions/compare/v2.0.0...v2.1.0) (2024-02-01)
+
+
+### Features
+
+* allow deps for conventional commits ([#245](https://github.com/chanzuckerberg/github-actions/issues/245)) ([a63ad0e](https://github.com/chanzuckerberg/github-actions/commit/a63ad0e12357e3af246433d8a26a1fef1d95fc44))
+
+
+### Bug Fixes
+
+* set default for version lock file location ([#247](https://github.com/chanzuckerberg/github-actions/issues/247)) ([df86206](https://github.com/chanzuckerberg/github-actions/commit/df86206aa76475f2db3b64682659a253f3a407ef))
+* set the OIDC token env variable for auth ([#248](https://github.com/chanzuckerberg/github-actions/issues/248)) ([4e08944](https://github.com/chanzuckerberg/github-actions/commit/4e08944080c55d70d2ce27c4ee8a257c5e81c05e))
+
 ## [2.0.0](https://github.com/chanzuckerberg/github-actions/compare/v1.29.0...v2.0.0) (2024-01-17)
 
 

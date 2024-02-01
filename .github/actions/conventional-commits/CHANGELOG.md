@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.4...conventional-commits-v1.4.0) (2024-02-01)
+
+
+### Features
+
+* allow deps for conventional commits ([#245](https://github.com/chanzuckerberg/github-actions/issues/245)) ([a63ad0e](https://github.com/chanzuckerberg/github-actions/commit/a63ad0e12357e3af246433d8a26a1fef1d95fc44))
+
 ### [1.3.4](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.3...conventional-commits-v1.3.4) (2024-01-10)
 
 
