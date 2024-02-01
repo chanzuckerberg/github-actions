@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.7.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.7.0...install-happy-v1.7.1) (2024-02-01)
+
+
+### Bug Fixes
+
+* set default for version lock file location ([#247](https://github.com/chanzuckerberg/github-actions/issues/247)) ([df86206](https://github.com/chanzuckerberg/github-actions/commit/df86206aa76475f2db3b64682659a253f3a407ef))
+
 ## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.6.2...install-happy-v1.7.0) (2023-09-01)
 
 

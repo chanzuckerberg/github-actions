@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.6.1](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.6.0...happy-cleanup-v1.6.1) (2024-02-01)
+
+
+### Bug Fixes
+
+* set the OIDC token env variable for auth ([#248](https://github.com/chanzuckerberg/github-actions/issues/248)) ([4e08944](https://github.com/chanzuckerberg/github-actions/commit/4e08944080c55d70d2ce27c4ee8a257c5e81c05e))
+
 ## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.5.0...happy-cleanup-v1.6.0) (2024-01-12)
 
 
