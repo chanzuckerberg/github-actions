@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/chanzuckerberg/github-actions/compare/v2.1.0...v2.2.0) (2024-04-02)
+
+
+### Features
+
+* add reusable Argus Builder action/workflow ([#249](https://github.com/chanzuckerberg/github-actions/issues/249)) ([4681a50](https://github.com/chanzuckerberg/github-actions/commit/4681a505ba69536d555f543b0f0cb0b8adba95b4))
+
 ## [2.1.0](https://github.com/chanzuckerberg/github-actions/compare/v2.0.0...v2.1.0) (2024-02-01)
 
 
