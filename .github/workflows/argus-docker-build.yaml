@@ -16,6 +16,7 @@ jobs:
   prep:
     name: Prep for Build
     runs-on: [ARM64,self-hosted,Linux]
+    if: contains(github.event.head_commit.message, '[no-deploy]') == false
     outputs:
       image-tag: ${{ steps.build-tags.outputs.IMAGE_TAG }}
       images: ${{ steps.parse-images.outputs.images }}
@@ -23,22 +24,15 @@ jobs:
         id-token: write
         contents: read
     steps:
-      - name: Skip if commit message contains [no-deploy]
-        if: contains(github.event.head_commit.message, '[no-deploy]')
-        id: skip-deploy
-        run: echo "SKIP_DEPLOY=true" >> $GITHUB_OUTPUT
       - uses: actions/checkout@v4
-        if: steps.skip-deploy.outputs.SKIP_DEPLOY != 'true'
         with:
           fetch-depth: 0
       - name: Get build tag
         id: build-tags
-        if: steps.skip-deploy.outputs.SKIP_DEPLOY != 'true'
         run: |
           echo "IMAGE_TAG=sha-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Parse images
         id: parse-images
-        if: steps.skip-deploy.outputs.SKIP_DEPLOY != 'true'
         uses: actions/github-script@v7
         with:
           script: |
