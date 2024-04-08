@@ -2,7 +2,7 @@
 	".github/actions/happy-cleanup": "1.6.1",
 	".github/actions/conventional-commits": "1.4.0",
 	".github/actions/docker-build-push": "1.6.0",
-	".": "2.2.0",
+	".": "2.2.1",
 	".github/actions/install-happy": "1.7.1",
 	".github/actions/deploy-happy-stack": "2.0.0",
 	".github/actions/get-github-ref-names": "1.6.0",

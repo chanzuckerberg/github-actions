@@ -1,5 +1,12 @@
 # Changelog
 
+### [2.2.1](https://github.com/chanzuckerberg/github-actions/compare/v2.2.0...v2.2.1) (2024-04-08)
+
+
+### Bug Fixes
+
+* use default token to prevent build cycle ([#251](https://github.com/chanzuckerberg/github-actions/issues/251)) ([728e81c](https://github.com/chanzuckerberg/github-actions/commit/728e81cdd6cf09d180babe9d6bfe3c33bebc0d1c))
+
 ## [2.2.0](https://github.com/chanzuckerberg/github-actions/compare/v2.1.0...v2.2.0) (2024-04-02)
 
 
