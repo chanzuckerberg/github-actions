@@ -86,7 +86,7 @@ jobs:
           dockerfile: ${{ github.event.repository.name }}/${{ matrix.image.dockerfile }}
           context: ${{ github.event.repository.name }}/${{ matrix.image.context }}
           name: core-platform/${{ github.event.repository.name }}/${{ matrix.image.name }}
-          registry: 471112759938.dkr.ecr.us-west-2.amazonaws.com
+          registry: 471112759938.dkr.ecr.us-west-2.amazonaws.com 
           custom_tag: ${{ env.IMAGE_TAG }}
           platforms: linux/arm64
           build_args: IMAGE_TAG=${{ env.IMAGE_TAG }}
@@ -100,13 +100,20 @@ jobs:
     if: needs.prep.outputs.image-tag != '' && needs.prep.outputs.image-tag != 'sha-' && needs.prep.outputs.images != '[]'
     permissions:
         id-token: write
-        contents: write
+        contents: read
     steps:
       - run: |
           echo IMAGE_TAG=$IMAGE_TAG
+      - name: Generate token
+        id: generate_token
+        uses: chanzuckerberg/github-app-token@v1.1.4
+        with:
+          app_id: ${{ secrets.CZI_RELEASE_PLEASE_APP_ID }}
+          private_key: ${{ secrets.CZI_RELEASE_PLEASE_PK }}
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ steps.generate_token.outputs.token }}
       - name: Update Manifest
         shell: bash
         run: |
