@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       images:
-        description: 'JSON array of images to build (required keys: dockerfile, context, name)'
+        description: 'JSON array of images to build (required keys: dockerfile, context, name, platform)'
         required: true
         type: string
 
@@ -41,7 +41,10 @@ jobs:
   build-docker:
     name: Build Docker Image
     needs: [prep]
-    runs-on: [ARM64,self-hosted,Linux]
+    runs-on: 
+      - self-hosted
+      - Linux
+      - ${{ matrix.image.platform == 'linux/arm64' && 'ARM64' || 'X64' }}
     env:
       IMAGE_TAG: ${{ needs.prep.outputs.image-tag }}
     if: needs.prep.outputs.image-tag != '' && needs.prep.outputs.image-tag != 'sha-' && needs.prep.outputs.images != '[]'
@@ -88,7 +91,7 @@ jobs:
           name: core-platform/${{ github.event.repository.name }}/${{ matrix.image.name }}
           registry: 471112759938.dkr.ecr.us-west-2.amazonaws.com 
           custom_tag: ${{ env.IMAGE_TAG }}
-          platforms: linux/arm64
+          platforms: ${{ matrix.image.platform }}
           build_args: IMAGE_TAG=${{ env.IMAGE_TAG }}
 
   update-manifests:
