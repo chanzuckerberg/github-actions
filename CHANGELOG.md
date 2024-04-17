@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/chanzuckerberg/github-actions/compare/v2.2.1...v2.3.0) (2024-04-17)
+
+
+### Features
+
+* allow image to be built for different platform ([#255](https://github.com/chanzuckerberg/github-actions/issues/255)) ([28cf226](https://github.com/chanzuckerberg/github-actions/commit/28cf226818b8408e8dd3d26bac255e9d87d006ac))
+
+
+### Bug Fixes
+
+* Revert "fix: use default token to prevent build cycle ([#251](https://github.com/chanzuckerberg/github-actions/issues/251))" ([#253](https://github.com/chanzuckerberg/github-actions/issues/253)) ([478b89f](https://github.com/chanzuckerberg/github-actions/commit/478b89f2e590101797fb4da27bbf547344523c47))
+
 ### [2.2.1](https://github.com/chanzuckerberg/github-actions/compare/v2.2.0...v2.2.1) (2024-04-08)
 
 
