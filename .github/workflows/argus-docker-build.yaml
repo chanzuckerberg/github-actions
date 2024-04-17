@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       images:
-        description: 'JSON array of images to build (required keys: dockerfile, context, name)'
+        description: 'JSON array of images to build (required keys: dockerfile, context, name, platform)'
         required: true
         type: string
 
