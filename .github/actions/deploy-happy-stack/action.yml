@@ -88,7 +88,11 @@ runs:
     - name: ecr login
       shell: bash
       run: |
+        # Log in to the platform global ECR and pre-pull any containers you might need
+        # We do this because when we go to build the containers, it won't do the pull through
+        # if the tag or image doesn't exist.
         aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 533267185808.dkr.ecr.us-west-2.amazonaws.com
+        for j in $(for i in $(find . -name "Dockerfile*"); do cat $i | grep "FROM 533267185808" | cut -d " " -f 2;done); do docker pull $j; done
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
