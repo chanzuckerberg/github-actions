@@ -85,6 +85,10 @@ runs:
       with:
         happy_version: ${{ inputs.happy-version }}
         version_lock_file: ${{ inputs.version-lock-file }}
+    - name: ecr core platform prod login
+      shell: bash
+      run: |
+        aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 533267185808.dkr.ecr.us-west-2.amazonaws.com
     - name: Create or update happy stack
       env:
         TFE_TOKEN: ${{ inputs.tfe-token }}
