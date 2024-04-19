@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/chanzuckerberg/github-actions/compare/v2.3.0...v2.4.0) (2024-04-19)
+
+
+### Features
+
+* always log in to core platform prod ECR ([#256](https://github.com/chanzuckerberg/github-actions/issues/256)) ([f0d73b9](https://github.com/chanzuckerberg/github-actions/commit/f0d73b9361e12fb38e554f4d5f1e578f656d2623))
+
 ## [2.3.0](https://github.com/chanzuckerberg/github-actions/compare/v2.2.1...v2.3.0) (2024-04-17)
 
 
