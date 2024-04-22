@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/chanzuckerberg/github-actions/compare/v2.4.0...v2.5.0) (2024-04-22)
+
+
+### Features
+
+* start using the prod core platform account ([#258](https://github.com/chanzuckerberg/github-actions/issues/258)) ([449a3e9](https://github.com/chanzuckerberg/github-actions/commit/449a3e904ba77c14c69a688e18d0de9c8f954ec0))
+
 ## [2.4.0](https://github.com/chanzuckerberg/github-actions/compare/v2.3.0...v2.4.0) (2024-04-19)
 
 
