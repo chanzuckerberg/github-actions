@@ -44,7 +44,7 @@ jobs:
     runs-on: 
       - self-hosted
       - Linux
-      - ${{ matrix.image.platform == 'linux/arm64' && 'ARM64' || 'X64' }}
+      - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64' }}
     env:
       IMAGE_TAG: ${{ needs.prep.outputs.image-tag }}
     if: needs.prep.outputs.image-tag != '' && needs.prep.outputs.image-tag != 'sha-' && needs.prep.outputs.images != '[]'
@@ -91,7 +91,7 @@ jobs:
           name: core-platform/${{ github.event.repository.name }}/${{ matrix.image.name }}
           registry: 533267185808.dkr.ecr.us-west-2.amazonaws.com 
           custom_tag: ${{ env.IMAGE_TAG }}
-          platforms: ${{ matrix.image.platform }}
+          platforms: ${{ matrix.image.platform == 'linux/amd64' && 'linux/amd64' || 'linux/arm64' }}
           build_args: IMAGE_TAG=${{ env.IMAGE_TAG }}
 
   update-manifests:
