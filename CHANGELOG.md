@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/chanzuckerberg/github-actions/compare/v2.5.0...v2.6.0) (2024-04-23)
+
+
+### Features
+
+* default platform to ARM ([#260](https://github.com/chanzuckerberg/github-actions/issues/260)) ([1ef30cf](https://github.com/chanzuckerberg/github-actions/commit/1ef30cf559b4bb09aae49ad2cce1c45ae86df4b6))
+
 ## [2.5.0](https://github.com/chanzuckerberg/github-actions/compare/v2.4.0...v2.5.0) (2024-04-22)
 
 
