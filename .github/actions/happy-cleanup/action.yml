@@ -15,6 +15,10 @@ inputs:
   tfe_token:
     description: A Terraform Enterprise API token to be used with your happy organization
     required: true
+  working-directory:
+    description: "The happy project root"
+    default: "."
+    required: false
   happy_version:
     description: The version of happy to use
     required: true
@@ -36,6 +40,7 @@ runs:
           core.setOutput('id_token', id_token)
           core.exportVariable('id_token', id_token);
     - name: Delete stale stacks
+      working-directory: ${{ inputs.working-directory }}
       env:
         ENV: ${{ inputs.env }}        
         TFE_TOKEN: ${{ inputs.tfe_token }}
