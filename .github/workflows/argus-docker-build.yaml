@@ -137,4 +137,4 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           add: -A
-          message: 'chore: Updated ${{ needs.prep.outputs.envs }} values.yaml image tags to ${{ env.IMAGE_TAG }}'
+          message: 'chore: Updated [${{ needs.prep.outputs.envs }}] values.yaml image tags to ${{ env.IMAGE_TAG }}'
