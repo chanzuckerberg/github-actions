@@ -40,7 +40,7 @@ runs:
           core.setOutput('id_token', id_token)
           core.exportVariable('id_token', id_token);
     - name: Delete stale stacks
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.working_directory }}
       env:
         ENV: ${{ inputs.env }}        
         TFE_TOKEN: ${{ inputs.tfe_token }}
