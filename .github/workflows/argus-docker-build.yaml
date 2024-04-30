@@ -45,7 +45,7 @@ jobs:
         with:
           script: |
             const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim());
-            core.setOutput('envs', envs);
+            core.setOutput('envs', envs.join(' '));
   build-docker:
     name: Build Docker Image
     needs: [prep]
