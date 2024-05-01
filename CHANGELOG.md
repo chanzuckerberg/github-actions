@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.0](https://github.com/chanzuckerberg/github-actions/compare/v2.6.0...v2.7.0) (2024-05-01)
+
+
+### Features
+
+* argus-docker-build update multiple envs ([#263](https://github.com/chanzuckerberg/github-actions/issues/263)) ([0ec8d51](https://github.com/chanzuckerberg/github-actions/commit/0ec8d51d812d5fbb7c8c807cb896be287edbd25b))
+
 ## [2.6.0](https://github.com/chanzuckerberg/github-actions/compare/v2.5.0...v2.6.0) (2024-04-23)
 
 
