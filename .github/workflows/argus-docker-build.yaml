@@ -13,6 +13,12 @@ on:
           JSON array of images to build (required keys: dockerfile, context, name, platform)
         required: true
         type: string
+      app_id:
+        type: string
+        required: true
+      pk:
+        type: string
+        required: true
 
 jobs:
   prep:
@@ -76,14 +82,13 @@ jobs:
         id: generate_token
         uses: chanzuckerberg/github-app-token@v1.1.4
         with:
-          app_id: ${{ secrets.CZI_GITHUB_HELPER_APP_ID }}
-          private_key: ${{ secrets.CZI_GITHUB_HELPER_PK }}
+          app_id: ${{ inputs.app_id }}
+          private_key: ${{ inputs.pk }}
       - uses: actions/checkout@v4
         with:
           repository: chanzuckerberg/core-platform-settings
           path: core-platform-settings
           token: ${{ steps.generate_token.outputs.token }}
-
       - name: Create ECR repo if necessary
         uses: int128/create-ecr-repository-action@v1
         with:
@@ -118,8 +123,8 @@ jobs:
         id: generate_token
         uses: chanzuckerberg/github-app-token@v1.1.4
         with:
-          app_id: ${{ secrets.CZI_RELEASE_PLEASE_APP_ID }}
-          private_key: ${{ secrets.CZI_RELEASE_PLEASE_PK }}
+          app_id: ${{ inputs.app_id }}
+          private_key: ${{ inputs.pk }}
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
