@@ -3,19 +3,21 @@ name: Docker Image Build
 on:
   workflow_call:
     inputs:
-      envs:
-        description: The envs that this is building (rdev, staging, or prod), comma delimited
+      env:
+        description: |
+          The env that this is building (rdev, staging, or prod)
         required: true
         type: string
       images:
-        description: 'JSON array of images to build (required keys: dockerfile, context, name, platform)'
+        description: |
+          JSON array of images to build (required keys: dockerfile, context, name, platform)
         required: true
         type: string
 
 jobs:
   prep:
     name: Prep for Build
-    runs-on: [ARM64,self-hosted,Linux]
+    runs-on: ubuntu-latest
     if: contains(github.event.head_commit.message, '[no-deploy]') == false
     outputs:
       image-tag: ${{ steps.build-tags.outputs.IMAGE_TAG }}
@@ -49,10 +51,7 @@ jobs:
   build-docker:
     name: Build Docker Image
     needs: [prep]
-    runs-on: 
-      - self-hosted
-      - Linux
-      - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64' }}
+    runs-on:  ubuntu-latest
     env:
       IMAGE_TAG: ${{ needs.prep.outputs.image-tag }}
     if: needs.prep.outputs.image-tag != '' && needs.prep.outputs.image-tag != 'sha-' && needs.prep.outputs.images != '[]'
@@ -105,7 +104,7 @@ jobs:
   update-manifests:
     name: Update ArgoCD manifests
     needs: [prep, build-docker]
-    runs-on: [ARM64,self-hosted,Linux]
+    runs-on:  ubuntu-latest
     env:
       IMAGE_TAG: ${{ needs.prep.outputs.image-tag }}
     if: needs.prep.outputs.image-tag != '' && needs.prep.outputs.image-tag != 'sha-' && needs.prep.outputs.images != '[]'
