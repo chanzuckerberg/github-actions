@@ -13,6 +13,10 @@ on:
           JSON array of images to build (required keys: dockerfile, context, name, platform)
         required: true
         type: string
+      ecr_root_path:
+        type: string
+        required: false
+        default: core-platform-settings
     secrets:
       app_id:
         required: true
@@ -83,17 +87,17 @@ jobs:
         with:
           app_id: ${{ secrets.app_id }}
           private_key: ${{ secrets.pk }}
-      - uses: actions/checkout@v4
-        with:
-          repository: chanzuckerberg/core-platform-settings
-          path: core-platform-settings
-          token: ${{ steps.generate_token.outputs.token }}
+     # - uses: actions/checkout@v4
+     #   with:
+     #     repository: chanzuckerberg/core-platform-settings
+     #     path: core-platform-settings
+     #     token: ${{ steps.generate_token.outputs.token }}
       - name: Create ECR repo if necessary
         uses: int128/create-ecr-repository-action@v1
         with:
           repository: core-platform/${{ github.event.repository.name }}/${{ matrix.image.name }}
-          lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
-          repository-policy: core-platform-settings/ecr/repository-policy.json
+          lifecycle-policy: ${inputs.ecr_root_path}/ecr/lifecycle-policy.json
+          repository-policy: ${inputs.ecr_root_path}/ecr/repository-policy.json
       - name: Build And Push
         uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@docker-build-push-v1.6.0
         with:
