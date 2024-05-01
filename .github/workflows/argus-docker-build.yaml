@@ -81,8 +81,8 @@ jobs:
         id: generate_token
         uses: chanzuckerberg/github-app-token@v1.1.4
         with:
-          app_id: ${{ inputs.app_id }}
-          private_key: ${{ inputs.pk }}
+          app_id: ${{ secrets.app_id }}
+          private_key: ${{ secrets.pk }}
       - uses: actions/checkout@v4
         with:
           repository: chanzuckerberg/core-platform-settings
@@ -122,8 +122,8 @@ jobs:
         id: generate_token
         uses: chanzuckerberg/github-app-token@v1.1.4
         with:
-          app_id: ${{ inputs.app_id }}
-          private_key: ${{ inputs.pk }} 
+          app_id: ${{ secrets.app_id }}
+          private_key: ${{ secrets.pk }} 
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
