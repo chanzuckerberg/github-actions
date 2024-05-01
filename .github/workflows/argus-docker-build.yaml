@@ -13,11 +13,10 @@ on:
           JSON array of images to build (required keys: dockerfile, context, name, platform)
         required: true
         type: string
+    secrets:
       app_id:
-        type: string
         required: true
       pk:
-        type: string
         required: true
 
 jobs:
@@ -124,7 +123,7 @@ jobs:
         uses: chanzuckerberg/github-app-token@v1.1.4
         with:
           app_id: ${{ inputs.app_id }}
-          private_key: ${{ inputs.pk }}
+          private_key: ${{ inputs.pk }} 
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
