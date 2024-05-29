@@ -11,6 +11,17 @@ on:
         description: 'JSON array of images to build (required keys: dockerfile, context, name, platform)'
         required: true
         type: string
+      path_filters:
+        description: 'Path to the configuration file or YAML string with filters definition'
+        required: true
+        type: string
+      path_filters_base:
+        description: |
+          Git reference (e.g. branch name) against which the changes will be detected. Defaults to repository default branch (e.g. master).
+          If it references same branch it was pushed to, changes are detected against the most recent commit before the push.
+          This option is ignored if action is triggered by pull_request event.
+        required: false
+        type: string
 
 jobs:
   prep:
@@ -21,6 +32,7 @@ jobs:
       image-tag: ${{ steps.build-tags.outputs.IMAGE_TAG }}
       images: ${{ steps.parse-images.outputs.images }}
       envs: ${{ steps.parse-envs.outputs.envs }}
+      run_build: ${{ steps.filter.outputs.run_on }}
     permissions:
         id-token: write
         contents: read
@@ -28,6 +40,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            run_on:
+              ${{ inputs.path_filters }}
+          base: ${{ inputs.path_filters_base }}
+          list-files: json
       - name: Get build tag
         id: build-tags
         run: |
@@ -55,7 +75,7 @@ jobs:
       - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64' }}
     env:
       IMAGE_TAG: ${{ needs.prep.outputs.image-tag }}
-    if: needs.prep.outputs.image-tag != '' && needs.prep.outputs.image-tag != 'sha-' && needs.prep.outputs.images != '[]'
+    if: needs.prep.outputs.run_build == 'true' && needs.prep.outputs.image-tag != '' && needs.prep.outputs.image-tag != 'sha-' && needs.prep.outputs.images != '[]'
     permissions:
       id-token: write
       contents: read
