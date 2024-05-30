@@ -24,7 +24,7 @@ on:
         required: false
         type: string
         default: ${{ github.ref }}
-      branch_filters:
+      branch_filter:
         description: 'Regex to match against the branch name to determine if the job should run'
         required: false
         type: string
@@ -51,8 +51,8 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const branchFiltersRegex = new RegExp('${{ inputs.branch_filters }}');
-            const shouldRun = '${{ github.ref }}'.match(branchFiltersRegex) != null;
+            const branchFilterRegex = new RegExp('${{ inputs.branch_filter }}');
+            const shouldRun = '${{ github.ref }}'.match(branchFilterRegex) != null;
             if (shouldRun) {
               console.log('Job will run');
             } else {
