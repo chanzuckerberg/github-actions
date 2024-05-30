@@ -47,7 +47,7 @@ jobs:
         with:
           script: |
             const filters = `${{ inputs.path_filters }}`.split(',').map(f => f.trim());
-            const filtersStr = "run_on:\n" + filters.map(f => `  - ${f}`).join('\n');
+            const filtersStr = "run_on:\n" + filters.map(f => `  - '${f}'`).join('\n');
             core.setOutput('filters', filtersStr);
       - uses: dorny/paths-filter@v3
         id: filter
