@@ -23,6 +23,7 @@ on:
           This option is ignored if action is triggered by pull_request event.
         required: false
         type: string
+        default: ${{ github.ref }}
 
 jobs:
   prep:
