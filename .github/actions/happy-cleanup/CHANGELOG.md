@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.6.1...happy-cleanup-v1.7.0) (2024-05-30)
+
+
+### Features
+
+* add working-dir to happy cleanup ([#262](https://github.com/chanzuckerberg/github-actions/issues/262)) ([ddd2721](https://github.com/chanzuckerberg/github-actions/commit/ddd27219796550ee602fc28437d8ffa4c7d5e3d3))
+
 ### [1.6.1](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.6.0...happy-cleanup-v1.6.1) (2024-02-01)
 
 

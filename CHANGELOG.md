@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.8.0](https://github.com/chanzuckerberg/github-actions/compare/v2.7.0...v2.8.0) (2024-05-30)
+
+
+### Features
+
+* add working-dir to happy cleanup ([#262](https://github.com/chanzuckerberg/github-actions/issues/262)) ([ddd2721](https://github.com/chanzuckerberg/github-actions/commit/ddd27219796550ee602fc28437d8ffa4c7d5e3d3))
+* embed path filtering into Argus builder workflow ([#268](https://github.com/chanzuckerberg/github-actions/issues/268)) ([a07fed7](https://github.com/chanzuckerberg/github-actions/commit/a07fed754128b4eed970be1007537b1aa681ea62))
+
+
+### Bug Fixes
+
+* don't fail builds if another build fails ([#267](https://github.com/chanzuckerberg/github-actions/issues/267)) ([099e5d6](https://github.com/chanzuckerberg/github-actions/commit/099e5d6bb175b9ad805bf1998d3500b0f7c5246f))
+
 ## [2.7.0](https://github.com/chanzuckerberg/github-actions/compare/v2.6.0...v2.7.0) (2024-05-01)
 
 
