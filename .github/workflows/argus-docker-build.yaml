@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       path_filters:
-        description: 'Path to the configuration file or YAML string with filters definition'
+        description: 'Glob patterns to match against changed files in the repository, comma delimited'
         required: false
         type: string
         default: '**/*'
@@ -24,6 +24,11 @@ on:
         required: false
         type: string
         default: ${{ github.ref }}
+      branch_filters:
+        description: 'Regex to match against the branch name to determine if the job should run'
+        required: false
+        type: string
+        default: '.*'
 
 jobs:
   prep:
@@ -31,50 +36,68 @@ jobs:
     runs-on: [ARM64,self-hosted,Linux]
     if: contains(github.event.head_commit.message, '[no-deploy]') == false
     outputs:
-      image-tag: ${{ steps.build-tags.outputs.IMAGE_TAG }}
-      images: ${{ steps.parse-images.outputs.images }}
-      envs: ${{ steps.parse-envs.outputs.envs }}
-      run_build: ${{ steps.filter.outputs.run_on }}
+      image_tag: ${{ steps.build-tags.outputs.IMAGE_TAG }}
+      image_tag_valid: ${{ steps.validate_image_tag.outputs.image_tag_valid }}
+      images: ${{ steps.parse_inputs.outputs.images }}
+      envs: ${{ steps.parse_inputs.outputs.envs }}
+      branch_matched: ${{ steps.branch_filter.outputs.match }}
+      files_matched: ${{ steps.file_filter.outputs.run_on }}
     permissions:
         id-token: write
         contents: read
     steps:
+      - name: Check for matching branch
+        id: branch_filter
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchFiltersRegex = new RegExp('${{ inputs.branch_filters }}');
+            const shouldRun = '${{ github.ref }}'.match(branchFiltersRegex) != null;
+            if (shouldRun) {
+              console.log('Job will run');
+            } else {
+              console.log('Job will be skipped because branch name "${{ github.ref }}" does not match the filter');
+            }
+            core.setOutput('match', shouldRun);
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Parse filters
-        id: parse_filters
+      - name: Parse inputs
+        id: parse_inputs
         uses: actions/github-script@v7
         with:
           script: |
             const filters = `${{ inputs.path_filters }}`.split(',').map(f => f.trim());
             const filtersStr = "run_on:\n" + filters.map(f => `  - '${f}'`).join('\n');
             core.setOutput('filters', filtersStr);
-      - uses: dorny/paths-filter@v3
-        id: filter
+
+            const images = JSON.parse(`${{ inputs.images }}`);
+            core.setOutput('images', images);
+
+            const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim());
+            core.setOutput('envs', envs.join(' '));
+
+      - name: Check for matching file changes
+        uses: dorny/paths-filter@v3
+        id: file_filter
         with:
           filters: |
-            ${{ steps.parse_filters.outputs.filters }}
+            ${{ steps.parse_inputs.outputs.filters }}
           base: ${{ inputs.path_filters_base }}
           list-files: json
       - name: Get build tag
         id: build-tags
         run: |
           echo "IMAGE_TAG=sha-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      - name: Parse images
-        id: parse-images
+      - name: Validate build tag
+        id: validate_image_tag
         uses: actions/github-script@v7
         with:
           script: |
-            const images = JSON.parse(`${{ inputs.images }}`);
-            core.setOutput('images', images);
-      - name: Parse envs
-        id: parse-envs
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim());
-            core.setOutput('envs', envs.join(' '));
+            const imageTag = `${{ steps.build-tags.outputs.IMAGE_TAG }}`;
+            core.setOutput('image_tag_valid', imageTag !== '' && imageTag !== 'sha-');
+
   build-docker:
     name: Build Docker Image
     needs: [prep]
@@ -83,8 +106,8 @@ jobs:
       - Linux
       - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64' }}
     env:
-      IMAGE_TAG: ${{ needs.prep.outputs.image-tag }}
-    if: needs.prep.outputs.run_build == 'true' && needs.prep.outputs.image-tag != '' && needs.prep.outputs.image-tag != 'sha-' && needs.prep.outputs.images != '[]'
+      IMAGE_TAG: ${{ needs.prep.outputs.image_tag }}
+    if: needs.prep.outputs.branch_matched == 'true' && needs.prep.outputs.files_matched == 'true' && needs.prep.outputs.image_tag_valid == 'true' && needs.prep.outputs.images != '[]'
     permissions:
       id-token: write
       contents: read
@@ -137,8 +160,8 @@ jobs:
     needs: [prep, build-docker]
     runs-on: [ARM64,self-hosted,Linux]
     env:
-      IMAGE_TAG: ${{ needs.prep.outputs.image-tag }}
-    if: needs.prep.outputs.image-tag != '' && needs.prep.outputs.image-tag != 'sha-' && needs.prep.outputs.images != '[]'
+      IMAGE_TAG: ${{ needs.prep.outputs.image_tag }}
+    if: needs.prep.outputs.image_tag_valid == 'true' && needs.prep.outputs.images != '[]'
     permissions:
         id-token: write
         contents: read
