@@ -63,10 +63,19 @@ jobs:
             }
 
             const branches = `${{ inputs.branches }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
+            console.log('Branches to run against:', branches);
+
             const branchesIgnore = `${{ inputs.branches_ignore }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
+            console.log('Branches to ignore:', branchesIgnore);
 
             const branch = `${{ github.ref }}`.replace('refs/heads/', '');
             const shouldRun = branches.some(b => wildcardMatch(branch, b)) && !branchesIgnore.some(b => wildcardMatch(branch, b));
+
+            if (shouldRun) {
+              console.log('Job will run');
+            } else {
+              console.log(`Job will be skipped because branch name "${branch}" does not match the filters`);
+            }
 
             core.setOutput('match', shouldRun);
 
