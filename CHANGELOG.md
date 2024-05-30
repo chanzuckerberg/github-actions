@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.0](https://github.com/chanzuckerberg/github-actions/compare/v2.8.0...v2.9.0) (2024-05-30)
+
+
+### Features
+
+* embed branch filtering into Argus builder workflow ([#269](https://github.com/chanzuckerberg/github-actions/issues/269)) ([a44edd2](https://github.com/chanzuckerberg/github-actions/commit/a44edd2aff119166fff43c7ffb35daefc54464bb))
+
 ## [2.8.0](https://github.com/chanzuckerberg/github-actions/compare/v2.7.0...v2.8.0) (2024-05-30)
 
 
