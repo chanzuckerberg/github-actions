@@ -13,7 +13,7 @@ jobs:
       allChanges: ${{ steps.changedDirs.outputs.allChanges }}
     steps:
       - uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2.10.2
+      - uses: dorny/paths-filter@v3.0.2
         id: filter
         with:
           initial-fetch-depth: '1'

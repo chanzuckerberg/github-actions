@@ -98,7 +98,7 @@ jobs:
             core.setOutput('envs', envs.join(' '));
 
       - name: Check for matching file changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v3.0.2
         id: file_filter
         with:
           filters: |
