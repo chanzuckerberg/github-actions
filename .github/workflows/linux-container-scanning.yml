@@ -1,0 +1,39 @@
+name: Linux Container Scanning
+
+on:
+  workflow_call:
+    inputs:
+      image-tag:
+        description: The envs that this is building (rdev, staging, or prod), comma delimited
+        required: true
+        type: string
+
+jobs:
+  linux-container-scanning:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      issues: write
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::871040364337:role/ci/github-actions-inspector
+          role-duration-seconds: 1800
+          role-session-name: github-actions-inspector
+      - name: Scan built image with Inspector
+        uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1.1.0
+        id: inspector
+        with:
+          artifact_type: 'container'
+          artifact_path: ${{ steps.parse_inputs.outputs.image-tag }} # make sure this matches the image you built
+          critical_threshold: 1
+          high_threshold: 1
+          medium_threshold: 1
+          low_threshold: 1
+          other_threshold: 1
+      - name: Display Inspector vulnerability scan results (markdown)
+        run: cat ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
+      - name: Fail job if vulnerability threshold is exceeded
+        run: exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
