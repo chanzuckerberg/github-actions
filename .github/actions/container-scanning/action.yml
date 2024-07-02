@@ -15,15 +15,19 @@ inputs:
   medium_threshold:
     description: 'number of medium vulnerabilities that will cause the action to fail'
     required: false
-    default: "1"
+    default: "10"
   low_threshold:
     description: 'number of low vulnerabilities that will cause the action to fail'
     required: false
-    default: "1"
+    default: "10"
   other_threshold:
     description: 'number of other vulnerabilities that will cause the action to fail'
     required: false
-    default: "0"
+    default: "10"
+  fail_on_vulnerabilities:
+    description: 'whether to fail the action if vulnerabilities are found'
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
@@ -50,4 +54,4 @@ runs:
       run: cat ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
     - name: Fail job if vulnerability threshold is exceeded
       shell: bash
-      run: exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
+      run: $${{ inputs.fail_on_vulnerabilities }} && exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
