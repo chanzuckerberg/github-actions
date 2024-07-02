@@ -53,5 +53,6 @@ runs:
       shell: bash
       run: cat ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
     - name: Fail job if vulnerability threshold is exceeded
+      if: ${{ inputs.fail_on_vulnerabilities }}
       shell: bash
-      run: ${{ inputs.fail_on_vulnerabilities }} && exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
+      run: exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
