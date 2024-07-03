@@ -104,7 +104,8 @@ jobs:
 
             const images = JSON.parse(`${{ inputs.images }}`);
             images.forEach(image => {
-              image.build_args = ["IMAGE_TAG=${{ steps.build-tags.outputs.IMAGE_TAG }}", ...image.build_args].join("\n");
+              const buildArgs = image.build_args || [];
+              image.build_args = ["IMAGE_TAG=${{ steps.build-tags.outputs.IMAGE_TAG }}", ...buildArgs].join("\n");
             });
             core.info(`Images to build: ${JSON.stringify(images, null, 2)}`);
             core.setOutput('images', images);
