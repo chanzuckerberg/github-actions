@@ -92,6 +92,10 @@ jobs:
             core.setOutput('filters', filtersStr);
 
             const images = JSON.parse(`${{ inputs.images }}`);
+            images.forEach(image => {
+              image.build_args = ["IMAGE_TAG=${{ env.IMAGE_TAG }}", image.build_args...].join("\n");
+            });
+            core.info(`Images to build: ${JSON.stringify(images, null, 2)}`);
             core.setOutput('images', images);
 
             const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
@@ -172,8 +176,7 @@ jobs:
           registry: 533267185808.dkr.ecr.us-west-2.amazonaws.com 
           custom_tag: ${{ env.IMAGE_TAG }}
           platforms: ${{ matrix.image.platform == 'linux/amd64' && 'linux/amd64' || 'linux/arm64' }}
-          build_args: IMAGE_TAG=${{ env.IMAGE_TAG }}
-
+          build_args: ${{ matrix.image.build_args }}
   update-manifests:
     name: Update ArgoCD manifests
     needs: [prep, build-docker]
