@@ -177,7 +177,8 @@ jobs:
           registry: 533267185808.dkr.ecr.us-west-2.amazonaws.com 
           custom_tag: ${{ env.IMAGE_TAG }}
           platforms: ${{ matrix.image.platform == 'linux/amd64' && 'linux/amd64' || 'linux/arm64' }}
-          build_args: ${{ matrix.image.build_args }}
+          build_args: |
+            ${{ matrix.image.build_args }}
   update-manifests:
     name: Update ArgoCD manifests
     needs: [prep, build-docker]
