@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.0](https://github.com/chanzuckerberg/github-actions/compare/v2.9.0...v2.10.0) (2024-07-03)
+
+
+### Features
+
+* support build_args in argus docker builder workflow ([#276](https://github.com/chanzuckerberg/github-actions/issues/276)) ([95e9d8d](https://github.com/chanzuckerberg/github-actions/commit/95e9d8d72e892814927d854a4c4bb10eb9fb47fe))
+
 ## [2.9.0](https://github.com/chanzuckerberg/github-actions/compare/v2.8.0...v2.9.0) (2024-05-30)
 
 
