@@ -58,20 +58,20 @@ runs:
         set -o pipefail
 
         date=`date +%Y-%m-%d'T'%H:%M'Z' -d "$TIME ago"`
-        list="happy list --aws-profile '' --output json --env $ENV"
+        list="happy list --output json --env $ENV"
         force=""
         if [[ ${ALL} ]]; then
-          list="happy list --all --aws-profile '' --output json --env $ENV"
+          list="happy list --all --output json --env $ENV"
           force="--force"
         fi
         if [[ ! -z ${EXCLUDE} ]]; then
-          for i in $("$list" | jq -r --arg date "$date" --arg exclude "$EXCLUDE" '.[] | select(.last_updated < $date) | select(any(.stack; contains($exclude))|not) | .stack'); do
+          for i in $($(echo $list) | jq -r --arg date "$date" --arg exclude "$EXCLUDE" '.[] | select(.last_updated < $date) | select(any(.stack; contains($exclude))|not) | .stack'); do
             echo "Deleting stack: $i"
-            happy delete $i --env $ENV --aws-profile "" "$force"
+            happy delete $i --env $ENV "$force"
           done
           exit
         fi
-        for i in $("$list" | jq -r --arg date "$date" '.[] | select(.last_updated < $date) | .stack'); do
+        for i in $($(echo $list) | jq -r --arg date "$date" '.[] | select(.last_updated < $date) | .stack'); do
           echo "Deleting stack: $i"
-          happy delete $i --env $ENV --aws-profile "" "$force"
+          happy delete $i --env $ENV "$force"
         done
