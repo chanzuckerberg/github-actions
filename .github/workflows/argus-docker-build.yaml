@@ -178,7 +178,8 @@ jobs:
           custom_tag: ${{ env.IMAGE_TAG }}
           platforms: ${{ matrix.image.platform == 'linux/amd64' && 'linux/amd64' || 'linux/arm64' }}
           build_args: |
-            ${{ matrix.image.build_args }}
+            IMAGE_TAG=${{ env.IMAGE_TAG }}
+            TEST_TEST_TEST=foobarbaz123
   update-manifests:
     name: Update ArgoCD manifests
     needs: [prep, build-docker]
