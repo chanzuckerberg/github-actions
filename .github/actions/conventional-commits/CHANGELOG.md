@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.4.0...conventional-commits-v1.5.0) (2024-07-08)
+
+
+### Features
+
+* add more conventional commit types ([#279](https://github.com/chanzuckerberg/github-actions/issues/279)) ([c212929](https://github.com/chanzuckerberg/github-actions/commit/c2129291817d4055272deee803d893d6669ababd))
+
 ## [1.4.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.3.4...conventional-commits-v1.4.0) (2024-02-01)
 
 
