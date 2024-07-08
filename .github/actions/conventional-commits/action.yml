@@ -6,7 +6,7 @@ runs:
     - uses: actions/github-script@v5
       with:
         script: |
-          const validator = /^(chore|feat|fix|deps|revert|docs|style)(\((((CCIE|CDI|PRODSEC|SECENG|ONCALL)-[0-9]+)|([a-z-]+))\))?(!)?: (.)+$/
+          const validator = /^(chore|feat|fix|deps|revert|docs|style|test|ci|perf|refactor)(\((((CCIE|CDI|PRODSEC|SECENG|ONCALL)-[0-9]+)|([a-z-]+))\))?(!)?: (.)+$/
           const title = context.payload.pull_request.title
           const is_valid = validator.test(title)
 
@@ -14,4 +14,3 @@ runs:
             const regex = validator.toString()
             core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. Start with chore, feat, fix, revert, or docs and add an ! if the change is breaking. Title must satisfy this regex: ${regex}.`)
           }
-# bump
