@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.11.0](https://github.com/chanzuckerberg/github-actions/compare/v2.10.0...v2.11.0) (2024-07-08)
+
+
+### Features
+
+* add ability to delete all stacks in happy environment ([#275](https://github.com/chanzuckerberg/github-actions/issues/275)) ([9e055ea](https://github.com/chanzuckerberg/github-actions/commit/9e055eaa8dfc05123dc2d3150485025c76c18c83))
+* add more conventional commit types ([#279](https://github.com/chanzuckerberg/github-actions/issues/279)) ([c212929](https://github.com/chanzuckerberg/github-actions/commit/c2129291817d4055272deee803d893d6669ababd))
+
 ## [2.10.0](https://github.com/chanzuckerberg/github-actions/compare/v2.9.0...v2.10.0) (2024-07-03)
 
 
