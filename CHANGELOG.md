@@ -1,5 +1,12 @@
 # Changelog
 
+### [2.11.1](https://github.com/chanzuckerberg/github-actions/compare/v2.11.0...v2.11.1) (2024-07-09)
+
+
+### Bug Fixes
+
+* handle force pushes in argus builder ([#280](https://github.com/chanzuckerberg/github-actions/issues/280)) ([5012077](https://github.com/chanzuckerberg/github-actions/commit/50120775b18694741b872689591c9efcbe402e13))
+
 ## [2.11.0](https://github.com/chanzuckerberg/github-actions/compare/v2.10.0...v2.11.0) (2024-07-08)
 
 
