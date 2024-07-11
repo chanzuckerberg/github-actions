@@ -1,5 +1,27 @@
 # Changelog
 
+### [2.11.1](https://github.com/chanzuckerberg/github-actions/compare/v2.11.0...v2.11.1) (2024-07-09)
+
+
+### Bug Fixes
+
+* handle force pushes in argus builder ([#280](https://github.com/chanzuckerberg/github-actions/issues/280)) ([5012077](https://github.com/chanzuckerberg/github-actions/commit/50120775b18694741b872689591c9efcbe402e13))
+
+## [2.11.0](https://github.com/chanzuckerberg/github-actions/compare/v2.10.0...v2.11.0) (2024-07-08)
+
+
+### Features
+
+* add ability to delete all stacks in happy environment ([#275](https://github.com/chanzuckerberg/github-actions/issues/275)) ([9e055ea](https://github.com/chanzuckerberg/github-actions/commit/9e055eaa8dfc05123dc2d3150485025c76c18c83))
+* add more conventional commit types ([#279](https://github.com/chanzuckerberg/github-actions/issues/279)) ([c212929](https://github.com/chanzuckerberg/github-actions/commit/c2129291817d4055272deee803d893d6669ababd))
+
+## [2.10.0](https://github.com/chanzuckerberg/github-actions/compare/v2.9.0...v2.10.0) (2024-07-03)
+
+
+### Features
+
+* support build_args in argus docker builder workflow ([#276](https://github.com/chanzuckerberg/github-actions/issues/276)) ([95e9d8d](https://github.com/chanzuckerberg/github-actions/commit/95e9d8d72e892814927d854a4c4bb10eb9fb47fe))
+
 ## [2.9.0](https://github.com/chanzuckerberg/github-actions/compare/v2.8.0...v2.9.0) (2024-05-30)
 
 

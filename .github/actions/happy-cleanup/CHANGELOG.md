@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.7.0...happy-cleanup-v1.8.0) (2024-07-08)
+
+
+### Features
+
+* add ability to delete all stacks in happy environment ([#275](https://github.com/chanzuckerberg/github-actions/issues/275)) ([9e055ea](https://github.com/chanzuckerberg/github-actions/commit/9e055eaa8dfc05123dc2d3150485025c76c18c83))
+
 ## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.6.1...happy-cleanup-v1.7.0) (2024-05-30)
 
 
