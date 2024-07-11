@@ -32,7 +32,7 @@ inputs:
 outputs:
   image_uri:
     description: 'URI of the image that was built'
-    value: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}/${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}:${{ inputs.image_tag }}
+    value: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
 
 runs:
   using: composite
@@ -67,6 +67,9 @@ runs:
 
         ECR_REPO_NAME="core-platform/${{ github.event.repository.name }}/${{ inputs.image_name }}"
         echo "ECR_REPO_NAME=$ECR_REPO_NAME" >> $GITHUB_OUTPUT
+
+        IMAGE_URI="$ECR_REGISTRY/$ECR_REPO_NAME:${{ inputs.image_tag }}"
+        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
     - name: Create ECR repo if necessary
       uses: int128/create-ecr-repository-action@v1
       with:
@@ -85,3 +88,11 @@ runs:
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
+
+    # TODO: scan image for vulnerabilities
+    # - name: Scan for vulnerabilities
+    #   uses: chanzuckerberg/github-actions/.github/actions/argus-builder/scan-for-vulnerabilities@main
+    #   with:
+    #     image_uri: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}/${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}:${{ inputs.image_tag }}
+    #     github_app_id: ${{ inputs.github_app_id }}
+    #     github_private_key: ${{ inputs.github_private_key }}
