@@ -48,14 +48,12 @@ runs:
       with:
         script: |
           const path = require('path');
-          const infraDirPath = path.join(`${{ inputs.working_directory }}`, '.infra');
-
           const fs = require('fs');
+          const infraDirPath = path.join(`${{ inputs.working_directory }}`, '.infra');
           if (!fs.existsSync(infraDirPath)) {
             throw new Error(`.infra directory not found at ${infraDirPath}`);
           }
-
-          core.setOutput('infra_dir_path', path.join(path, '.infra'));
+          core.setOutput('infra_dir_path', infraDirPath);
     - name: Update Manifest
       shell: bash
       run: |
