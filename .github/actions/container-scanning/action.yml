@@ -42,7 +42,7 @@ runs:
       id: inspector
       with:
         artifact_type: 'container'
-        artifact_path: ${{ inputs.image-tag }} # make sure this matches the image you built
+        artifact_path: ${{ inputs.image_uri }} # make sure this matches the image you built
         critical_threshold: ${{ inputs.critical_threshold }}
         high_threshold:   ${{ inputs.high_threshold }}
         medium_threshold:   ${{ inputs.medium_threshold }}
