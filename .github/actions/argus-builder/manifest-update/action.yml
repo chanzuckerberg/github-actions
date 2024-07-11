@@ -8,9 +8,6 @@ inputs:
   image_tag:
     description: The tag of the image that should be updated
     required: true
-  image_uri:
-    description: The URI of the image that was built
-    required: true
   working_directory:
     description: 'The Argus project root (parent directory that contains the .infra/ directory)'
     default: '.'
