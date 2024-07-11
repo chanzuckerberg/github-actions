@@ -41,101 +41,32 @@ jobs:
     runs-on: [ARM64,self-hosted,Linux]
     if: contains(github.event.head_commit.message, '[no-deploy]') == false
     outputs:
-      image_tag: ${{ steps.build-tags.outputs.IMAGE_TAG }}
-      image_tag_valid: ${{ steps.validate_image_tag.outputs.image_tag_valid }}
-      images: ${{ steps.parse_inputs.outputs.images }}
-      envs: ${{ steps.parse_inputs.outputs.envs }}
-      branch_matched: ${{ steps.branch_filter.outputs.match }}
-      files_matched: ${{ steps.file_filter.outputs.run_on }}
+      image_tag: ${{ steps.build_prep.outputs.image_tag }}
+      should_build: ${{ steps.build_prep.outputs.should_build }}
+      images: ${{ steps.parse_images.outputs.images }}
     permissions:
-        id-token: write
-        contents: read
+      id-token: write
+      contents: read
     steps:
-      - name: Check for matching branch
-        id: branch_filter
-        uses: actions/github-script@v7
+      - uses: ./.github/actions/argus-builder/build-prep
+        id: build_prep
         with:
-          script: |
-            function wildcardMatch(text, pattern) {
-              const regexPattern =
-              new RegExp('^' + pattern.replace(/\?/g, '.').replace(/\*/g, '.*') + '$');
-              return regexPattern.test(text);
-            }
-
-            const branches = `${{ inputs.branches }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
-            console.log('Branches to run against:', branches);
-
-            const branchesIgnore = `${{ inputs.branches_ignore }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
-            console.log('Branches to ignore:', branchesIgnore);
-
-            const branch = `${{ github.ref }}`.replace('refs/heads/', '');
-            const shouldRun = branches.some(b => wildcardMatch(branch, b)) && !branchesIgnore.some(b => wildcardMatch(branch, b));
-
-            if (shouldRun) {
-              console.log('Job will run');
-            } else {
-              console.log(`Job will be skipped because branch name "${branch}" does not match the filters`);
-            }
-
-            core.setOutput('match', shouldRun);
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Get build tag
-        id: build-tags
-        run: |
-          echo "IMAGE_TAG=sha-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      - name: Validate build tag
-        id: validate_image_tag
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const imageTag = `${{ steps.build-tags.outputs.IMAGE_TAG }}`;
-            core.setOutput('image_tag_valid', imageTag !== '' && imageTag !== 'sha-');
+          path_filters: ${{ inputs.path_filters }}
+          path_filters_base: ${{ inputs.path_filters_base }}
+          branches: ${{ inputs.branches }}
+          branches_ignore: ${{ inputs.branches_ignore }}
       - name: Parse inputs
-        id: parse_inputs
+        id: parse_images
         uses: actions/github-script@v7
         with:
           script: |
-            const filters = `${{ inputs.path_filters }}`.split(',').map(f => f.trim()).filter(b => b.length > 0);
-            const filtersStr = "run_on:\n" + filters.map(f => `  - '${f}'`).join('\n');
-            core.setOutput('filters', filtersStr);
-
             const images = JSON.parse(`${{ inputs.images }}`);
             images.forEach(image => {
               const buildArgs = image.build_args || [];
-              image.build_args = ["IMAGE_TAG=${{ steps.build-tags.outputs.IMAGE_TAG }}", ...buildArgs].join("\n");
+              image.build_args = buildArgs.join("\n");
             });
             core.info(`Images to build: ${JSON.stringify(images, null, 2)}`);
             core.setOutput('images', images);
-
-            const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
-            core.setOutput('envs', envs.join(' '));
-
-      - name: Check for force push
-        id: force_push
-        uses: actions/github-script@v7
-        with:
-          # if the push was forced, use the default branch as the base -- otherwise, use the most recent commit before the push
-          # this is necessary because when you force push the previous commit is not available in the repo, thus no changes can be detected
-          script: |
-            if (`${{ github.event_name }}` === 'push' && ${{ github.event.forced }}) {
-              core.info(`Force push detected, using the repo's default branch (${{ github.event.repository.default_branch }}) as the base`)
-              core.setOutput('base', `${{ github.event.repository.default_branch }}`);
-            } else {
-              core.info(`Push was not forced, using the most recent commit before the push as the base`)
-              core.setOutput('base', `${{ inputs.path_filters_base }}`);
-            }
-
-      - name: Check for matching file changes
-        uses: dorny/paths-filter@v3
-        id: file_filter
-        with:
-          filters: |
-            ${{ steps.parse_inputs.outputs.filters }}
-          base: ${{ steps.force_push.outputs.base }}
-          list-files: json
 
   build-docker:
     name: Build Docker Image
@@ -144,9 +75,7 @@ jobs:
       - self-hosted
       - Linux
       - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64' }}
-    env:
-      IMAGE_TAG: ${{ needs.prep.outputs.image_tag }}
-    if: needs.prep.outputs.branch_matched == 'true' && needs.prep.outputs.files_matched == 'true' && needs.prep.outputs.image_tag_valid == 'true' && needs.prep.outputs.images != '[]'
+    if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     permissions:
       id-token: write
       contents: read
@@ -155,77 +84,29 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: ./.github/actions/argus-builder/docker-build
         with:
-          fetch-depth: 0
-          path: ${{ github.event.repository.name }}
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::533267185808:role/gh_actions_core_platform_infra_prod_eks
-          role-session-name: ContainerBuildTest
-      - name: Generate token
-        id: generate_token
-        uses: chanzuckerberg/github-app-token@v1.1.4
-        with:
-          app_id: ${{ secrets.CZI_GITHUB_HELPER_APP_ID }}
-          private_key: ${{ secrets.CZI_GITHUB_HELPER_PK }}
-      - uses: actions/checkout@v4
-        with:
-          repository: chanzuckerberg/core-platform-settings
-          path: core-platform-settings
-          token: ${{ steps.generate_token.outputs.token }}
-
-      - name: Create ECR repo if necessary
-        uses: int128/create-ecr-repository-action@v1
-        with:
-          repository: core-platform/${{ github.event.repository.name }}/${{ matrix.image.name }}
-          lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
-          repository-policy: core-platform-settings/ecr/repository-policy.json
-      - name: Build And Push
-        uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@docker-build-push-v1.6.0
-        with:
-          dockerfile: ${{ github.event.repository.name }}/${{ matrix.image.dockerfile }}
-          context: ${{ github.event.repository.name }}/${{ matrix.image.context }}
-          name: core-platform/${{ github.event.repository.name }}/${{ matrix.image.name }}
-          registry: 533267185808.dkr.ecr.us-west-2.amazonaws.com 
-          custom_tag: ${{ env.IMAGE_TAG }}
-          platforms: ${{ matrix.image.platform == 'linux/amd64' && 'linux/amd64' || 'linux/arm64' }}
+          image_name: ${{ matrix.image.name }}
+          dockerfile: ${{ matrix.image.dockerfile }}
+          context: ${{ matrix.image.context }}
+          platform: ${{ matrix.image.platform }}
           build_args: ${{ matrix.image.build_args }}
+          image_tag: ${{ needs.prep.outputs.image_tag }}
+          github_app_id: ${{ secrets.CZI_GITHUB_HELPER_APP_ID }}
+          github_private_key: ${{ secrets.CZI_GITHUB_HELPER_PK }}
+
   update-manifests:
     name: Update ArgoCD manifests
     needs: [prep, build-docker]
     runs-on: [ARM64,self-hosted,Linux]
-    env:
-      IMAGE_TAG: ${{ needs.prep.outputs.image_tag }}
-    if: needs.prep.outputs.image_tag_valid == 'true' && needs.prep.outputs.images != '[]'
+    # if: needs.prep.outputs.image_tag_valid == 'true' && needs.prep.outputs.images != '[]'
     permissions:
-        id-token: write
-        contents: read
+      id-token: write
+      contents: read
     steps:
-      - run: |
-          echo IMAGE_TAG=$IMAGE_TAG
-      - name: Generate token
-        id: generate_token
-        uses: chanzuckerberg/github-app-token@v1.1.4
+      - uses: ./.github/actions/argus-builder/manifest-update
         with:
-          app_id: ${{ secrets.CZI_RELEASE_PLEASE_APP_ID }}
-          private_key: ${{ secrets.CZI_RELEASE_PLEASE_PK }}
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ steps.generate_token.outputs.token }}
-      - name: Update Manifest
-        shell: bash
-        run: |
-          for env in ${{ needs.prep.outputs.envs }}
-          do
-            sed -i 's/tag: sha-\w\+/tag: ${{ env.IMAGE_TAG }}/g' .infra/${env}/values.yaml
-            cat .infra/${env}/values.yaml
-          done
-      - name: Update Argus manifests
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: -A
-          message: 'chore: Updated [${{ needs.prep.outputs.envs }}] values.yaml image tags to ${{ env.IMAGE_TAG }}'
+          envs: ${{ inputs.envs }}
+          image_tag: ${{ needs.prep.outputs.image_tag }}
+          github_app_id: ${{ secrets.CZI_GITHUB_HELPER_APP_ID }}
+          github_private_key: ${{ secrets.CZI_GITHUB_HELPER_PK }}

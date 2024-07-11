@@ -81,7 +81,7 @@ runs:
           }
 
     - name: Parse inputs
-      id: parse_inputs
+      id: parse_filters
       uses: actions/github-script@v7
       with:
         script: |
@@ -109,7 +109,7 @@ runs:
       id: file_filter
       with:
         filters: |
-          ${{ steps.parse_inputs.outputs.filters }}
+          ${{ steps.parse_filters.outputs.filters }}
         base: ${{ steps.force_push.outputs.base }}
         list-files: json
 
