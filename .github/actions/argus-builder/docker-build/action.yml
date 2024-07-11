@@ -29,6 +29,11 @@ inputs:
     description: 'GitHub App private key'
     required: true
 
+outputs:
+  image_uri:
+    description: 'URI of the image that was built'
+    value: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}/${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}:${{ inputs.image_tag }}
+
 runs:
   using: composite
   steps:
@@ -53,10 +58,19 @@ runs:
         repository: chanzuckerberg/core-platform-settings
         path: core-platform-settings
         token: ${{ steps.generate_token.outputs.token }}
+    - name: ECR Metadata
+      id: ecr_metadata
+      shell: bash
+      run: |
+        ECR_REGISTRY="533267185808.dkr.ecr.us-west-2.amazonaws.com"
+        echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_OUTPUT
+
+        ECR_REPO_NAME="core-platform/${{ github.event.repository.name }}/${{ inputs.image_name }}"
+        echo "ECR_REPO_NAME=$ECR_REPO_NAME" >> $GITHUB_OUTPUT
     - name: Create ECR repo if necessary
       uses: int128/create-ecr-repository-action@v1
       with:
-        repository: core-platform/${{ github.event.repository.name }}/${{ inputs.image_name }}
+        repository: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
         lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
         repository-policy: core-platform-settings/ecr/repository-policy.json
     - name: Build And Push
@@ -64,8 +78,8 @@ runs:
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
-        name: core-platform/${{ github.event.repository.name }}/${{ inputs.image_name }}
-        registry: 533267185808.dkr.ecr.us-west-2.amazonaws.com
+        name: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
+        registry: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}
         custom_tag: ${{ inputs.image_tag }}
         platforms: ${{ inputs.platform }}
         build_args: |

@@ -8,6 +8,13 @@ inputs:
   image_tag:
     description: The tag of the image that should be updated
     required: true
+  image_uri:
+    description: The URI of the image that was built
+    required: true
+  working_directory:
+    description: 'The Argus project root (parent directory that contains the .infra/ directory)'
+    default: '.'
+    required: false
   github_app_id:
     description: 'GitHub App ID'
     required: true
@@ -18,8 +25,13 @@ inputs:
 runs:
   using: composite
   steps:
-    - run: echo "${{ inputs.image_tag }}"
+    - run: |
+        echo "Image Tag: ${{ inputs.image_tag }}"
+        echo "Image URI: ${{ inputs.image_uri }}"
       shell: bash
+
+    # TODO: scan image for vulnerabilities
+
     - name: Generate token
       id: generate_token
       uses: tibdex/github-app-token@v2
@@ -37,14 +49,27 @@ runs:
         script: |
           const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
           core.setOutput('envs', envs.join(' '));
+    - name: Determine .infra path
+      uses: actions/github-script@v7
+      id: path
+      with:
+        script: |
+          const path = require('path');
+          const infraDirPath = path.join(`${{ inputs.working_directory }}`, '.infra');
+
+          const fs = require('fs');
+          if (!fs.existsSync(infraDirPath)) {
+            throw new Error(`.infra directory not found at ${infraDirPath}`);
+          }
+
+          core.setOutput('infra_dir_path', path.join(path, '.infra'));
     - name: Update Manifest
       shell: bash
-      # TODO: support non-root .infra directories -- aka support monorepos
       run: |
         for env in ${{ steps.parse_envs.outputs.envs }}
         do
-          sed -i 's/tag: sha-\w\+/tag: ${{ inputs.image_tag }}/g' .infra/${env}/values.yaml
-          cat .infra/${env}/values.yaml
+          sed -i 's/tag: sha-\w\+/tag: ${{ inputs.image_tag }}/g' ${{ steps.path.outputs.infra_dir_path }}/${env}/values.yaml
+          cat ${{ steps.path.outputs.infra_dir_path }}/${env}/values.yaml
         done
     - name: Update Argus manifests
       uses: EndBug/add-and-commit@v9
