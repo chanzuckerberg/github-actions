@@ -1,7 +1,7 @@
 name: Container Scanning
 description: 'A GitHub Action to scan a container image for security vulnerabilities that follows CZI Best Practices'
 inputs:
-  image-tag:
+  image_uri:
     description: 'which image to scan'
     required: true
   critical_threshold:
