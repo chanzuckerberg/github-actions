@@ -48,6 +48,7 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/argus-builder/build-prep
         id: build_prep
         with:
@@ -84,6 +85,7 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/argus-builder/docker-build
         with:
           image_name: ${{ matrix.image.name }}
@@ -104,6 +106,7 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/argus-builder/manifest-update
         with:
           envs: ${{ inputs.envs }}
