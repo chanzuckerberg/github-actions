@@ -32,6 +32,9 @@ outputs:
   vulnerability_threshold_exceeded:
     description: '1 if the vulnerability threshold was exceeded, 0 otherwise'
     value: ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
+  inspector_scan_results_markdown:
+    description: 'path to the markdown file containing the Inspector scan results'
+    value: ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
 runs:
   using: "composite"
   steps:

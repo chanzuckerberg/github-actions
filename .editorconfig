@@ -1,0 +1,15 @@
+# EditorConfig helps developers define and maintain consistent coding styles across different editors and IDEs
+
+# Top-most EditorConfig file
+root = true
+
+# Set the default charset
+[*]
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
