@@ -28,6 +28,10 @@ inputs:
     description: 'whether to fail the action if vulnerabilities are found'
     required: false
     default: "true"
+outputs:
+  vulnerability_threshold_exceeded:
+    description: '1 if the vulnerability threshold was exceeded, 0 otherwise'
+    value: ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
 runs:
   using: "composite"
   steps:
