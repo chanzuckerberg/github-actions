@@ -28,6 +28,10 @@ inputs:
   github_private_key:
     description: 'GitHub App private key'
     required: true
+  fail_on_vulnerabilities:
+    description: 'whether to fail the action if vulnerabilities are found'
+    required: false
+    default: "true"
 
 outputs:
   image_uri:
@@ -88,11 +92,8 @@ runs:
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
-
-    # TODO: scan image for vulnerabilities
-    # - name: Scan for vulnerabilities
-    #   uses: chanzuckerberg/github-actions/.github/actions/argus-builder/scan-for-vulnerabilities@main
-    #   with:
-    #     image_uri: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}/${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}:${{ inputs.image_tag }}
-    #     github_app_id: ${{ inputs.github_app_id }}
-    #     github_private_key: ${{ inputs.github_private_key }}
+    - name: Scan for vulnerabilities
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@v2.12.0
+      with:
+        image_uri: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
+        fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
