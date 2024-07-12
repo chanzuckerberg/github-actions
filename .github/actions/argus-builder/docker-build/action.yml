@@ -94,10 +94,10 @@ runs:
           ${{ inputs.build_args }}
 
     - name: Scan for vulnerabilities
-      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@c68491ca93b787340c87c5f317475cac71cbdd72
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@d5f287c67911c671c691b2c67baf59fd9d640442
       id: scan
       with:
-        image_uri: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
+        image_uri: ${{ inputs.image_name }}:${{ inputs.image_tag }}
         fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
 
     - name: Notify on skipped vulnerabilities
