@@ -92,8 +92,44 @@ runs:
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
+
     - name: Scan for vulnerabilities
-      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@v2.12.0
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@c68491ca93b787340c87c5f317475cac71cbdd72
+      id: scan
       with:
         image_uri: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
         fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
+
+    - name: Notify on skipped vulnerabilities
+      uses: actions/github-script@v7
+      if: inputs.fail_on_vulnerabilities != 'true' && steps.scan.outputs.vulnerability_threshold_exceeded == 1
+      with:
+        script: |
+          let issueNumber;
+          if (context.issue.number) {
+            // use issue number from context if present
+            issueNumber = context.issue.number;
+          } else {
+            // Otherwise use issue number from commit
+            issueNumber = (
+              await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                commit_sha: context.sha,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              })
+            ).data[0].number;
+          }
+          const body = `
+          :rotating_light: **Vulnerabilities found in image**: ${{ steps.ecr_metadata.outputs.IMAGE_URI }} :rotating_light:
+
+          Please review the vulnerabilities found in the image and take appropriate action:
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ github.job }}
+
+          ${{ steps.scan.outputs.inspector_scan_results_markdown }}
+          `;
+          await github.rest.issues.createComment({
+            issue_number: issueNumber,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body,
+          });
