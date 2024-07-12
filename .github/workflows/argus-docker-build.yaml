@@ -81,10 +81,7 @@ jobs:
   build-docker:
     name: Build Docker Image
     needs: [prep]
-    runs-on:
-      - self-hosted
-      - Linux
-      - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64' }}
+    runs-on: ${{ matrix.image.platform == 'linux/amd64' && 'linux-latest' || 'macos-latest' }}
     if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     permissions:
       id-token: write
