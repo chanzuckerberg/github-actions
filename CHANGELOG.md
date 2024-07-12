@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.12.0](https://github.com/chanzuckerberg/github-actions/compare/v2.11.1...v2.12.0) (2024-07-11)
+
+
+### Features
+
+* adding docker scanning github action workflow ([#274](https://github.com/chanzuckerberg/github-actions/issues/274)) ([89b5406](https://github.com/chanzuckerberg/github-actions/commit/89b5406c40cf13ec055ab8e44633019e1655802b))
+
 ### [2.11.1](https://github.com/chanzuckerberg/github-actions/compare/v2.11.0...v2.11.1) (2024-07-09)
 
 
