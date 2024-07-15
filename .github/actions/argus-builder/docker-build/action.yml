@@ -1,0 +1,98 @@
+name: argus-docker-build
+description: Build a Docker Image for Argus
+
+inputs:
+  image_name:
+    description: 'Name of the image to build'
+    required: true
+  dockerfile:
+    description: 'Path to the Dockerfile'
+    required: true
+  context:
+    description: 'Path to the build context'
+    required: true
+  platform:
+    description: 'Platform to build for'
+    required: false
+    default: 'linux/arm64'
+  build_args:
+    description: 'Args for docker build'
+    required: false
+    default: ''
+  image_tag:
+    description: 'Additional tag to apply to the image this is built'
+    required: true
+  github_app_id:
+    description: 'GitHub App ID'
+    required: true
+  github_private_key:
+    description: 'GitHub App private key'
+    required: true
+
+outputs:
+  image_uri:
+    description: 'URI of the image that was built'
+    value: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        path: ${{ github.event.repository.name }}
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-west-2
+        role-to-assume: arn:aws:iam::533267185808:role/gh_actions_core_platform_infra_prod_eks
+        role-session-name: ArgusContainerBuilder
+    - name: Generate token
+      id: generate_token
+      uses: tibdex/github-app-token@v2
+      with:
+        app_id: ${{ inputs.github_app_id }}
+        private_key: ${{ inputs.github_private_key }}
+    - uses: actions/checkout@v4
+      with:
+        repository: chanzuckerberg/core-platform-settings
+        path: core-platform-settings
+        token: ${{ steps.generate_token.outputs.token }}
+    - name: ECR Metadata
+      id: ecr_metadata
+      shell: bash
+      run: |
+        ECR_REGISTRY="533267185808.dkr.ecr.us-west-2.amazonaws.com"
+        echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_OUTPUT
+
+        ECR_REPO_NAME="core-platform/${{ github.event.repository.name }}/${{ inputs.image_name }}"
+        echo "ECR_REPO_NAME=$ECR_REPO_NAME" >> $GITHUB_OUTPUT
+
+        IMAGE_URI="$ECR_REGISTRY/$ECR_REPO_NAME:${{ inputs.image_tag }}"
+        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
+    - name: Create ECR repo if necessary
+      uses: int128/create-ecr-repository-action@v1
+      with:
+        repository: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
+        lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
+        repository-policy: core-platform-settings/ecr/repository-policy.json
+    - name: Build And Push
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@docker-build-push-v1.6.0
+      with:
+        dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
+        context: ${{ github.event.repository.name }}/${{ inputs.context }}
+        name: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
+        registry: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}
+        custom_tag: ${{ inputs.image_tag }}
+        platforms: ${{ inputs.platform }}
+        build_args: |
+          IMAGE_TAG=${{ inputs.image_tag }}
+          ${{ inputs.build_args }}
+
+    # TODO: scan image for vulnerabilities
+    # - name: Scan for vulnerabilities
+    #   uses: chanzuckerberg/github-actions/.github/actions/argus-builder/scan-for-vulnerabilities@main
+    #   with:
+    #     image_uri: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}/${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}:${{ inputs.image_tag }}
+    #     github_app_id: ${{ inputs.github_app_id }}
+    #     github_private_key: ${{ inputs.github_private_key }}

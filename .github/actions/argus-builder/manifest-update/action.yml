@@ -1,0 +1,70 @@
+name: argus-docker-manifest-update
+description: Updates manifests for Argus after the Docker image is built
+
+inputs:
+  envs:
+    description: 'Env names, comma delimited'
+    required: true
+  image_tag:
+    description: The tag of the image that should be updated
+    required: true
+  working_directory:
+    description: 'The Argus project root (parent directory that contains the .infra/ directory)'
+    default: '.'
+    required: false
+  github_app_id:
+    description: 'GitHub App ID'
+    required: true
+  github_private_key:
+    description: 'GitHub App private key'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - run: |
+        echo "Image Tag: ${{ inputs.image_tag }}"
+      shell: bash
+    - name: Generate token
+      id: generate_token
+      uses: tibdex/github-app-token@v2
+      with:
+        app_id: ${{ inputs.github_app_id }}
+        private_key: ${{ inputs.github_private_key }}
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ steps.generate_token.outputs.token }}
+    - name: Parse envs
+      id: parse_envs
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
+          core.setOutput('envs', envs.join(' '));
+    - name: Determine .infra path
+      uses: actions/github-script@v7
+      id: path
+      with:
+        script: |
+          const path = require('path');
+          const fs = require('fs');
+          const infraDirPath = path.join(`${{ inputs.working_directory }}`, '.infra');
+          if (!fs.existsSync(infraDirPath)) {
+            throw new Error(`.infra directory not found at ${infraDirPath}`);
+          }
+          core.setOutput('infra_dir_path', infraDirPath);
+    - name: Update Manifest
+      shell: bash
+      run: |
+        for env in ${{ steps.parse_envs.outputs.envs }}
+        do
+          sed -i 's/tag: sha-\w\+/tag: ${{ inputs.image_tag }}/g' ${{ steps.path.outputs.infra_dir_path }}/${env}/values.yaml
+          cat ${{ steps.path.outputs.infra_dir_path }}/${env}/values.yaml
+        done
+    - name: Update Argus manifests
+      uses: EndBug/add-and-commit@v9
+      with:
+        add: -A
+        message: 'chore: Updated [${{ steps.parse_envs.outputs.envs }}] values.yaml image tags to ${{ inputs.image_tag }}'
+
