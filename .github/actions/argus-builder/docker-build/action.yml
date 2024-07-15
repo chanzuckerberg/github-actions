@@ -46,11 +46,13 @@ runs:
         fetch-depth: 0
         path: ${{ github.event.repository.name }}
     - name: Configure AWS Credentials
+      id: awscreds
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: us-west-2
         role-to-assume: arn:aws:iam::533267185808:role/gh_actions_core_platform_infra_prod_eks
         role-session-name: ArgusContainerBuilder
+        output-credentials: true
     - name: Generate token
       id: generate_token
       uses: tibdex/github-app-token@v2
@@ -93,6 +95,12 @@ runs:
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
 
+    - name: Docker login
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}
+        username: ${{ steps.awscreds.outputs.aws-access-key-id }}
+        password: ${{ steps.awscreds.outputs.aws-secret-access-key }}
     - name: Scan for vulnerabilities
       uses: chanzuckerberg/github-actions/.github/actions/container-scanning@d5f287c67911c671c691b2c67baf59fd9d640442
       id: scan
