@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.13.0](https://github.com/chanzuckerberg/github-actions/compare/v2.12.0...v2.13.0) (2024-07-15)
+
+
+### Features
+
+* break argus-docker-build workflow into composite actions ([#283](https://github.com/chanzuckerberg/github-actions/issues/283)) ([d9d1014](https://github.com/chanzuckerberg/github-actions/commit/d9d1014b19da6dd46d12a2e15f2f0319aed2b42f))
+
+
+### Misc
+
+* upgrade release-please action ([#286](https://github.com/chanzuckerberg/github-actions/issues/286)) ([102be50](https://github.com/chanzuckerberg/github-actions/commit/102be50d09a67f315e28a3ba026dedf0154c31b9))
+
 ## [2.12.0](https://github.com/chanzuckerberg/github-actions/compare/v2.11.1...v2.12.0) (2024-07-11)
 
 
