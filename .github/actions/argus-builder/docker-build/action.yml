@@ -81,7 +81,7 @@ runs:
         lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
         repository-policy: core-platform-settings/ecr/repository-policy.json
     - name: Build And Push
-      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@557c7b93320ed73cb013db52ef25275398fbea92
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@CCIE-3099-embed-docker-scanning-into-argus-builder-gh-actions
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
