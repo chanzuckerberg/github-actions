@@ -89,3 +89,4 @@ runs:
         build-args: ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret-files }}
         platforms: ${{ inputs.platforms }}
+        load: true
