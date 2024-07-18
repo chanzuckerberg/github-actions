@@ -81,7 +81,7 @@ runs:
         lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
         repository-policy: core-platform-settings/ecr/repository-policy.json
     - name: Build And Push
-      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@09df741a484188380636fe079727ce1ac6e3bc94
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@1c4976a1f95d9b320c37d09a8f4c86c5eeb046bc
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
