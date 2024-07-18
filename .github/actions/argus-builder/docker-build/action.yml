@@ -89,19 +89,16 @@ runs:
         registry: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}
         custom_tag: ${{ inputs.image_tag }}
         platforms: ${{ inputs.platform }}
+        load: true
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
 
-    - name: Docker login
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}
     - name: Scan for vulnerabilities
       uses: chanzuckerberg/github-actions/.github/actions/container-scanning@d5f287c67911c671c691b2c67baf59fd9d640442
       id: scan
       with:
-        image_uri: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
+        image_uri: ${{ inputs.image_name }}:${{ inputs.image_tag }}
         fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
 
     - name: Notify on skipped vulnerabilities
