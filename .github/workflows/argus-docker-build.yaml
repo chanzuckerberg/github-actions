@@ -58,7 +58,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@8461a2ca27a313af1984f32f6d6b9df3b80607c8
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@e0d6da6ed2e7e79adfe03a4580767169930e470b
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
@@ -94,7 +94,7 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@8461a2ca27a313af1984f32f6d6b9df3b80607c8
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@e0d6da6ed2e7e79adfe03a4580767169930e470b
         with:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
@@ -114,7 +114,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@8461a2ca27a313af1984f32f6d6b9df3b80607c8
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@e0d6da6ed2e7e79adfe03a4580767169930e470b
         with:
           envs: ${{ inputs.envs }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
