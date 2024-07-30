@@ -107,7 +107,7 @@ runs:
         script: |
           const jiraIssueRef = ${{ steps.parseIssueRef.outputs.result }};
           const response = await fetch(
-            `${ inputs.jiraBaseUrl }/rest/api/3/issue/${jiraIssueRef}?fields=summary,issuetype,status`,
+            `${{ inputs.jiraBaseUrl }}/rest/api/3/issue/${jiraIssueRef}?fields=summary,issuetype,status`,
             {
               headers: {
                 Authorization: `Basic ${{ inputs.jiraToken }}`
@@ -136,7 +136,7 @@ runs:
           function getJiraIssueDetails(jiraIssueRef, jiraIssueDetails) {
             return `<!--JIRA_VALIDATE_START:${jiraIssueRef}:do not remove this marker as it will break the jira validation functionality-->
           <details open>
-            <summary><a href="${ inputs.jiraBaseUrl }/browse/${jiraIssueRef}" title="${jiraIssueRef}" target="_blank">${jiraIssueRef}</a></summary>
+            <summary><a href="${{ inputs.jiraBaseUrl }}/browse/${jiraIssueRef}" title="${jiraIssueRef}" target="_blank">${jiraIssueRef}</a></summary>
             <br />
             <table>
               <tr>
