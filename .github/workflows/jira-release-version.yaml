@@ -15,6 +15,11 @@ on:
         description: 'The Jira Project Key'
         required: true
         type: string
+      jiraBaseUrl:
+        description: 'The Jira Base URL'
+        required: false
+        type: string
+        default: 'https://czi.atlassian.net'
     secrets:
       jiraToken:
         required: true
@@ -70,7 +75,7 @@ jobs:
             // create the version but don't release it until after associating relevant issues because the Slack automation
             // will be triggered when the version is released and it relies on the issues being associated with the release
             const response = await fetch(
-              'https://czi-tech.atlassian.net/rest/api/3/version',
+              '${{ inputs.jiraBaseUrl }}/rest/api/3/version',
               {
                 method: 'POST',
                 body: JSON.stringify({
@@ -119,7 +124,7 @@ jobs:
             const jiraVersionName = '${{ needs.create_jira_version.outputs.jiraVersionName }}';
             console.log(`Updating Jira issue ${jiraIssueRef} with Fix Version: ${jiraVersionName}`)
             const response = await fetch(
-              `https://czi-tech.atlassian.net/rest/api/3/issue/${jiraIssueRef}`,
+              `${{ inputs.jiraBaseUrl }}/rest/api/3/issue/${jiraIssueRef}`,
               {
                 method: 'PUT',
                 body: JSON.stringify({
@@ -160,7 +165,7 @@ jobs:
             const projectId = ${{ inputs.projectID }};
 
             const response = await fetch(
-              `https://czi-tech.atlassian.net/rest/api/3/version/${jiraVersionId}`,
+              `${{ inputs.jiraBaseUrl }}/rest/api/3/version/${jiraVersionId}`,
               {
                 method: 'PUT',
                 body: JSON.stringify({

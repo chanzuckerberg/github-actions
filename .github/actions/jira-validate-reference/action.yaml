@@ -1,8 +1,8 @@
 name: Validate Jira Reference
 description: |
-  Finds the jira issue reference in the branch name, PR title, or PR body and 
+  Finds the jira issue reference in the branch name, PR title, or PR body and
   validates it against the Jira API. If the reference is not found, the action
-  will fail. If the reference is found, the action will add a Jira summary to 
+  will fail. If the reference is found, the action will add a Jira summary to
   the PR body (or update the existing summary if it already exists).
 
 inputs:
@@ -19,6 +19,11 @@ inputs:
     description: Jira token
     required: true
     type: string
+  jiraBaseUrl:
+    description: 'The Jira Base URL'
+    required: false
+    type: string
+    default: 'https://czi.atlassian.net'
 
 runs:
   using: composite
@@ -102,7 +107,7 @@ runs:
         script: |
           const jiraIssueRef = ${{ steps.parseIssueRef.outputs.result }};
           const response = await fetch(
-            `https://czi-tech.atlassian.net/rest/api/3/issue/${jiraIssueRef}?fields=summary,issuetype,status`,
+            `${{ inputs.jiraBaseUrl }}/rest/api/3/issue/${jiraIssueRef}?fields=summary,issuetype,status`,
             {
               headers: {
                 Authorization: `Basic ${{ inputs.jiraToken }}`
@@ -131,7 +136,7 @@ runs:
           function getJiraIssueDetails(jiraIssueRef, jiraIssueDetails) {
             return `<!--JIRA_VALIDATE_START:${jiraIssueRef}:do not remove this marker as it will break the jira validation functionality-->
           <details open>
-            <summary><a href="https://czi-tech.atlassian.net/browse/${jiraIssueRef}" title="${jiraIssueRef}" target="_blank">${jiraIssueRef}</a></summary>
+            <summary><a href="${{ inputs.jiraBaseUrl }}/browse/${jiraIssueRef}" title="${jiraIssueRef}" target="_blank">${jiraIssueRef}</a></summary>
             <br />
             <table>
               <tr>
