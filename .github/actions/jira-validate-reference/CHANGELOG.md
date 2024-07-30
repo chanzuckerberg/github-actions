@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.1.1...jira-validate-reference-v1.1.2) (2024-07-30)
+
+
+### BugFixes
+
+* update Jira URLs after czi-tech to czi migration ([#287](https://github.com/chanzuckerberg/github-actions/issues/287)) ([60629a9](https://github.com/chanzuckerberg/github-actions/commit/60629a9ec3a18abb6b362754f4b6287cca168414))
+
 ### [1.1.1](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.1.0...jira-validate-reference-v1.1.1) (2023-07-26)
 
 
