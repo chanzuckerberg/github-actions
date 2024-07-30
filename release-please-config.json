@@ -13,13 +13,13 @@
 			"hidden": false
 		},
 		{
-			"type": "chore",
-			"section": "Misc",
+			"type": "fix",
+			"section": "BugFixes",
 			"hidden": false
 		},
 		{
-			"type": "fix",
-			"section": "BugFixes",
+			"type": "chore",
+			"section": "Misc",
 			"hidden": false
 		}
 	],
