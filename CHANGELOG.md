@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.13.2](https://github.com/chanzuckerberg/github-actions/compare/v2.13.1...v2.13.2) (2024-08-02)
+
+
+### BugFixes
+
+* make 'Update Manifest' job fail if any image build fails ([#289](https://github.com/chanzuckerberg/github-actions/issues/289)) ([7a08299](https://github.com/chanzuckerberg/github-actions/commit/7a08299241246b063672ce4014f068fc6ec79372))
+
 ## [2.13.1](https://github.com/chanzuckerberg/github-actions/compare/v2.13.0...v2.13.1) (2024-07-30)
 
 
