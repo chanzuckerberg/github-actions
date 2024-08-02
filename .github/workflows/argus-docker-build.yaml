@@ -117,7 +117,7 @@ jobs:
         with:
           script: |
             console.log("-----failed:")
-            console.log(contains(needs.*.result, 'failure'))
+            console.log(${{ contains(needs.*.result, 'failure') }})
             console.log("-------------------")
 
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
