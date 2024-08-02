@@ -116,9 +116,11 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            console.log("-----failed:")
-            console.log(${{ contains(needs.*.result, 'failure') }})
-            console.log("-------------------")
+            if (${{ contains(needs.*.result, 'failure') }}) {
+              core.setFailed('One or more Docker builds failed');
+            } else {
+              core.info('All jobs passed');
+            }
 
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
         with:
