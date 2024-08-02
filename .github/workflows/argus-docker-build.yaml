@@ -117,9 +117,9 @@ jobs:
         with:
           script: |
             if (${{ contains(needs.*.result, 'failure') }}) {
-              core.setFailed('One or more Docker builds failed');
+              core.setFailed("We won't update the manifest because one or more Docker builds failed");
             } else {
-              core.info('All jobs passed');
+              core.info('All builds passed, continuing with manifest update...');
             }
 
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
