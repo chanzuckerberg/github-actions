@@ -84,15 +84,12 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    outputs:
-      images: ${{ needs.prep.outputs.images }}
     strategy:
       fail-fast: false
       matrix:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
-        id: docker_build
         with:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
