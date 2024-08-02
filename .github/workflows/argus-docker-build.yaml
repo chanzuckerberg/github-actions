@@ -84,12 +84,15 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    outputs:
+      images: ${{ needs.prep.outputs.images }}
     strategy:
       fail-fast: false
       matrix:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
+        id: docker_build
         with:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
@@ -107,7 +110,16 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    if: always() && needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     steps:
+      - name: Check build status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log("-----failed:")
+            console.log(contains(needs.*.result, 'failure'))
+            console.log("-------------------")
+
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
         with:
           envs: ${{ inputs.envs }}
