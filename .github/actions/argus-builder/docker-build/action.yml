@@ -87,7 +87,7 @@ runs:
             '${{ inputs.working_directory }}',
             '${{ inputs.image_name }}',
           );
-          const IMAGE_URI = `${ECR_REGISTRY}/${ECR_REPO_NAME}:${inputs.image_tag}`;
+          const IMAGE_URI = `${ECR_REGISTRY}/${ECR_REPO_NAME}:${{ inputs.image_tag }}`;
 
           console.log('...registry:', ECR_REGISTRY);
           console.log('...repo name:', ECR_REPO_NAME);
