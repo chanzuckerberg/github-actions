@@ -28,6 +28,10 @@ inputs:
   github_private_key:
     description: 'GitHub App private key'
     required: true
+  working_directory:
+    description: 'The Argus project root (parent directory that contains the .infra/ directory)'
+    required: false
+    default: '.'
 
 outputs:
   image_uri:
@@ -70,6 +74,23 @@ runs:
 
         IMAGE_URI="$ECR_REGISTRY/$ECR_REPO_NAME:${{ inputs.image_tag }}"
         echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
+    - name: ECR Metadata
+      id: ecr_metadata2
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const path = require('path');
+          const ECR_REGISTRY = "533267185808.dkr.ecr.us-west-2.amazonaws.com";
+          const ECR_REPO_NAME = path.join('core-platform', github.context.repo.repo, '${{ inputs.working_directory }}', '${{ inputs.image_name }}');
+          const IMAGE_URI = `${ECR_REGISTRY}/${ECR_REPO_NAME}:${inputs.image_tag}`;
+
+          console.log('...registry:', ECR_REGISTRY);
+          console.log('...repo name:', ECR_REPO_NAME);
+          console.log('...image uri:', IMAGE_URI);
+
+          core.setOutput('ECR_REGISTRY', ECR_REGISTRY);
+          core.setOutput('ECR_REPO_NAME', ECR_REPO_NAME);
+          core.setOutput('IMAGE_URI', IMAGE_URI);
     - name: Create ECR repo if necessary
       uses: int128/create-ecr-repository-action@v1
       with:
