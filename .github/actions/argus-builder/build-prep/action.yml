@@ -3,7 +3,7 @@ description: Prepare for building a Docker Image for Argus
 
 inputs:
   path_filters:
-    description: 'Glob patterns to match against changed files in the repository, comma delimited. If any of them match, the job will run (unless a paths_ignore is matched).'
+    description: 'Glob patterns to match against changed files in the repository, comma delimited'
     required: false
     default: '**/*'
   path_filters_base:
