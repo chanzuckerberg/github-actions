@@ -81,7 +81,12 @@ runs:
         script: |
           const path = require('path');
           const ECR_REGISTRY = "533267185808.dkr.ecr.us-west-2.amazonaws.com";
-          const ECR_REPO_NAME = path.join('core-platform', github.context.repo.repo, '${{ inputs.working_directory }}', '${{ inputs.image_name }}');
+          const ECR_REPO_NAME = path.join(
+            'core-platform',
+            '${{ github.event.repository.name }}',
+            '${{ inputs.working_directory }}',
+            '${{ inputs.image_name }}',
+          );
           const IMAGE_URI = `${ECR_REGISTRY}/${ECR_REPO_NAME}:${inputs.image_tag}`;
 
           console.log('...registry:', ECR_REGISTRY);
