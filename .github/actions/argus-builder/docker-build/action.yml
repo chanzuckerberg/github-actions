@@ -64,18 +64,6 @@ runs:
         token: ${{ steps.generate_token.outputs.token }}
     - name: ECR Metadata
       id: ecr_metadata
-      shell: bash
-      run: |
-        ECR_REGISTRY="533267185808.dkr.ecr.us-west-2.amazonaws.com"
-        echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_OUTPUT
-
-        ECR_REPO_NAME="core-platform/${{ github.event.repository.name }}/${{ inputs.image_name }}"
-        echo "ECR_REPO_NAME=$ECR_REPO_NAME" >> $GITHUB_OUTPUT
-
-        IMAGE_URI="$ECR_REGISTRY/$ECR_REPO_NAME:${{ inputs.image_tag }}"
-        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
-    - name: ECR Metadata
-      id: ecr_metadata2
       uses: actions/github-script@v7
       with:
         script: |
@@ -88,10 +76,6 @@ runs:
             '${{ inputs.image_name }}',
           );
           const IMAGE_URI = `${ECR_REGISTRY}/${ECR_REPO_NAME}:${{ inputs.image_tag }}`;
-
-          console.log('...registry:', ECR_REGISTRY);
-          console.log('...repo name:', ECR_REPO_NAME);
-          console.log('...image uri:', IMAGE_URI);
 
           core.setOutput('ECR_REGISTRY', ECR_REGISTRY);
           core.setOutput('ECR_REPO_NAME', ECR_REPO_NAME);
