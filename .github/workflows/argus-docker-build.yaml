@@ -53,13 +53,14 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@156c536b464b9f12026d3e11a239c6b5a354775b
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
           path_filters_base: ${{ inputs.path_filters_base }}
           branches: ${{ inputs.branches }}
           branches_ignore: ${{ inputs.branches_ignore }}
+          working_directory: ${{ inputs.working_directory }}
       - name: Parse inputs
         id: parse_images
         uses: actions/github-script@v7
