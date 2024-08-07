@@ -21,6 +21,10 @@ inputs:
     description: 'Branch names to run this job on, supports wildcards, comma delimited'
     required: false
     default: ''
+  working_directory:
+    description: 'The Argus project root (parent directory that contains the .infra/ directory)'
+    required: false
+    default: '.'
 
 outputs:
   image_tag:
@@ -112,6 +116,7 @@ runs:
           ${{ steps.parse_filters.outputs.filters }}
         base: ${{ steps.force_push.outputs.base }}
         list-files: json
+        working-directory: ${{ inputs.working_directory }}
 
     - name: Check if build should run
       id: final_check
