@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.14.0](https://github.com/chanzuckerberg/github-actions/compare/v2.13.2...v2.14.0) (2024-08-08)
+
+
+### Features
+
+* scope Argus ECR repo name with working directory ([#291](https://github.com/chanzuckerberg/github-actions/issues/291)) ([cdbe4f8](https://github.com/chanzuckerberg/github-actions/commit/cdbe4f89ff76793b9f5b84c27b04976ed279be39))
+
 ## [2.13.2](https://github.com/chanzuckerberg/github-actions/compare/v2.13.1...v2.13.2) (2024-08-02)
 
 
