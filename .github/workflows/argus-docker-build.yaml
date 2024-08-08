@@ -89,7 +89,7 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@82b4571f2858a23e3c695ce48367f9497385e377
         with:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
@@ -99,6 +99,7 @@ jobs:
           image_tag: ${{ needs.prep.outputs.image_tag }}
           github_app_id: ${{ secrets.CZI_GITHUB_HELPER_APP_ID }}
           github_private_key: ${{ secrets.CZI_GITHUB_HELPER_PK }}
+          working_directory: ${{ inputs.working_directory }}
 
   update-manifests:
     name: Update ArgoCD manifests
