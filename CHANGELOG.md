@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.15.2](https://github.com/chanzuckerberg/github-actions/compare/v2.15.1...v2.15.2) (2024-08-16)
+
+
+### BugFixes
+
+* prevent manifest update when dependent job was cancelled (2) ([#297](https://github.com/chanzuckerberg/github-actions/issues/297)) ([f755674](https://github.com/chanzuckerberg/github-actions/commit/f7556746ffef827dbe6d6dd7c2d8f2b1662c86b6))
+
 ## [2.15.1](https://github.com/chanzuckerberg/github-actions/compare/v2.15.0...v2.15.1) (2024-08-16)
 
 
