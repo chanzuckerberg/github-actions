@@ -53,7 +53,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@c210eb8dba1aeb3ccf02186ad89c3c85f6fc4da7
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
@@ -69,6 +69,9 @@ jobs:
             images.forEach(image => {
               const buildArgs = image.build_args || [];
               image.build_args = buildArgs.join("\n");
+
+              const secretFiles = image.secret_files || [];
+              image.secret_files = secretFiles.join("\n");
             });
             core.info(`Images to build: ${JSON.stringify(images, null, 2)}`);
             core.setOutput('images', images);
@@ -89,13 +92,14 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@82b4571f2858a23e3c695ce48367f9497385e377
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@c210eb8dba1aeb3ccf02186ad89c3c85f6fc4da7
         with:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
           context: ${{ matrix.image.context }}
           platform: ${{ matrix.image.platform }}
           build_args: ${{ matrix.image.build_args }}
+          secret_files: ${{ matrix.image.secret_files }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
           github_app_id: ${{ secrets.CZI_GITHUB_HELPER_APP_ID }}
           github_private_key: ${{ secrets.CZI_GITHUB_HELPER_PK }}
@@ -120,7 +124,7 @@ jobs:
               core.info('All builds passed, continuing with manifest update...');
             }
 
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@b7d8eaf3c08d100ded457432f9ce6be6d88932e3
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@c210eb8dba1aeb3ccf02186ad89c3c85f6fc4da7
         with:
           envs: ${{ inputs.envs }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
