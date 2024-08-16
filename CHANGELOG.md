@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.15.0](https://github.com/chanzuckerberg/github-actions/compare/v2.14.0...v2.15.0) (2024-08-16)
+
+
+### Features
+
+* Add secret_files arg to Argus docker builder to allow passing files to build context ([#293](https://github.com/chanzuckerberg/github-actions/issues/293)) ([fe01920](https://github.com/chanzuckerberg/github-actions/commit/fe0192038cc934397910d3768f03c8aa35dbf152))
+
 ## [2.14.0](https://github.com/chanzuckerberg/github-actions/compare/v2.13.2...v2.14.0) (2024-08-08)
 
 
