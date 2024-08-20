@@ -39,10 +39,14 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: ecr core platform prod login
-      shell: bash
-      run: |
-        aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 533267185808.dkr.ecr.us-west-2.amazonaws.com
+    # - name: ecr core platform prod login
+    #   shell: bash
+    #   run: |
+    #     aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 
+    - name: Login to ECR
+      uses: docker/login-action@v3
+      with:
+        registry: 533267185808.dkr.ecr.us-west-2.amazonaws.com
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
       with:
