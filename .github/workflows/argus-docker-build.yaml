@@ -92,7 +92,7 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@ee0e4baf045c0a5005579948972dc8591c9b0854
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@0bf13ddcc9cd1b7bcd69e080d472104569f53f28
         with:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
