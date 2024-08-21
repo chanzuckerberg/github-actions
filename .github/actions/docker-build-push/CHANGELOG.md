@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.6.0...docker-build-push-v1.6.1) (2024-08-21)
+
+
+### Misc
+
+* use pull-through cache in docker-builders for qemu ([#299](https://github.com/chanzuckerberg/github-actions/issues/299)) ([07ae9c3](https://github.com/chanzuckerberg/github-actions/commit/07ae9c3950e07a8e1c6426b30f91ede86b127d11))
+
 ## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.5.0...docker-build-push-v1.6.0) (2024-01-12)
 
 

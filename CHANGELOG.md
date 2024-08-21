@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.15.3](https://github.com/chanzuckerberg/github-actions/compare/v2.15.2...v2.15.3) (2024-08-21)
+
+
+### Misc
+
+* use pull-through cache in docker-builders for qemu ([#299](https://github.com/chanzuckerberg/github-actions/issues/299)) ([07ae9c3](https://github.com/chanzuckerberg/github-actions/commit/07ae9c3950e07a8e1c6426b30f91ede86b127d11))
+
 ## [2.15.2](https://github.com/chanzuckerberg/github-actions/compare/v2.15.1...v2.15.2) (2024-08-16)
 
 
