@@ -53,7 +53,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@43f5576779d68e2bd36a740c13c6eeec52ceae9b
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@25fd8ad87926972bc48ae5d0f225b0398b0e220b
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
@@ -92,7 +92,7 @@ jobs:
       matrix:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@43f5576779d68e2bd36a740c13c6eeec52ceae9b
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@25fd8ad87926972bc48ae5d0f225b0398b0e220b
         with:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
@@ -124,7 +124,7 @@ jobs:
               core.info('All builds passed, continuing with manifest update...');
             }
 
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@43f5576779d68e2bd36a740c13c6eeec52ceae9b
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@25fd8ad87926972bc48ae5d0f225b0398b0e220b
         with:
           envs: ${{ inputs.envs }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
