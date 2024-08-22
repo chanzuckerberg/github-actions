@@ -75,8 +75,19 @@ runs:
       uses: actions/github-script@v7
       with:
         script: |
-          console.log('context.sha:', context.sha);
-          console.log('context.payload.pull_request.head.sha:', context.payload.pull_request.head.sha);
+          let sha;
+          if (context.eventName === "pull_request") {
+            console.log('pull_request:', context.payload.pull_request.head.sha);
+            sha = context.payload.pull_request.head.sha;
+          } else if (context.eventName === "push") {
+            console.log('push:', context.sha);
+            sha = context.sha;
+          } else {
+            core.setFailed(`EventName ${eventName} not supported`);
+            return;
+          }
+          console.log('IMAGE_TAG:', `sha-${sha.slice(0, 7)}`);
+          core.setOutput('IMAGE_TAG', `sha-${sha.slice(0, 7)}`);
         
     - name: Validate build tag
       uses: actions/github-script@v7
