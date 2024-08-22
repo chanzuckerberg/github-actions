@@ -70,7 +70,15 @@ runs:
       shell: bash
       run: |
         echo "IMAGE_TAG=sha-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
+    - name: Get build tag (2)
+      id: build_tags2
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const IMAGE_TAG = `${context.sha.slice(0, 7)}`;
+          console.log('IMAGE_TAG:', IMAGE_TAG);
+          core.setOutput('IMAGE_TAG', IMAGE_TAG);
+        
     - name: Validate build tag
       uses: actions/github-script@v7
       with:
