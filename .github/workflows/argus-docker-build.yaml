@@ -53,7 +53,7 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@ca9170c14e89c0276fa62c87db87542f826cd49d
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@hspitzley/add_fallback_to_force_push_detection
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
