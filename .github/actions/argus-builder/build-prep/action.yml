@@ -29,6 +29,9 @@ outputs:
   should_build:
     description: Whether the job should run
     value: ${{ steps.final_check.outputs.should_build }}
+  base:
+    description: The base branch or commit to compare against
+    value: ${{ steps.force_push.outputs.base }}
 
 runs:
   using: composite
