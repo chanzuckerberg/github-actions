@@ -9,7 +9,7 @@ inputs:
     description: The tag of the image that should be updated
     required: true
   working_directory:
-    description: 'The Argus project root (parent directory that contains the .infra/ directory)'
+    description: 'Comma-delimited list of Argus project roots (parent directory that contains the .infra/ directory)'
     default: '.'
     required: false
   github_app_id:
@@ -49,18 +49,25 @@ runs:
         script: |
           const path = require('path');
           const fs = require('fs');
-          const infraDirPath = path.join(`${{ inputs.working_directory }}`, '.infra');
-          if (!fs.existsSync(infraDirPath)) {
-            throw new Error(`.infra directory not found at ${infraDirPath}`);
-          }
-          core.setOutput('infra_dir_path', infraDirPath);
+          const workingDirs = `${{ inputs.working_directory }}`.split(',').map(dir => dir.trim()).filter(b => b.length > 0);
+          const infraDirPaths = workingDirs.map(dir => {
+            const infraDirPath = path.join(dir, '.infra');
+            if (!fs.existsSync(infraDirPath)) {
+              throw new Error(`.infra directory not found at ${infraDirPath}`);
+            }
+            return infraDirPath;
+          });
+          core.setOutput('infra_dir_paths', infraDirPaths.join(' '));
     - name: Update Manifest
       shell: bash
       run: |
         for env in ${{ steps.parse_envs.outputs.envs }}
         do
-          sed -i 's/tag: sha-\w\+/tag: ${{ inputs.image_tag }}/g' ${{ steps.path.outputs.infra_dir_path }}/${env}/values.yaml
-          cat ${{ steps.path.outputs.infra_dir_path }}/${env}/values.yaml
+          for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
+          do
+            sed -i 's/tag: sha-\w\+/tag: ${{ inputs.image_tag }}/g' ${infra_dir_path}/${env}/values.yaml
+            cat ${infra_dir_path}/${env}/values.yaml
+          done
         done
     - name: Update Argus manifests
       uses: EndBug/add-and-commit@v9
