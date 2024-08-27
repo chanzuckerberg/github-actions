@@ -1,0 +1,30 @@
+name: argus-docker-build-prep
+description: Prepare for building a Docker Image for Argus
+
+inputs:
+  json:
+    description: The JSON to validate
+    required: true
+  schema:
+    description: The AJV schema to validate json against
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - run: npm install ajv@8
+      shell: bash
+    - uses: actions/github-script@v7
+      with:
+        script: |
+          const Ajv = require('ajv');
+          const ajv = new Ajv();
+          const schema = ${{ inputs.schema }};
+          const validate = ajv.compile(schema);
+          const valid = validate(${{ inputs.json }});
+          if (!valid) {
+            throw new Error(`JSON is invalid: ${ajv.errorsText(validate.errors)}`);
+          }
