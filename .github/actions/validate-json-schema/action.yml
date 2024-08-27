@@ -2,7 +2,7 @@ name: argus-docker-build-prep
 description: Prepare for building a Docker Image for Argus
 
 inputs:
-  json:
+  data:
     description: The JSON to validate
     required: true
   schema:
@@ -23,8 +23,13 @@ runs:
           const Ajv = require('ajv');
           const ajv = new Ajv();
           const schema = ${{ inputs.schema }};
+          const data = ${{ inputs.data }};
+
+          core.info(`Validating JSON against schema: ${JSON.stringify(schema, null, 2)}`);
+          core.info(`Input data: ${JSON.stringify(data, null, 2)}`);
+
           const validate = ajv.compile(schema);
-          const valid = validate(${{ inputs.json }});
+          const valid = validate(data);
           if (!valid) {
             throw new Error(`JSON is invalid: ${ajv.errorsText(validate.errors)}`);
           }
