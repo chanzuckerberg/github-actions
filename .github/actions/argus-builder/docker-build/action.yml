@@ -32,10 +32,6 @@ inputs:
   github_private_key:
     description: 'GitHub App private key'
     required: true
-  working_directory:
-    description: 'The Argus project root (parent directory that contains the .infra/ directory)'
-    required: false
-    default: '.'
 
 outputs:
   image_uri:
@@ -76,7 +72,7 @@ runs:
           const ECR_REPO_NAME = path.join(
             'core-platform',
             '${{ github.event.repository.name }}',
-            '${{ inputs.working_directory }}',
+            '${{ inputs.context }}',
             '${{ inputs.image_name }}',
           );
           const IMAGE_URI = `${ECR_REGISTRY}/${ECR_REPO_NAME}:${{ inputs.image_tag }}`;
