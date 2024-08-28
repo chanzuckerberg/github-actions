@@ -1,5 +1,5 @@
-name: argus-docker-build-prep
-description: Prepare for building a Docker Image for Argus
+name: validate-json-schema
+description: Validate that a given JSON object matches a given AJV schema
 
 inputs:
   data:
