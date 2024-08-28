@@ -44,21 +44,21 @@ jobs:
       image_tag: ${{ steps.build_prep.outputs.image_tag }}
       should_build: ${{ steps.build_prep.outputs.should_build }}
       images: ${{ steps.parse_images.outputs.images }}
-      path_filter_base: ${{ steps.build_prep.outputs.base }}
+      path_filter_base: ${{ steps.build_prep.outputs.base_ref }}
     permissions:
       id-token: write
       contents: read
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@bfe3e9bba81a3a1d20c017b0bfd2b0361d8f97bc
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@f7c728e2388fad9ccc1fa369bb4c48b8ca587c3b
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
           path_filters_base: ${{ inputs.path_filters_base }}
-          branches: ${{ inputs.branches_include }}
+          branches_include: ${{ inputs.branches_include }}
           branches_ignore: ${{ inputs.branches_ignore }}
       
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@7cc6b249575fe530d88f345599524c939821aeda
+      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@f7c728e2388fad9ccc1fa369bb4c48b8ca587c3b
         name: Validate images input
         with:
           schema: |
@@ -173,7 +173,7 @@ jobs:
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
       - name: Check branch
         id: check_branch
-        uses: chanzuckerberg/github-actions/.github/actions/check-branch-match@98e955dbb01d403ed58c0c04d509eed8aa629f98
+        uses: chanzuckerberg/github-actions/.github/actions/check-branch-match@f7c728e2388fad9ccc1fa369bb4c48b8ca587c3b
         with:
           branches_include: ${{ matrix.image.branches_include }}
           branches_ignore: ${{ matrix.image.branches_ignore }}
@@ -198,7 +198,7 @@ jobs:
             const shouldBuild = matchedBranches && matchedFiles;
             console.log('should build?', shouldBuild);
             return shouldBuild;
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@e5c37d11ce543f5072765c754fe483e63f477513
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@f7c728e2388fad9ccc1fa369bb4c48b8ca587c3b
         if: steps.should_build.outputs.result == 'true'
         with:
           image_name: ${{ matrix.image.name }}
@@ -279,7 +279,7 @@ jobs:
             console.log('Argus root dirs:', argusRootDirs);
             return argusRootDirs.join(',');
 
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@1d4de79138f4999e3c4b06a6762c37ace5edc18c
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@f7c728e2388fad9ccc1fa369bb4c48b8ca587c3b
         if: steps.determine_manifests.outputs.result != ''
         with:
           envs: ${{ inputs.envs }}
