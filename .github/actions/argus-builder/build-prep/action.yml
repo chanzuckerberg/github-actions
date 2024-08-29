@@ -29,19 +29,32 @@ outputs:
   should_build:
     description: Whether the job should run
     value: ${{ steps.final_check.outputs.should_build }}
-  base_ref:
-    description: The base branch or commit to compare against
-    value: ${{ steps.force_push.outputs.base }}
 
 runs:
   using: composite
   steps:
     - name: Check for matching branch
       id: branch_filter
-      uses: chanzuckerberg/github-actions/.github/actions/check-branch-match@98e955dbb01d403ed58c0c04d509eed8aa629f98
+      uses: actions/github-script@v7
       with:
-        branches_include: ${{ inputs.branches_include }}
-        branches_ignore: ${{ inputs.branches_ignore }}
+        script: |
+          function wildcardMatch(text, pattern) {
+            const regexPattern =
+            new RegExp('^' + pattern.replace(/\?/g, '.').replace(/\*/g, '.*') + '$');
+            return regexPattern.test(text);
+          }
+          const branches = `${{ inputs.branches }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
+          console.log('Branches to run against:', branches);
+          const branchesIgnore = `${{ inputs.branches_ignore }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
+          console.log('Branches to ignore:', branchesIgnore);
+          const branch = `${{ github.ref }}`.replace('refs/heads/', '');
+          const shouldRun = branches.some(b => wildcardMatch(branch, b)) && !branchesIgnore.some(b => wildcardMatch(branch, b));
+          if (shouldRun) {
+            console.log('Job will run');
+          } else {
+            console.log(`Job will be skipped because branch name "${branch}" does not match the filters`);
+          }
+          core.setOutput('match', shouldRun);
 
     - uses: actions/checkout@v4
       with:

@@ -44,7 +44,6 @@ jobs:
       image_tag: ${{ steps.build_prep.outputs.image_tag }}
       should_build: ${{ steps.build_prep.outputs.should_build }}
       images: ${{ steps.parse_images.outputs.images }}
-      path_filter_base: ${{ steps.build_prep.outputs.base_ref }}
     permissions:
       id-token: write
       contents: read
