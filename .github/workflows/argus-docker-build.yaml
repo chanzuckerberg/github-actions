@@ -102,16 +102,28 @@ jobs:
             }
           data: ${{ inputs.images }}
 
+      - uses: tj-actions/changed-files@v45
+        id: changed_files
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install yaml
+      - run: npm install yaml minimatch
       - name: Parse inputs
         id: parse_images
         uses: actions/github-script@v7
         with:
           script: |
             const YAML = require('yaml');
+            const { minimatch } = require('minimatch');
+            function wildcardMatch(text, pattern) {
+              const regexPattern =
+              new RegExp('^' + pattern.replace(/\?/g, '.').replace(/\*/g, '.*') + '$');
+              return regexPattern.test(text);
+            }
+
+            const currentBranch = `${{ github.ref }}`.replace('refs/heads/', '');
+            const changedFiles = `${{ steps.changed_files.outputs.all_modified_files }}`.split(' ');
+            console.log('Changed files:', changedFiles);
 
             const images = JSON.parse(`${{ inputs.images }}`);
             const processedImages = Object.entries(images).map(([name, image]) => {
@@ -123,29 +135,38 @@ jobs:
               const secretFiles = image.secret_files || [];
               image.secret_files = secretFiles.join("\n");
 
-              const pathFilters = image.path_filters || ['**/*'];
-              // convert to an object with keys
-              const processed = pathFilters.reduce((acc, filter, index) => {
-                acc[index] = Array.isArray(filter) ? filter : [filter];
-                return acc;
-              }, {});
-              core.info(`Processed path filters: ${JSON.stringify(processed, null, 2)}`);
-              const doc = new YAML.Document();
-              doc.contents = processed;
-              image.path_filters = doc.toString();
-
-              const branchesInclude = image.branches_include || ['*'];
-              image.branches_include = branchesInclude.join(",");
-
-              const branchesIgnore = image.branches_ignore || [];
-              image.branches_ignore = branchesIgnore.join(",");
-
               const argusRoot = image.argus_root || '.';
               image.argus_root = argusRoot;
 
+              const pathFilters = (image.path_filters || ['**/*']).map(f => Array.isArray(f) ? f : [f]);
+
+              console.log('---\nLooking for file changes that match the filters for image:', name);
+              const filesMatched = changedFiles.filter(file => {
+                console.log('Checking file:', file);
+                return pathFilters.some(filters => {
+                  console.log('- checking filters:', filters);
+                  const matchedFile = filters.every(filter => minimatch(file, filter));
+                  console.log(`- matched file ${file} with filters ${filters}?`, matchedFile);
+                  return matchedFile;
+                });
+              });
+              console.log('Files matched:', filesMatched);
+              image.files_matched = filesMatched.length > 0;
+
+              const branchesInclude = (image.branches_include || ['*']).map(b => b.trim()).filter(b => b.length > 0);
+              const branchesIgnore = (image.branches_ignore || []).map(b => b.trim()).filter(b => b.length > 0);
+              console.log('branches include:', branchesInclude);
+              console.log('branches ignore:', branchesIgnore);
+              console.log('current branch:', currentBranch);
+
+              const branchMatched = branchesInclude.some(b => wildcardMatch(currentBranch, b)) && !branchesIgnore.some(b => wildcardMatch(currentBranch, b));
+              image.branch_matched = branchMatched;
+
+              image.should_build = image.files_matched && image.branch_matched;
+
               return image;
             });
-            core.info(`Images to build: ${JSON.stringify(processedImages, null, 2)}`);
+            core.info(`Images configuration: ${JSON.stringify(processedImages, null, 2)}`);
             core.setOutput('images', processedImages);
 
   build-docker:
@@ -171,35 +192,8 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - name: Check branch
-        id: check_branch
-        uses: chanzuckerberg/github-actions/.github/actions/check-branch-match@f7c728e2388fad9ccc1fa369bb4c48b8ca587c3b
-        with:
-          branches_include: ${{ matrix.image.branches_include }}
-          branches_ignore: ${{ matrix.image.branches_ignore }}
-      - name: Check for matching file changes
-        uses: dorny/paths-filter@v3
-        id: path_filter
-        with:
-          # predicate-quantifier will cause a warning but it is a valid input (https://github.com/dorny/paths-filter/pull/226)
-          predicate-quantifier: 'every'
-          filters: ${{ matrix.image.path_filters }}
-          base: ${{ needs.prep.outputs.path_filter_base }}
-          list-files: json
-      - name: Check if we should build
-        id: should_build
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const matchedBranches = ${{ steps.check_branch.outputs.match }};
-            console.log('matched branches?', matchedBranches);
-            const matchedFiles = ${{ steps.path_filter.outputs.changes }}.length > 0;
-            console.log('matched files?', matchedFiles);
-            const shouldBuild = matchedBranches && matchedFiles;
-            console.log('should build?', shouldBuild);
-            return shouldBuild;
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@f7c728e2388fad9ccc1fa369bb4c48b8ca587c3b
-        if: steps.should_build.outputs.result == 'true'
+        if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
@@ -210,16 +204,6 @@ jobs:
           image_tag: ${{ needs.prep.outputs.image_tag }}
           github_app_id: ${{ secrets.CZI_GITHUB_HELPER_APP_ID }}
           github_private_key: ${{ secrets.CZI_GITHUB_HELPER_PK }}
-      - run: echo "BUILD_ARTIFACT_FILENAME=built-${{ matrix.image.name }}-${{ needs.prep.outputs.image_tag }}" >> $GITHUB_OUTPUT
-        if: steps.should_build.outputs.result == 'true'
-        id: set_artifact_name
-      - run: echo true > ${{ steps.set_artifact_name.outputs.BUILD_ARTIFACT_FILENAME }}
-        if: steps.should_build.outputs.result == 'true'
-      - uses: actions/upload-artifact@v4
-        if: steps.should_build.outputs.result == 'true'
-        with:
-          name: ${{ steps.set_artifact_name.outputs.BUILD_ARTIFACT_FILENAME }}
-          path: ${{ steps.set_artifact_name.outputs.BUILD_ARTIFACT_FILENAME }}
 
   update-manifests:
     name: Update ArgoCD manifests
@@ -240,42 +224,14 @@ jobs:
               core.info('All builds passed, continuing with manifest update...');
             }
 
-      - uses: actions/download-artifact@v4
-        id: download
-        with:
-          path: build-results
-          pattern: built-*
-
       - name: Determine manifests to update
         uses: actions/github-script@v7
         id: determine_manifests
         with:
           result-encoding: string
           script: |
-            const fs = require('fs');
-
             const images = ${{ needs.prep.outputs.images }};
-            const filenameRegex = new RegExp(`^built-(\\S*)-(sha-\\S*)$`);
-
-            if (!fs.existsSync(`${{ steps.download.outputs.download-path }}`)) {
-              core.info('No images were built, skipping manifest update');
-              return '';
-            }
-
-            const argusRootDirs = [];
-            fs.readdirSync(`${{ steps.download.outputs.download-path }}`).forEach(file => {
-              console.log('checking file:', file);
-              const match = file.match(filenameRegex);
-              if (!match || match.length < 2) {
-                return;
-              }
-              const imageName = match[1];
-              const image = images.find(img => img.name === imageName);
-              if (!image) {
-                throw new Error(`Image with name=${imageName} was built but cannot be found in ${JSON.stringify(images)}`);
-              }
-              argusRootDirs.push(image.argus_root)
-            });
+            const argusRootDirs = images.filter(image => image.should_build).map(image => image.argus_root);
             console.log('Argus root dirs:', argusRootDirs);
             return argusRootDirs.join(',');
 
