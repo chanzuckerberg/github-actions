@@ -43,12 +43,12 @@ runs:
             new RegExp('^' + pattern.replace(/\?/g, '.').replace(/\*/g, '.*') + '$');
             return regexPattern.test(text);
           }
-          const branches = `${{ inputs.branches }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
-          console.log('Branches to run against:', branches);
+          const branchesInclude = `${{ inputs.branches_include }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
+          console.log('Branches to run against:', branchesInclude);
           const branchesIgnore = `${{ inputs.branches_ignore }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
           console.log('Branches to ignore:', branchesIgnore);
           const branch = `${{ github.ref }}`.replace('refs/heads/', '');
-          const shouldRun = branches.some(b => wildcardMatch(branch, b)) && !branchesIgnore.some(b => wildcardMatch(branch, b));
+          const shouldRun = branchesInclude.some(b => wildcardMatch(branch, b)) && !branchesIgnore.some(b => wildcardMatch(branch, b));
           if (shouldRun) {
             console.log('Job will run');
           } else {
