@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/chanzuckerberg/github-actions/compare/v2.15.3...v3.0.0) (2024-08-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* support for building argus monorepo all in the same workflow ([#302](https://github.com/chanzuckerberg/github-actions/issues/302))
+
+### Features
+
+* support for building argus monorepo all in the same workflow ([#302](https://github.com/chanzuckerberg/github-actions/issues/302)) ([a8e3826](https://github.com/chanzuckerberg/github-actions/commit/a8e382625d319f919fa356d955d95d679917f2bb))
+
 ## [2.15.3](https://github.com/chanzuckerberg/github-actions/compare/v2.15.2...v2.15.3) (2024-08-21)
 
 
