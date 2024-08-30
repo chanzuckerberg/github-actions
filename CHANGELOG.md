@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/chanzuckerberg/github-actions/compare/v3.0.0...v3.1.0) (2024-08-30)
+
+
+### Features
+
+* support pull_request trigger in argus docker builder ([#304](https://github.com/chanzuckerberg/github-actions/issues/304)) ([054ac7b](https://github.com/chanzuckerberg/github-actions/commit/054ac7bd94bce45e1b07ef35042da487ba6bec45))
+
 ## [3.0.0](https://github.com/chanzuckerberg/github-actions/compare/v2.15.3...v3.0.0) (2024-08-29)
 
 
