@@ -79,7 +79,7 @@ runs:
           }
 
           const imageTag = `sha-${sha.slice(0, 7)}`;
-          if (imageTag === '' || imageTag === 'sha-') {
+          if (imageTag === 'sha-') {
             core.setFailed('The image tag [${imageTag}] is invalid.');
           }
 
