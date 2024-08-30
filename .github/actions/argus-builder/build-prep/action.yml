@@ -91,7 +91,7 @@ runs:
         # if the push was forced, use the default branch as the base -- otherwise, use the most recent commit before the push
         # this is necessary because when you force push the previous commit is not available in the repo, thus no changes can be detected
         script: |
-          if (`${{ github.event_name }}` === 'push' && ${{ github.event.forced }}) {
+          if (`${{ github.event_name }}` === 'push' && ${{ github.event.forced || false }}) {
             core.info(`Force push detected, using the repo's default branch (${{ github.event.repository.default_branch }}) as the base`)
             core.setOutput('base', `${{ github.event.repository.default_branch }}`);
           } else {
