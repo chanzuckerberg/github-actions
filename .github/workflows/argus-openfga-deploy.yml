@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Deploy using a file
         id: deploy-openfga
-        uses: openfga/action-openfga-deploy@v0.1.0
+        uses: openfga/action-openfga-deploy@v0.1.1
         with:
           api-url: ${{ inputs.api_url }}
           api-token: ${{ secrets.openfga_token }}
