@@ -68,6 +68,7 @@ jobs:
             console.log("old value: ", JSON.stringify(config));
 
             for (const [key, value] of Object.entries(config.stack.services)) {
+              if (!value.env) continue;
               config.stack.services[key].env = value.env.reduce(
                 (accum, curr) => curr.key === envVariableKey ?
                   accum.concat(Object.assign(curr, { value: authorizationModelId })) :
