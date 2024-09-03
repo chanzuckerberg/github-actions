@@ -33,8 +33,7 @@ jobs:
   deploy:
     permissions:
       id-token: write
-      contents: read    
-      issues: write
+      contents: write
       pull-requests: write
     name: Deploy Authorization Model
     runs-on: [ARM64,self-hosted,Linux]
