@@ -63,21 +63,22 @@ jobs:
             const envVariableKey = '${{ inputs.env_variable_key }}';
             const authorizationModelId = '${{ steps.deploy-openfga.outputs.authorization_model_id }}';
 
-            const config = YAML.parse(fs.readFileSync(filePath, 'utf8'));
-            console.log("old value: ", JSON.stringify(config));
+            const fileContent = fs.readFileSync(filePath, 'utf8');
+            const doc = YAML.parseDocument(fileContent);
+            console.log("old value: ", doc.toString());
 
-            for (const [key, value] of Object.entries(config.stack.services)) {
+            for (const [key, value] of Object.entries(doc.toJS().stack.services)) {
               if (!value.env) continue;
-              config.stack.services[key].env = value.env.reduce(
-                (accum, curr) => curr.key === envVariableKey ?
-                  accum.concat(Object.assign(curr, { value: authorizationModelId })) :
-                  accum.concat(curr),
-                []
-              );
+              value.env.map((item, i) => {
+                if (item.name === envVariableKey) {
+                  doc.deleteIn(['stack', 'services', key, 'env', i]);
+                  doc.addIn(['stack', 'services', key, 'env'], { name: item.name, value: authorizationModelId });
+                }
+              });
             }
 
-            console.log("new value: ", JSON.stringify(config));
-            fs.writeFileSync(filePath, YAML.stringify(config));
+            console.log("new value: ", doc.toString());
+            fs.writeFileSync(filePath, doc.toString());
       - name: Update YAML configuration
         uses: EndBug/add-and-commit@v9
         with:
