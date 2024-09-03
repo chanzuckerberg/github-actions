@@ -1,0 +1,78 @@
+name: Deploy Action
+
+on:
+  workflow_call:
+    inputs: 
+      store_id:
+        description: "The OpenFGA Store ID"
+        required: true
+        type: string
+      api_url:
+        description: "The URL of the OpenFGA API"
+        required: true
+        type: string
+      model_file_path:
+        description: "The path to the model file"
+        required: true
+        type: string
+      env_file_path:
+        description: "The path to the argus configuration YAML file where the authorization_model_id should be checked into"
+        required: true
+        type: string
+      env_variable_key:
+        description: "The key of the environment variable to be updated"
+        required: false
+        type: string
+        default: "OPENFGA_AUTHZ_MODEL_ID"
+    secrets:
+      openfga_token:
+        description: "The OpenFGA API Token"
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy Authorization Model
+    runs-on: [ARM64,self-hosted,Linux]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy using a file
+        id: deploy-openfga
+        uses: openfga/action-openfga-deploy@v0.1.0
+        with:
+          api-url: ${{ inputs.api_url }}
+          api-token: ${{ secrets.openfga_token }}
+          store-id: ${{ inputs.store_id }}
+          model-file-path: ${{ inputs.model_file_path }} 
+      - run: npm install yaml
+        shell: bash 
+      - name: Write the authorization model ID
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const YAML = require('yaml');
+            const fs = require('fs');
+
+            const filePath = '${{ inputs.env_file_path }}';
+            const envVariableKey = '${{ inputs.env_variable_key }}';
+            const authorizationModelId = '${{ steps.deploy-openfga.outputs.authorization_model_id }}';
+
+            const config = YAML.parse(fs.readFileSync(filePath, 'utf8'));
+            console.log("old value: ", JSON.stringify(config));
+
+            for (const [key, value] of Object.entries(config.stack.services)) {
+              config.stack.services[key].env = value.env.reduce(
+                (accum, curr) => curr.key === envVariableKey ?
+                  accum.concat(Object.assign(curr, { value: authorizationModelId })) :
+                  accum.concat(curr),
+                []
+              );
+            }
+
+            console.log("new value: ", JSON.stringify(config));
+            fs.writeFileSync(filePath, YAML.stringify(config));
+      - name: Update YAML configuration
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: -A
+          message: 'chore: Updated ${{ inputs.env_file_path }} ${{ inputs.env_variable_key }} to ${{ steps.deploy-openfga.outputs.authorization_model_id }}'
+
