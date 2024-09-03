@@ -82,6 +82,6 @@ jobs:
       - name: Update YAML configuration
         uses: EndBug/add-and-commit@v9
         with:
-          add: -A
+          add: ${{ inputs.env_file_path }}
           message: 'chore: Updated ${{ inputs.env_file_path }} ${{ inputs.env_variable_key }} to ${{ steps.deploy-openfga.outputs.authorization_model_id }}'
 
