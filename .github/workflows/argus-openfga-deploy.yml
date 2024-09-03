@@ -48,6 +48,9 @@ jobs:
           api-token: ${{ secrets.openfga_token }}
           store-id: ${{ inputs.store_id }}
           model-file-path: ${{ inputs.model_file_path }} 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - run: npm install yaml
         shell: bash 
       - name: Write the authorization model ID
