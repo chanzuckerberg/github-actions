@@ -39,7 +39,14 @@ jobs:
     runs-on: [ARM64,self-hosted,Linux]
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy using a file
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            model:
+              - '${{ inputs.model_file_path }}'
+      - if: steps.changes.outputs.model == 'true'
+        name: Deploy using a file
         id: deploy-openfga
         uses: openfga/action-openfga-deploy@v0.1.1
         with:
@@ -47,12 +54,15 @@ jobs:
           api-token: ${{ secrets.openfga_token }}
           store-id: ${{ inputs.store_id }}
           model-file-path: ${{ inputs.model_file_path }} 
-      - uses: actions/setup-node@v4
+      - if: steps.changes.outputs.model == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install yaml
+      - if: steps.changes.outputs.model == 'true'
+        run: npm install yaml
         shell: bash 
-      - name: Write the authorization model ID
+      - if: steps.changes.outputs.model == 'true'
+        name: Write the authorization model ID
         uses: actions/github-script@v6
         with:
           script: |
@@ -79,7 +89,8 @@ jobs:
 
             console.log("new value: ", doc.toString());
             fs.writeFileSync(filePath, doc.toString());
-      - name: Update YAML configuration
+      - if: steps.changes.outputs.model == 'true'
+        name: Update YAML configuration
         uses: EndBug/add-and-commit@v9
         with:
           add: ${{ inputs.env_file_path }}
