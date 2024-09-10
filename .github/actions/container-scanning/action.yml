@@ -1,0 +1,58 @@
+name: Container Scanning
+description: 'A GitHub Action to scan a container image for security vulnerabilities that follows CZI Best Practices'
+inputs:
+  image_uri:
+    description: 'which image to scan'
+    required: true
+  critical_threshold:
+    description: 'number of critical vulnerabilities that will cause the action to fail'
+    required: false
+    default: "1"
+  high_threshold:
+    description: 'number of high vulnerabilities that will cause the action to fail'
+    required: false
+    default: "1"
+  medium_threshold:
+    description: 'number of medium vulnerabilities that will cause the action to fail'
+    required: false
+    default: "10"
+  low_threshold:
+    description: 'number of low vulnerabilities that will cause the action to fail'
+    required: false
+    default: "10"
+  other_threshold:
+    description: 'number of other vulnerabilities that will cause the action to fail'
+    required: false
+    default: "10"
+  fail_on_vulnerabilities:
+    description: 'whether to fail the action if vulnerabilities are found'
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-region: us-west-2
+        role-to-assume: arn:aws:iam::871040364337:role/ci/github-actions-inspector
+        role-duration-seconds: 1800
+        role-session-name: github-actions-inspector
+    - name: Scan built image with Inspector
+      uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1.1.0
+      id: inspector
+      with:
+        artifact_type: 'container'
+        artifact_path: ${{ inputs.image_uri }} # make sure this matches the image you built
+        critical_threshold: ${{ inputs.critical_threshold }}
+        high_threshold:   ${{ inputs.high_threshold }}
+        medium_threshold:   ${{ inputs.medium_threshold }}
+        low_threshold:  ${{ inputs.low_threshold }}
+        other_threshold: ${{ inputs.other_threshold }}
+        display_vulnerability_findings: "enabled"
+    - name: Display Inspector vulnerability scan results (markdown)
+      shell: bash
+      run: cat ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
+    - name: Fail job if vulnerability threshold is exceeded
+      if: contains(inputs.fail_on_vulnerabilities, 'true')
+      shell: bash
+      run: exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}

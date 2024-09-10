@@ -3,22 +3,23 @@
 	"release-type": "simple",
 	"group-pull-request-title-pattern": "chore: release ${version}",
 	"bump-minor-pre-major": true,
+	"monorepo-tags": true,
 	"prerelease": false,
 	"initial-version": "0.0.1",
-	"changelog-types": [
+	"changelog-sections": [
 		{
 			"type": "feat",
 			"section": "Features",
 			"hidden": false
 		},
 		{
-			"type": "chore",
-			"section": "Misc",
+			"type": "fix",
+			"section": "BugFixes",
 			"hidden": false
 		},
 		{
-			"type": "fix",
-			"section": "BugFixes",
+			"type": "chore",
+			"section": "Misc",
 			"hidden": false
 		}
 	],

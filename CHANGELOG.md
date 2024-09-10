@@ -1,5 +1,118 @@
 # Changelog
 
+## [3.1.0](https://github.com/chanzuckerberg/github-actions/compare/v3.0.0...v3.1.0) (2024-08-30)
+
+
+### Features
+
+* support pull_request trigger in argus docker builder ([#304](https://github.com/chanzuckerberg/github-actions/issues/304)) ([054ac7b](https://github.com/chanzuckerberg/github-actions/commit/054ac7bd94bce45e1b07ef35042da487ba6bec45))
+
+## [3.0.0](https://github.com/chanzuckerberg/github-actions/compare/v2.15.3...v3.0.0) (2024-08-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* support for building argus monorepo all in the same workflow ([#302](https://github.com/chanzuckerberg/github-actions/issues/302))
+
+### Features
+
+* support for building argus monorepo all in the same workflow ([#302](https://github.com/chanzuckerberg/github-actions/issues/302)) ([a8e3826](https://github.com/chanzuckerberg/github-actions/commit/a8e382625d319f919fa356d955d95d679917f2bb))
+
+## [2.15.3](https://github.com/chanzuckerberg/github-actions/compare/v2.15.2...v2.15.3) (2024-08-21)
+
+
+### Misc
+
+* use pull-through cache in docker-builders for qemu ([#299](https://github.com/chanzuckerberg/github-actions/issues/299)) ([07ae9c3](https://github.com/chanzuckerberg/github-actions/commit/07ae9c3950e07a8e1c6426b30f91ede86b127d11))
+
+## [2.15.2](https://github.com/chanzuckerberg/github-actions/compare/v2.15.1...v2.15.2) (2024-08-16)
+
+
+### BugFixes
+
+* prevent manifest update when dependent job was cancelled (2) ([#297](https://github.com/chanzuckerberg/github-actions/issues/297)) ([f755674](https://github.com/chanzuckerberg/github-actions/commit/f7556746ffef827dbe6d6dd7c2d8f2b1662c86b6))
+
+## [2.15.1](https://github.com/chanzuckerberg/github-actions/compare/v2.15.0...v2.15.1) (2024-08-16)
+
+
+### BugFixes
+
+* prevent manifest update when dependent job was cancelled ([#295](https://github.com/chanzuckerberg/github-actions/issues/295)) ([17272a0](https://github.com/chanzuckerberg/github-actions/commit/17272a0044360c87d274f1bc1e226a4ecb199fb8))
+
+## [2.15.0](https://github.com/chanzuckerberg/github-actions/compare/v2.14.0...v2.15.0) (2024-08-16)
+
+
+### Features
+
+* Add secret_files arg to Argus docker builder to allow passing files to build context ([#293](https://github.com/chanzuckerberg/github-actions/issues/293)) ([fe01920](https://github.com/chanzuckerberg/github-actions/commit/fe0192038cc934397910d3768f03c8aa35dbf152))
+
+## [2.14.0](https://github.com/chanzuckerberg/github-actions/compare/v2.13.2...v2.14.0) (2024-08-08)
+
+
+### Features
+
+* scope Argus ECR repo name with working directory ([#291](https://github.com/chanzuckerberg/github-actions/issues/291)) ([cdbe4f8](https://github.com/chanzuckerberg/github-actions/commit/cdbe4f89ff76793b9f5b84c27b04976ed279be39))
+
+## [2.13.2](https://github.com/chanzuckerberg/github-actions/compare/v2.13.1...v2.13.2) (2024-08-02)
+
+
+### BugFixes
+
+* make 'Update Manifest' job fail if any image build fails ([#289](https://github.com/chanzuckerberg/github-actions/issues/289)) ([7a08299](https://github.com/chanzuckerberg/github-actions/commit/7a08299241246b063672ce4014f068fc6ec79372))
+
+## [2.13.1](https://github.com/chanzuckerberg/github-actions/compare/v2.13.0...v2.13.1) (2024-07-30)
+
+
+### BugFixes
+
+* update Jira URLs after czi-tech to czi migration ([#287](https://github.com/chanzuckerberg/github-actions/issues/287)) ([60629a9](https://github.com/chanzuckerberg/github-actions/commit/60629a9ec3a18abb6b362754f4b6287cca168414))
+
+
+### Misc
+
+* bump google-github-actions/release-please-action ([#271](https://github.com/chanzuckerberg/github-actions/issues/271)) ([08e6a7b](https://github.com/chanzuckerberg/github-actions/commit/08e6a7b6e4f224cc7babb8d9ced2959d68e16d06))
+
+## [2.13.0](https://github.com/chanzuckerberg/github-actions/compare/v2.12.0...v2.13.0) (2024-07-15)
+
+
+### Features
+
+* break argus-docker-build workflow into composite actions ([#283](https://github.com/chanzuckerberg/github-actions/issues/283)) ([d9d1014](https://github.com/chanzuckerberg/github-actions/commit/d9d1014b19da6dd46d12a2e15f2f0319aed2b42f))
+
+
+### Misc
+
+* upgrade release-please action ([#286](https://github.com/chanzuckerberg/github-actions/issues/286)) ([102be50](https://github.com/chanzuckerberg/github-actions/commit/102be50d09a67f315e28a3ba026dedf0154c31b9))
+
+## [2.12.0](https://github.com/chanzuckerberg/github-actions/compare/v2.11.1...v2.12.0) (2024-07-11)
+
+
+### Features
+
+* adding docker scanning github action workflow ([#274](https://github.com/chanzuckerberg/github-actions/issues/274)) ([89b5406](https://github.com/chanzuckerberg/github-actions/commit/89b5406c40cf13ec055ab8e44633019e1655802b))
+
+### [2.11.1](https://github.com/chanzuckerberg/github-actions/compare/v2.11.0...v2.11.1) (2024-07-09)
+
+
+### Bug Fixes
+
+* handle force pushes in argus builder ([#280](https://github.com/chanzuckerberg/github-actions/issues/280)) ([5012077](https://github.com/chanzuckerberg/github-actions/commit/50120775b18694741b872689591c9efcbe402e13))
+
+## [2.11.0](https://github.com/chanzuckerberg/github-actions/compare/v2.10.0...v2.11.0) (2024-07-08)
+
+
+### Features
+
+* add ability to delete all stacks in happy environment ([#275](https://github.com/chanzuckerberg/github-actions/issues/275)) ([9e055ea](https://github.com/chanzuckerberg/github-actions/commit/9e055eaa8dfc05123dc2d3150485025c76c18c83))
+* add more conventional commit types ([#279](https://github.com/chanzuckerberg/github-actions/issues/279)) ([c212929](https://github.com/chanzuckerberg/github-actions/commit/c2129291817d4055272deee803d893d6669ababd))
+
+## [2.10.0](https://github.com/chanzuckerberg/github-actions/compare/v2.9.0...v2.10.0) (2024-07-03)
+
+
+### Features
+
+* support build_args in argus docker builder workflow ([#276](https://github.com/chanzuckerberg/github-actions/issues/276)) ([95e9d8d](https://github.com/chanzuckerberg/github-actions/commit/95e9d8d72e892814927d854a4c4bb10eb9fb47fe))
+
 ## [2.9.0](https://github.com/chanzuckerberg/github-actions/compare/v2.8.0...v2.9.0) (2024-05-30)
 
 

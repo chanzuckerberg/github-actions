@@ -1,0 +1,81 @@
+name: argus-docker-manifest-update
+description: Updates manifests for Argus after the Docker image is built
+
+inputs:
+  envs:
+    description: 'Env names, comma delimited'
+    required: true
+  image_tag:
+    description: The tag of the image that should be updated
+    required: true
+  argus_project_dirs:
+    description: 'Comma-delimited list of Argus project roots (directories that contain the .infra/ directory for each app)'
+    default: '.'
+    required: false
+  github_app_id:
+    description: 'GitHub App ID'
+    required: true
+  github_private_key:
+    description: 'GitHub App private key'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - run: |
+        echo "Image Tag: ${{ inputs.image_tag }}"
+      shell: bash
+    - name: Generate token
+      id: generate_token
+      uses: tibdex/github-app-token@v2
+      with:
+        app_id: ${{ inputs.github_app_id }}
+        private_key: ${{ inputs.github_private_key }}
+    - name: Calculate Branch and Base Names
+      id: refs
+      uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1.6.0
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ steps.generate_token.outputs.token }}
+        ref: ${{ steps.refs.outputs.headRef }}
+    - name: Parse envs
+      id: parse_envs
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
+          core.setOutput('envs', envs.join(' '));
+    - name: Determine .infra path
+      uses: actions/github-script@v7
+      id: path
+      with:
+        script: |
+          const path = require('path');
+          const fs = require('fs');
+          const workingDirs = `${{ inputs.argus_project_dirs }}`.split(',').map(dir => dir.trim()).filter(b => b.length > 0);
+          const infraDirPaths = workingDirs.map(dir => {
+            const infraDirPath = path.join(dir, '.infra');
+            if (!fs.existsSync(infraDirPath)) {
+              throw new Error(`.infra directory not found at ${infraDirPath}`);
+            }
+            return infraDirPath;
+          });
+          core.setOutput('infra_dir_paths', infraDirPaths.join(' '));
+    - name: Update Manifest
+      shell: bash
+      run: |
+        for env in ${{ steps.parse_envs.outputs.envs }}
+        do
+          for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
+          do
+            sed -i 's/tag: sha-\w\+/tag: ${{ inputs.image_tag }}/g' ${infra_dir_path}/${env}/values.yaml
+            cat ${infra_dir_path}/${env}/values.yaml
+          done
+        done
+    - name: Update Argus manifests
+      uses: EndBug/add-and-commit@v9
+      with:
+        add: -A
+        message: 'chore: Updated [${{ steps.parse_envs.outputs.envs }}] values.yaml image tags to ${{ inputs.image_tag }}'
+
