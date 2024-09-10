@@ -21,7 +21,7 @@ jobs:
           filters: |
             changed:
               - added|modified: 'terraform/**'
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v7
         id: changedDirs
         with:
           script: |
