@@ -10,7 +10,7 @@ jobs:
   tf-test-cache:
     runs-on: [ARM64,self-hosted,Linux]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Terraform build cache
       uses: ./.github/actions/tf-cache-providers
       with:

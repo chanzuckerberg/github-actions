@@ -104,7 +104,7 @@ jobs:
         pullRequestBody: ${{ fromJson(needs.find_released_prs.outputs.prBodyArray) }}
     if: ${{ needs.find_released_prs.outputs.prBodyArray != '[]' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Find Jira Marker
         id: findJiraMarker
         uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@jira-find-marker-v1.0.1
