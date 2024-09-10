@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.2.0](https://github.com/chanzuckerberg/github-actions/compare/v3.1.0...v3.2.0) (2024-09-10)
+
+
+### Features
+
+* argus-docker-build allow skipping manifest update ([#307](https://github.com/chanzuckerberg/github-actions/issues/307)) ([a4e91c6](https://github.com/chanzuckerberg/github-actions/commit/a4e91c6cdf63ac870a05eadf3ebec8a2346b0bd3))
+
+
+### Misc
+
+* bump dorny/paths-filter from 2.10.2 to 3.0.2 ([#272](https://github.com/chanzuckerberg/github-actions/issues/272)) ([ad2288c](https://github.com/chanzuckerberg/github-actions/commit/ad2288cdef257524846902f74fd17a3b25d4aa81))
+
 ## [3.1.0](https://github.com/chanzuckerberg/github-actions/compare/v3.0.0...v3.1.0) (2024-08-30)
 
 
