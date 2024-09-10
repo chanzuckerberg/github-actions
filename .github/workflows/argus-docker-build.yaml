@@ -95,6 +95,7 @@ jobs:
                     "type": "array",
                     "items": { "type": "string" }
                   },
+                  "skip_manifest_update": { "type": "boolean" }
                 },
                 "required": ["context", "dockerfile"]
               }
@@ -230,7 +231,7 @@ jobs:
           result-encoding: string
           script: |
             const images = ${{ needs.prep.outputs.images }};
-            const argusRootDirs = images.filter(image => image.should_build).map(image => image.argus_root);
+            const argusRootDirs = images.filter(image => image.should_build && !image.skip_manifest_update).map(image => image.argus_root);
             console.log('Argus root dirs:', argusRootDirs);
             return argusRootDirs.join(',');
 
