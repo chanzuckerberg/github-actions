@@ -33,7 +33,7 @@ inputs:
     description: 'GitHub App private key'
     required: true
   skip_checkout:
-    description: 'Skip checking out the repository. If set to "true", we assume the repo is already checked out at ${{ github.event.repository.name }}.'
+    description: 'Skip checking out the repository. If set to "true", we assume the repo is already checked out in a directory matching the repos name.'
     required: false
     default: 'false'
 
