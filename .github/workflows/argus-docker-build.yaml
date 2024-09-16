@@ -146,7 +146,7 @@ jobs:
                 console.log('Checking file:', file);
                 return pathFilters.some(filters => {
                   console.log('- checking filters:', filters);
-                  const matchedFile = filters.every(filter => minimatch(file, filter, , { dot: true }));
+                  const matchedFile = filters.every(filter => minimatch(file, filter, { dot: true }));
                   console.log(`- matched file ${file} with filters ${filters}?`, matchedFile);
                   return matchedFile;
                 });
