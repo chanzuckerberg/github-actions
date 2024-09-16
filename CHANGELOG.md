@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.2](https://github.com/chanzuckerberg/github-actions/compare/v3.2.1...v3.2.2) (2024-09-16)
+
+
+### BugFixes
+
+* typo ([#311](https://github.com/chanzuckerberg/github-actions/issues/311)) ([e22ae9f](https://github.com/chanzuckerberg/github-actions/commit/e22ae9fb2ab335465481e357f48456932aede3f1))
+
 ## [3.2.1](https://github.com/chanzuckerberg/github-actions/compare/v3.2.0...v3.2.1) (2024-09-16)
 
 
