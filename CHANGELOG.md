@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.1](https://github.com/chanzuckerberg/github-actions/compare/v3.2.0...v3.2.1) (2024-09-16)
+
+
+### BugFixes
+
+* set dot option in minimatch ([#309](https://github.com/chanzuckerberg/github-actions/issues/309)) ([f3b209a](https://github.com/chanzuckerberg/github-actions/commit/f3b209a6c2fa3bf4edafe9abadc87705d85bf0e6))
+
 ## [3.2.0](https://github.com/chanzuckerberg/github-actions/compare/v3.1.0...v3.2.0) (2024-09-10)
 
 
