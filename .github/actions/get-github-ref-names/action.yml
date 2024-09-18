@@ -10,6 +10,9 @@ outputs:
   headRef:
     description: "The name of our branch's ref"
     value: ${{ steps.refs.outputs.headRef }}
+  headSha:
+    description: "The sha of our branch's ref"
+    value: ${{ steps.refs.outputs.headSha }}
   baseRef:
     description: "The name of the upstream's default ref"
     value: ${{ steps.refs.outputs.baseRef }}
@@ -23,29 +26,35 @@ runs:
       with:
         script: |
           let eventName = context.eventName;
-          let base;
-          let head;
+          let baseRef;
+          let headRef;
+          let headSha;
 
           // TODO: what do we do wrt characters not allowed in docker tags?
           if (eventName === "pull_request") {
-            head = context.payload.pull_request.head.ref;
-            base = context.payload.pull_request.base.ref;
+            headRef = context.payload.pull_request.headRef.ref;
+            headSha = context.payload.pull_request.head.sha;
+            baseRef = context.payload.pull_request.baseRef.ref;
           } else if (eventName === "push") {
             // TODO: this won't work with tags
             const pruneHead = "refs/heads/";
-            head = context.payload.ref.substring(pruneHead.length);
-            base = context.payload.repository.default_branch;
+            headRef = context.payload.ref.substring(pruneHead.length);
+            headSha = context.sha;
+            baseRef = context.payload.repository.default_branch;
           } else if (eventName === "delete") {
-            head = context.payload.repository.default_branch;
-            base = context.payload.ref;
+            headRef = context.payload.repository.default_branch;
+            headSha = context.sha;
+            baseRef = context.payload.ref;
           } else if (eventName === "release") {
-            head = context.payload.repository.default_branch;
-            base = context.payload.repository.default_branch;
+            headRef = context.payload.repository.default_branch;
+            headSha = context.sha;
+            baseRef = context.payload.repository.default_branch;
           } else {
             core.setFailed(`EventName ${eventName} not supported`);
             return;
           }
 
-          core.setOutput("headRef", head);
-          core.setOutput("baseRef", base);
-          console.log(`Calculated the following ${JSON.stringify({eventName,base,head}, null, 2)}`);
+          core.setOutput("headRef", headRef);
+          core.setOutput("headSha", headSha);
+          core.setOutput("baseRef", baseRef);
+          console.log(`Calculated the following ${JSON.stringify({eventName,baseRef,headRef,headSha}, null, 2)}`);
