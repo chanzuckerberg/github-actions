@@ -236,7 +236,7 @@ jobs:
             console.log('Argus root dirs:', argusRootDirs);
             return argusRootDirs.join(',');
 
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@8a46805ca8e5b91bfa8959587a00b5526a35d14e
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@258ab59196f6952756a0285fcd92100317035a03
         if: steps.determine_manifests.outputs.result != ''
         with:
           envs: ${{ inputs.envs }}
