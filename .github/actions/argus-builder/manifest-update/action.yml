@@ -37,6 +37,7 @@ runs:
       with:
         result-encoding: string
         script: |
+          const eventName = context.eventName;
           if (eventName === "pull_request") {
             // use PR head branch name if triggered by PR
             return context.payload.pull_request.head.ref;
