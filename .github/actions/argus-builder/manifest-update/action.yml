@@ -43,7 +43,8 @@ runs:
             return context.payload.pull_request.head.ref;
           } else if (eventName === "push") {
             // use commit sha if triggered by push
-            return context.sha;
+            // return context.sha;
+            return '';
           } else {
             core.setFailed(`EventName ${eventName} not supported`);
             return;
@@ -52,7 +53,7 @@ runs:
       with:
         fetch-depth: 0
         token: ${{ steps.generate_token.outputs.token }}
-        # ref: ${{ steps.checkout_ref.outputs.result }}
+        ref: ${{ steps.checkout_ref.outputs.result }}
     - name: Parse envs
       id: parse_envs
       uses: actions/github-script@v7
@@ -95,5 +96,5 @@ runs:
       with:
         add: -A
         message: 'chore: Updated [${{ steps.parse_envs.outputs.envs }}] values.yaml image tags to ${{ inputs.image_tag }}'
-        push: origin ${{ steps.refs.outputs.headRef }}
+        # push: origin ${{ steps.refs.outputs.headRef }}
 
