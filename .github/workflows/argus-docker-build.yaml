@@ -47,6 +47,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      pull-requests: read
     steps:
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@f801d1e293e6275cc1f5c0d6061ff0e3de640589
         id: build_prep
