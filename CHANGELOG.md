@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.3](https://github.com/chanzuckerberg/github-actions/compare/v3.2.2...v3.2.3) (2024-09-23)
+
+
+### BugFixes
+
+* prevent manifest update after another commit ([#313](https://github.com/chanzuckerberg/github-actions/issues/313)) ([184fd1b](https://github.com/chanzuckerberg/github-actions/commit/184fd1b7af7570e355d1bd0c442c5cb8a09fd93d))
+
 ## [3.2.2](https://github.com/chanzuckerberg/github-actions/compare/v3.2.1...v3.2.2) (2024-09-16)
 
 
