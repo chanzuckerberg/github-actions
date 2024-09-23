@@ -47,6 +47,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      pull-requests: read
     steps:
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@f801d1e293e6275cc1f5c0d6061ff0e3de640589
         id: build_prep
@@ -236,7 +237,7 @@ jobs:
             console.log('Argus root dirs:', argusRootDirs);
             return argusRootDirs.join(',');
 
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@f801d1e293e6275cc1f5c0d6061ff0e3de640589
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@0b9b41fa49ec6d64bacbeab699712434e79c3476
         if: steps.determine_manifests.outputs.result != ''
         with:
           envs: ${{ inputs.envs }}
