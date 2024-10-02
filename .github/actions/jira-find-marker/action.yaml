@@ -34,16 +34,22 @@ runs:
 
           const projectKeys = `${{ inputs.projectKeys }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
 
-          const markerMatch = projectKeys.map(projectKey => {
+          let markerMatch = null;
+          projectKeys.find(projectKey => {
             console.log('Searching for Jira marker in PR body for project key:', projectKey);
             const markerRegex = new RegExp(`<!--JIRA_VALIDATE_START:(${projectKey}-\\d+):do not remove this marker as it will break the jira validation functionality-->[\\s\\S]+<!--JIRA_VALIDATE_END:do not remove this marker as it will break the jira validation functionality-->\\s+---\\s+`);
             const matchResult = pullRequestBody.match(markerRegex);
-            if (!matchResult || matchResult.length < 2) {
-              console.log('No Jira marker found in PR body');
-              return false;
+            if (matchResult && matchResult.length >= 2) {
+              markerMatch = matchResult;
+              return true;
             }
-            return matchResult;
-          }).find(match => match);
+            return false;
+          });
+
+          if (!markerMatch) {
+            console.log('No Jira marker found in PR body');
+            return;
+          }
 
           const jiraIssueMarker = markerMatch[0];
           console.log('Setting jiraIssueMarker to:', jiraIssueMarker);
