@@ -6,7 +6,7 @@ inputs:
     description: The Github PR body
     required: true
     type: string
-  projectKeys:
+  projectKey:
     description: The Jira project keys to look for (comma delimited)
     required: true
     type: string
@@ -32,21 +32,9 @@ runs:
             return;
           }
 
-          const projectKeys = `${{ inputs.projectKeys }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
-
-          let markerMatch = null;
-          projectKeys.find(projectKey => {
-            console.log('Searching for Jira marker in PR body for project key:', projectKey);
-            const markerRegex = new RegExp(`<!--JIRA_VALIDATE_START:(${projectKey}-\\d+):do not remove this marker as it will break the jira validation functionality-->[\\s\\S]+<!--JIRA_VALIDATE_END:do not remove this marker as it will break the jira validation functionality-->\\s+---\\s+`);
-            const matchResult = pullRequestBody.match(markerRegex);
-            if (matchResult && matchResult.length >= 2) {
-              markerMatch = matchResult;
-              return true;
-            }
-            return false;
-          });
-
-          if (!markerMatch) {
+          const markerRegex = new RegExp(`<!--JIRA_VALIDATE_START:(${{ inputs.projectKey }}-\\d+):do not remove this marker as it will break the jira validation functionality-->[\\s\\S]+<!--JIRA_VALIDATE_END:do not remove this marker as it will break the jira validation functionality-->\\s+---\\s+`);
+          const markerMatch = pullRequestBody.match(markerRegex);
+          if (!markerMatch || markerMatch.length < 2) {
             console.log('No Jira marker found in PR body');
             return;
           }
