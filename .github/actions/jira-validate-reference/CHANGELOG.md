@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.1.2...jira-validate-reference-v1.2.0) (2024-10-02)
+
+
+### Features
+
+* allow multiple projectKeys in jira automations ([#315](https://github.com/chanzuckerberg/github-actions/issues/315)) ([9abdda4](https://github.com/chanzuckerberg/github-actions/commit/9abdda4d328968ee4862f720aaba672ec7f5b6a8))
+
+
+### Misc
+
+* roll back mutliple projectKey support ([#317](https://github.com/chanzuckerberg/github-actions/issues/317)) ([dea8a11](https://github.com/chanzuckerberg/github-actions/commit/dea8a117439171e7f7e4751a087e1354e233b104))
+
 ## [1.1.2](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.1.1...jira-validate-reference-v1.1.2) (2024-07-30)
 
 
