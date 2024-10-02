@@ -97,7 +97,7 @@ runs:
 
           for (let comment of comments) {
             if (comment.body === noJiraIssueBody && comment.user.type === 'Bot') {
-              console.log('Found comment:', JSON.stringify(comment, null, 2));
+              console.log('Found comment to delete:', JSON.stringify(comment, null, 2));
               await github.rest.issues.deleteComment({
                 owner,
                 repo,
