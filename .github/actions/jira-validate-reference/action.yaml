@@ -6,7 +6,7 @@ description: |
   the PR body (or update the existing summary if it already exists).
 
 inputs:
-  projectKeys:
+  projectKey:
     description: The Jira project keys to look for (comma delimited)
     required: true
     type: string
@@ -68,34 +68,26 @@ runs:
         script: |
           const prBody = ${{ steps.getPullRequest.outputs.prBody }};
           const prTitle = ${{ steps.getPullRequest.outputs.prTitle }};
-          const projectKeys = `${{ inputs.projectKeys }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
-          if (projectKeys.length === 0) {
-            throw new Error('No projectKeys provided');
-          }
-
-          const issueRegexes = projectKeys.map(projectKey => new RegExp(`${projectKey}-\\d+`));
 
           let jiraIssueRef = null;
+          const issueRegex = new RegExp(`${{ inputs.projectKey }}-\\d+`);
           [
             { label: 'branch', value: '${{ github.head_ref }}' },
             { label: 'title', value: prTitle },
             { label: 'body', value: prBody },
           ].find(({label, value}) => {
-            const found = issueRegexes.find(issueRegex => {
-              const match = value.match(issueRegex);
-              if (match) {
-                jiraIssueRef = match[0];
-                console.log(`Found Jira issue reference in PR ${label}: ${jiraIssueRef}`);
-                return true;
-              }
-              return false;
-            });
-            return found;
+            const match = value.match(issueRegex);
+            if (match) {
+              jiraIssueRef = match[0];
+              console.log(`Found Jira issue reference in PR ${label}: ${jiraIssueRef}`);
+              return true;
+            }
+            return false;
           });
 
           const ownerAndRepo = '${{ github.repository }}';
           const [owner, repo] = ownerAndRepo.split('/');
-          const noJiraIssueBody = `No Jira issue reference found in branch, title, or body of PR.\n\nPlease add a reference to a Jira issue in the form of PROJECTKEY-#### (eg: ${projectKeys[0]}-1234) to the branch name, title, or body of your PR.`;
+          const noJiraIssueBody = `No Jira issue reference found in branch, title, or body of PR.\n\nPlease add a reference to a Jira issue in the form of ${{ inputs.projectKey }}-#### (eg: ${{ inputs.projectKey }}-1234) to the branch name, title, or body of your PR.`;
 
           const { data: comments } = await github.rest.issues.listComments({
             owner,
@@ -104,8 +96,8 @@ runs:
           })
 
           for (let comment of comments) {
-            if (comment.body === noJiraIssueBody) {
-              console.log('Found comment:', JSON.stringify(comment, null, 2));
+            if (comment.body === noJiraIssueBody && comment.user.type === 'Bot') {
+              console.log('Found comment to delete:', JSON.stringify(comment, null, 2));
               await github.rest.issues.deleteComment({
                 owner,
                 repo,
@@ -121,7 +113,7 @@ runs:
               issue_number: ${{ github.event.pull_request.number }},
               body: noJiraIssueBody,
             });
-            throw new Error(body);
+            throw new Error(noJiraIssueBody);
           }
           return jiraIssueRef;
 
@@ -149,10 +141,10 @@ runs:
     - name: Find Jira Marker
       id: findJiraMarker
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
-      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@885251a38b81dbb9b6ab0b106dc31ec2f5703764
+      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@a9fcc1eebdf68758ed741a0828e1c822a3b3177e
       with:
         pullRequestBody: ${{ steps.getPullRequest.outputs.prBody }}
-        projectKeys: ${{ inputs.projectKeys }}
+        projectKey: ${{ inputs.projectKey }}
 
     - name: Update PR Body
       uses: actions/github-script@v7
