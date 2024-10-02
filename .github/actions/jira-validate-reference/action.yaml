@@ -96,7 +96,7 @@ runs:
           })
 
           for (let comment of comments) {
-            if (comment.body === noJiraIssueBody) {
+            if (comment.body === noJiraIssueBody && user.type === 'Bot') {
               console.log('Found comment:', JSON.stringify(comment, null, 2));
               await github.rest.issues.deleteComment({
                 owner,
@@ -113,7 +113,7 @@ runs:
               issue_number: ${{ github.event.pull_request.number }},
               body: noJiraIssueBody,
             });
-            throw new Error(body);
+            throw new Error(noJiraIssueBody);
           }
           return jiraIssueRef;
 
