@@ -6,8 +6,8 @@ inputs:
     description: The Github PR body
     required: true
     type: string
-  projectKey:
-    description: The Jira project key
+  projectKeys:
+    description: The Jira project keys to look for (comma delimited)
     required: true
     type: string
 
@@ -24,7 +24,7 @@ runs:
   steps:
     - name: Get Jira Issue Reference From Marker
       id: getJiraIssueReferenceFromMarker
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const pullRequestBody = ${{ inputs.pullRequestBody }};
@@ -32,12 +32,18 @@ runs:
             return;
           }
 
-          const markerRegex = new RegExp(`<!--JIRA_VALIDATE_START:(${{ inputs.projectKey }}-\\d+):do not remove this marker as it will break the jira validation functionality-->[\\s\\S]+<!--JIRA_VALIDATE_END:do not remove this marker as it will break the jira validation functionality-->\\s+---\\s+`);
-          const markerMatch = pullRequestBody.match(markerRegex);
-          if (!markerMatch || markerMatch.length < 2) {
-            console.log('No Jira marker found in PR body');
-            return;
-          }
+          const projectKeys = `${{ inputs.projectKey }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
+
+          const markerMatch = projectKeys.map(projectKey => {
+            console.log('Searching for Jira marker in PR body for project key:', projectKey);
+            const markerRegex = new RegExp(`<!--JIRA_VALIDATE_START:(${projectKey}-\\d+):do not remove this marker as it will break the jira validation functionality-->[\\s\\S]+<!--JIRA_VALIDATE_END:do not remove this marker as it will break the jira validation functionality-->\\s+---\\s+`);
+            const matchResult = pullRequestBody.match(markerRegex);
+            if (!matchResult || matchResult.length < 2) {
+              console.log('No Jira marker found in PR body');
+              return false;
+            }
+            return matchResult;
+          }).find(match => match);
 
           const jiraIssueMarker = markerMatch[0];
           console.log('Setting jiraIssueMarker to:', jiraIssueMarker);
