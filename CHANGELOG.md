@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.3.0](https://github.com/chanzuckerberg/github-actions/compare/v3.2.3...v3.3.0) (2024-10-02)
+
+
+### Features
+
+* allow multiple projectKeys in jira automations ([#315](https://github.com/chanzuckerberg/github-actions/issues/315)) ([9abdda4](https://github.com/chanzuckerberg/github-actions/commit/9abdda4d328968ee4862f720aaba672ec7f5b6a8))
+
+
+### Misc
+
+* roll back mutliple projectKey support ([#317](https://github.com/chanzuckerberg/github-actions/issues/317)) ([dea8a11](https://github.com/chanzuckerberg/github-actions/commit/dea8a117439171e7f7e4751a087e1354e233b104))
+* update jira release workflow ([#318](https://github.com/chanzuckerberg/github-actions/issues/318)) ([c276d61](https://github.com/chanzuckerberg/github-actions/commit/c276d61d83aa6d1aadd6e1c1f64d741844f34e8f))
+
 ## [3.2.3](https://github.com/chanzuckerberg/github-actions/compare/v3.2.2...v3.2.3) (2024-09-23)
 
 
