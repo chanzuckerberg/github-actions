@@ -104,7 +104,7 @@ runs:
               issue_number: ${{ github.event.pull_request.number }},
             })
 
-            const comment = comments.forEach(comment => {
+            for (let comment of comments) {
               if (comment.body === body) {
                 console.log('Found comment:', JSON.stringify(comment, null, 2));
                 await github.rest.issues.deleteComment({
@@ -113,7 +113,7 @@ runs:
                   comment_id: comment.id,
                 });
               }
-            });
+            }
 
             await github.rest.issues.createComment({
               owner,
