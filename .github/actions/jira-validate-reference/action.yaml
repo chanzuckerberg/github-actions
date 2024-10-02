@@ -103,12 +103,16 @@ runs:
               repo,
               issue_number: ${{ github.event.pull_request.number }},
             })
-            if (comments.length > 0) {
-              console.log('comments:', JSON.stringify(comments[0], null, 2));
+
+            const comment = comments.find(comment => comment.body === body });
+            if (comment) {
+              console.log('Found comment:', JSON.stringify(comment, null, 2));
+              await github.rest.issues.deleteComment({
+                owner,
+                repo,
+                comment_id: comment.id,
+              });
             }
-            // const botComment = comments.find(comment => {
-            //   return comment.user.type === 'Bot' && comment.body.includes('${{ matrix.tfmodule }}')
-            // })
 
             await github.rest.issues.createComment({
               owner,
