@@ -6,8 +6,8 @@ description: |
   the PR body (or update the existing summary if it already exists).
 
 inputs:
-  projectKey:
-    description: The Jira project key
+  projectKeys:
+    description: The Jira project keys to look for (comma delimited)
     required: true
     type: string
   skipBranches:
@@ -30,7 +30,7 @@ runs:
   steps:
     - name: Check If Job Should Run
       id: checkIfJobShouldRun
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const skipBranchesRegex = new RegExp('${{ inputs.skipBranches }}');
@@ -45,7 +45,7 @@ runs:
     - name: Get Pull Request
       id: getPullRequest
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const ownerAndRepo = '${{ github.repository }}';
@@ -63,32 +63,40 @@ runs:
     - name: Parse Jira Issue Reference
       id: parseIssueRef
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const prBody = ${{ steps.getPullRequest.outputs.prBody }};
           const prTitle = ${{ steps.getPullRequest.outputs.prTitle }};
+          const projectKeys = `${{ inputs.projectKeys }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
+          if (projectKeys.length === 0) {
+            throw new Error('No projectKeys provided');
+          }
+
+          const issueRegexes = projectKeys.map(projectKey => new RegExp(`${projectKey}-\\d+`));
 
           let jiraIssueRef = null;
-          const issueRegex = new RegExp(`${{ inputs.projectKey }}-\\d+`);
           [
             { label: 'branch', value: '${{ github.head_ref }}' },
             { label: 'title', value: prTitle },
             { label: 'body', value: prBody },
           ].find(({label, value}) => {
-            const match = value.match(issueRegex);
-            if (match) {
-              jiraIssueRef = match[0];
-              console.log(`Found Jira issue reference in PR ${label}: ${jiraIssueRef}`);
-              return true;
-            }
-            return false;
+            const found = issueRegexes.find(issueRegex => {
+              const match = value.match(issueRegex);
+              if (match) {
+                jiraIssueRef = match[0];
+                console.log(`Found Jira issue reference in PR ${label}: ${jiraIssueRef}`);
+                return true;
+              }
+              return false;
+            });
+            return found;
           });
 
           if (!jiraIssueRef) {
             const ownerAndRepo = '${{ github.repository }}';
             const [owner, repo] = ownerAndRepo.split('/');
-            const body = `No Jira issue reference found in branch, title, or body of PR.\n\nPlease add a reference to a Jira issue in the form of ${{ inputs.projectKey }}-#### (eg: ${{ inputs.projectKey }}-1400) to the branch name, title, or body of your PR.`;
+            const body = `No Jira issue reference found in branch, title, or body of PR.\n\nPlease add a reference to a Jira issue in the form of <projectKey>-#### (eg: ${projectKeys[0]}-1234) to the branch name, title, or body of your PR.`;
             await github.rest.issues.createComment({
               owner,
               repo,
@@ -102,7 +110,7 @@ runs:
     - name: Fetch Jira Issue Details
       id: fetchJiraIssueDetails
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const jiraIssueRef = ${{ steps.parseIssueRef.outputs.result }};
@@ -123,13 +131,13 @@ runs:
     - name: Find Jira Marker
       id: findJiraMarker
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
-      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@jira-find-marker-v1.0.1
+      uses: chanzuckerberg/github-actions/.github/actions/jira-find-marker@faafd22c1957bdda910aabbf39e421c636fbbff1
       with:
         pullRequestBody: ${{ steps.getPullRequest.outputs.prBody }}
-        projectKey: ${{ inputs.projectKey }}
+        projectKeys: ${{ inputs.projectKeys }}
 
     - name: Update PR Body
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
       with:
         script: |
