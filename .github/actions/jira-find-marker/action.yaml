@@ -32,7 +32,7 @@ runs:
             return;
           }
 
-          const projectKeys = `${{ inputs.projectKey }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
+          const projectKeys = `${{ inputs.projectKeys }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
 
           const markerMatch = projectKeys.map(projectKey => {
             console.log('Searching for Jira marker in PR body for project key:', projectKey);
