@@ -93,33 +93,33 @@ runs:
             return found;
           });
 
-          if (!jiraIssueRef) {
-            const ownerAndRepo = '${{ github.repository }}';
-            const [owner, repo] = ownerAndRepo.split('/');
-            const body = `No Jira issue reference found in branch, title, or body of PR.\n\nPlease add a reference to a Jira issue in the form of PROJECTKEY-#### (eg: ${projectKeys[0]}-1234) to the branch name, title, or body of your PR.`;
+          const ownerAndRepo = '${{ github.repository }}';
+          const [owner, repo] = ownerAndRepo.split('/');
+          const noJiraIssueBody = `No Jira issue reference found in branch, title, or body of PR.\n\nPlease add a reference to a Jira issue in the form of PROJECTKEY-#### (eg: ${projectKeys[0]}-1234) to the branch name, title, or body of your PR.`;
 
-            const { data: comments } = await github.rest.issues.listComments({
-              owner,
-              repo,
-              issue_number: ${{ github.event.pull_request.number }},
-            })
+          const { data: comments } = await github.rest.issues.listComments({
+            owner,
+            repo,
+            issue_number: ${{ github.event.pull_request.number }},
+          })
 
-            for (let comment of comments) {
-              if (comment.body === body) {
-                console.log('Found comment:', JSON.stringify(comment, null, 2));
-                await github.rest.issues.deleteComment({
-                  owner,
-                  repo,
-                  comment_id: comment.id,
-                });
-              }
+          for (let comment of comments) {
+            if (comment.body === noJiraIssueBody) {
+              console.log('Found comment:', JSON.stringify(comment, null, 2));
+              await github.rest.issues.deleteComment({
+                owner,
+                repo,
+                comment_id: comment.id,
+              });
             }
+          }
 
+          if (!jiraIssueRef) {
             await github.rest.issues.createComment({
               owner,
               repo,
               issue_number: ${{ github.event.pull_request.number }},
-              body,
+              body: noJiraIssueBody,
             });
             throw new Error(body);
           }
