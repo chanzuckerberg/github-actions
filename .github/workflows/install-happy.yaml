@@ -6,14 +6,14 @@ jobs:
   test-install-happy-latest:
     runs-on: [self-hosted, ARM64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/install-happy
       - run: happy version
       - run: gh auth status
   test-install-happy-pinned:
     runs-on: [self-hosted, ARM64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/install-happy
         with:
           happy_version: "0.81.0"
@@ -22,7 +22,7 @@ jobs:
   test-install-happy-x64:
     runs-on: [self-hosted, linux, X64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/install-happy
       - run: happy version
       - run: gh auth status
