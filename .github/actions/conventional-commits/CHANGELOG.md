@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.5.0...conventional-commits-v1.6.0) (2024-10-22)
+
+
+### Features
+
+* small change to bump the release ([#322](https://github.com/chanzuckerberg/github-actions/issues/322)) ([9c73329](https://github.com/chanzuckerberg/github-actions/commit/9c7332935d01ede0022a2e4f50a2180ea5395366))
+
 ## [1.5.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.4.0...conventional-commits-v1.5.0) (2024-07-08)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.8.0...happy-cleanup-v1.9.0) (2024-10-22)
+
+
+### Features
+
+* Fix happy-cleanup aws profile setting ([#319](https://github.com/chanzuckerberg/github-actions/issues/319)) ([83129b4](https://github.com/chanzuckerberg/github-actions/commit/83129b4c8b10f44b57eca3c4a4a3c6f6996aa23b))
+
 ## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.7.0...happy-cleanup-v1.8.0) (2024-07-08)
 
 
