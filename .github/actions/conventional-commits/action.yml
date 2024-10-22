@@ -12,5 +12,5 @@ runs:
 
           if (!is_valid) {
             const regex = validator.toString()
-            core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. Start with chore, feat, fix, revert, or docs and add an ! if the change is breaking. Title must satisfy this regex: ${regex}.`)
+            core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. Start with chore, feat, fix, revert, test, or docs and add an ! if the change is breaking. Title must satisfy this regex: ${regex}.`)
           }
