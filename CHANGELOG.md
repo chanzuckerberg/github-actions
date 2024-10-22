@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.4.0](https://github.com/chanzuckerberg/github-actions/compare/v3.3.0...v3.4.0) (2024-10-22)
+
+
+### Features
+
+* Fix happy-cleanup aws profile setting ([#319](https://github.com/chanzuckerberg/github-actions/issues/319)) ([83129b4](https://github.com/chanzuckerberg/github-actions/commit/83129b4c8b10f44b57eca3c4a4a3c6f6996aa23b))
+* small change to bump the release ([#322](https://github.com/chanzuckerberg/github-actions/issues/322)) ([9c73329](https://github.com/chanzuckerberg/github-actions/commit/9c7332935d01ede0022a2e4f50a2180ea5395366))
+
 ## [3.3.0](https://github.com/chanzuckerberg/github-actions/compare/v3.2.3...v3.3.0) (2024-10-02)
 
 
