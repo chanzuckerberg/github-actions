@@ -12,7 +12,7 @@ jobs:
     outputs:
       allChanges: ${{ steps.changedDirs.outputs.allChanges }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -45,7 +45,7 @@ jobs:
         workspace: ${{ fromJson(needs.find-changed-dirs.outputs.allChanges) }}
     if: ${{ needs.find-changed-dirs.outputs.allChanges != '[]' }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Terraform plan
       uses: ./.github/actions/tf-plan
       with:
