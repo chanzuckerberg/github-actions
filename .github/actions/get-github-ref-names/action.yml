@@ -30,6 +30,9 @@ runs:
           if (eventName === "pull_request") {
             head = context.payload.pull_request.head.ref;
             base = context.payload.pull_request.base.ref;
+          } else if (eventName === "workflow_dispatch") {
+            head = context.payload.workflow_dispatch.head.ref;
+            base = context.payload.workflow_dispatch.base.ref;
           } else if (eventName === "push") {
             // TODO: this won't work with tags
             const pruneHead = "refs/heads/";
