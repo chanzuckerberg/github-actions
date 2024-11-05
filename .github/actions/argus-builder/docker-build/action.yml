@@ -32,7 +32,7 @@ inputs:
   github_private_key:
     description: "GitHub App private key"
     required: true
-  clean:
+  clean_checkout:
     description: "Whether to clean the repository before checking out"
     required: false
     default: false
@@ -47,7 +47,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
-        clean: ${{ inputs.clean }}
+        clean: ${{ inputs.clean_checkout }}
         fetch-depth: 0
         path: ${{ github.event.repository.name }}
     - name: Configure AWS Credentials
