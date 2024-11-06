@@ -49,6 +49,8 @@ runs:
         image: 533267185808.dkr.ecr.us-west-2.amazonaws.com/docker.io/central/tonistiigi/binfmt:latest
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: image=533267185808.dkr.ecr.us-west-2.amazonaws.com/docker.io/central/moby/buildkit:master
     - name: Docker meta
       id: meta
       uses: docker/metadata-action@v5
