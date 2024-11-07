@@ -3,39 +3,43 @@ description: Build a Docker Image for Argus
 
 inputs:
   image_name:
-    description: 'Name of the image to build'
+    description: "Name of the image to build"
     required: true
   dockerfile:
-    description: 'Path to the Dockerfile'
+    description: "Path to the Dockerfile"
     required: true
   context:
-    description: 'Path to the build context'
+    description: "Path to the build context"
     required: true
   platform:
-    description: 'Platform to build for'
+    description: "Platform to build for"
     required: false
-    default: 'linux/arm64'
+    default: "linux/arm64"
   build_args:
-    description: 'Args for docker build'
+    description: "Args for docker build"
     required: false
-    default: ''
+    default: ""
   secret_files:
-    description: 'Files to copy into the build context'
+    description: "Files to copy into the build context"
     required: false
-    default: ''
+    default: ""
   image_tag:
-    description: 'Additional tag to apply to the image this is built'
+    description: "Additional tag to apply to the image this is built"
     required: true
   github_app_id:
-    description: 'GitHub App ID'
+    description: "GitHub App ID"
     required: true
   github_private_key:
-    description: 'GitHub App private key'
+    description: "GitHub App private key"
     required: true
+  clean_checkout:
+    description: "Whether to clean the repository before checking out"
+    required: false
+    default: false
 
 outputs:
   image_uri:
-    description: 'URI of the image that was built'
+    description: "URI of the image that was built"
     value: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
 
 runs:
@@ -43,6 +47,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
+        clean: ${{ inputs.clean_checkout }}
         fetch-depth: 0
         path: ${{ github.event.repository.name }}
     - name: Configure AWS Credentials
@@ -87,7 +92,7 @@ runs:
         lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
         repository-policy: core-platform-settings/ecr/repository-policy.json
     - name: Build And Push
-      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@6fe6046403cf16689027cb3981781d8b05fd702b
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@74d720a183006c0fe0a82f52475befed7d992888
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
