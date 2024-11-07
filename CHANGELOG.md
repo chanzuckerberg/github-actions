@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.2](https://github.com/chanzuckerberg/github-actions/compare/v3.4.1...v3.4.2) (2024-11-07)
+
+
+### Misc
+
+* pin to latest release ([072114a](https://github.com/chanzuckerberg/github-actions/commit/072114a86d6866b64e0df2802ec3cf20ff3e21d4))
+
 ## [3.4.1](https://github.com/chanzuckerberg/github-actions/compare/v3.4.0...v3.4.1) (2024-11-07)
 
 
