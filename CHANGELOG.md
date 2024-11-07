@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.1](https://github.com/chanzuckerberg/github-actions/compare/v3.4.0...v3.4.1) (2024-11-07)
+
+
+### Misc
+
+* add a clean parameter to the checkout ([#324](https://github.com/chanzuckerberg/github-actions/issues/324)) ([4e4223e](https://github.com/chanzuckerberg/github-actions/commit/4e4223e12a904a69dcff2d819505b311acace29c))
+
 ## [3.4.0](https://github.com/chanzuckerberg/github-actions/compare/v3.3.0...v3.4.0) (2024-10-22)
 
 
