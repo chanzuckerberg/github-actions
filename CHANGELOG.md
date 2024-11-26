@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.5.0](https://github.com/chanzuckerberg/github-actions/compare/v3.4.2...v3.5.0) (2024-11-26)
+
+
+### Features
+
+* allow skipping checking if tag exists ([f7a1cf7](https://github.com/chanzuckerberg/github-actions/commit/f7a1cf72543ac0b7e676959d4ffb046d09796ab3))
+
+
+### BugFixes
+
+* bash script in happy-cleanup github action ([#329](https://github.com/chanzuckerberg/github-actions/issues/329)) ([04fb669](https://github.com/chanzuckerberg/github-actions/commit/04fb669a704eea859935253e5c2fb72b7cdbdd61))
+
+
+### Misc
+
+* bump github-script version ([#327](https://github.com/chanzuckerberg/github-actions/issues/327)) ([6a1d02c](https://github.com/chanzuckerberg/github-actions/commit/6a1d02cfe4728fe4c1e1ec32d7cb6c07de320193))
+
 ## [3.4.2](https://github.com/chanzuckerberg/github-actions/compare/v3.4.1...v3.4.2) (2024-11-07)
 
 
