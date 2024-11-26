@@ -39,6 +39,10 @@ inputs:
     description: "Specify true to skip migrations"
     default: "false"
     required: false
+  skip-check-tag:
+    description: "Specify true to skip checking the tag"
+    default: "false"
+    required: false
   working-directory:
     description: "The happy project root"
     default: "."
@@ -77,9 +81,9 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
-          repository: ${{ inputs.repository || github.repository }}
-          ref: ${{ inputs.github-repo-branch || github.event.pull_request && github.head_ref || github.sha }}
-          token: ${{ inputs.github-token || github.token }}
+        repository: ${{ inputs.repository || github.repository }}
+        ref: ${{ inputs.github-repo-branch || github.event.pull_request && github.head_ref || github.sha }}
+        token: ${{ inputs.github-token || github.token }}
     - name: Install happy
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
       with:
@@ -105,6 +109,7 @@ runs:
         IMAGE_SOURCE_ROLE_ARN: ${{ inputs.image-source-role-arn }}
         SLICE: ${{ inputs.slice }}
         SLICE_DEFAULT_TAG: ${{ inputs.slice-default-tag }}
+        SKIP_CHECK_TAG: ${{ inputs.skip-check-tag }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
@@ -120,6 +125,9 @@ runs:
         fi
 
         if [[ ${OPERATION} == "update" || ${OPERATION} == "create" ]]; then
+          if [[ ! -z ${SKIP_CHECK_TAG} ]]; then
+            HAPPY_DEPLOYMENT_FLAGS="$HAPPY_DEPLOYMENT_FLAGS --skip-check-tag=${SKIP_CHECK_TAG}"
+          fi
           HAPPY_DEPLOYMENT_FLAGS="${HAPPY_DEPLOYMENT_FLAGS} --create-tag=${CREATE_TAG} --tag ${IMAGE_TAG} --docker-compose-env-file=${ENV_FILE}"
         fi
 
