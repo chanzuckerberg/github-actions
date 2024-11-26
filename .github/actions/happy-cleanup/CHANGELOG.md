@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.9.0...happy-cleanup-v1.9.1) (2024-11-26)
+
+
+### BugFixes
+
+* bash script in happy-cleanup github action ([#329](https://github.com/chanzuckerberg/github-actions/issues/329)) ([04fb669](https://github.com/chanzuckerberg/github-actions/commit/04fb669a704eea859935253e5c2fb72b7cdbdd61))
+
 ## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.8.0...happy-cleanup-v1.9.0) (2024-10-22)
 
 

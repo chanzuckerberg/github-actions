@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v2.1.0...deploy-happy-stack-v2.2.0) (2024-11-26)
+
+
+### Features
+
+* allow skipping checking if tag exists ([f7a1cf7](https://github.com/chanzuckerberg/github-actions/commit/f7a1cf72543ac0b7e676959d4ffb046d09796ab3))
+
 ## [2.1.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v2.0.0...deploy-happy-stack-v2.1.0) (2024-04-19)
 
 
