@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.0](https://github.com/chanzuckerberg/github-actions/compare/v3.5.0...v3.6.0) (2024-12-10)
+
+
+### Features
+
+* allow update manifests to be turned off ([0c07e62](https://github.com/chanzuckerberg/github-actions/commit/0c07e62b97a01a51fdec13a12b7d3883cebfc9b3))
+
 ## [3.5.0](https://github.com/chanzuckerberg/github-actions/compare/v3.4.2...v3.5.0) (2024-11-26)
 
 
