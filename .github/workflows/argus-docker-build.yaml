@@ -34,6 +34,11 @@ on:
         required: false
         type: string
         default: ''
+      update_manifests:
+        description: 'Whether to update ArgoCD manifests after building the Docker images'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   prep:
@@ -214,7 +219,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: always() && needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
+    if: always() && inputs.update_manifests && needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     steps:
       - name: Check build status
         uses: actions/github-script@v7
