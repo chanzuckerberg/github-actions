@@ -21,6 +21,13 @@ inputs:
     description: 'Branch names to run this job on, supports wildcards, comma delimited'
     required: false
     default: ''
+  pr_labels:
+    description: 'Labels attached to an associated PR'
+    required: false
+    default: ''
+  manifest_trigger_label:
+    description: 'Label that will trigger updating the manifest and committing a docker image change to values.yaml'
+    default: 'stack'
 
 outputs:
   image_tag:
@@ -29,6 +36,9 @@ outputs:
   should_build:
     description: Whether the job should run
     value: ${{ steps.final_check.outputs.should_build }}
+  should_deploy:
+    description: Whether or not the build is to be deployed to a stack
+    value: ${{ steps.require_stack_label.outputs.should_deploy }}
 
 runs:
   using: composite
@@ -94,6 +104,7 @@ runs:
           const filters = `${{ inputs.path_filters }}`.split(',').map(f => f.trim()).filter(b => b.length > 0);
           const filtersStr = "run_on:\n" + filters.map(f => `  - '${f}'`).join('\n');
           core.setOutput('filters', filtersStr);
+          console.log(`Filters: ${filtersStr}`);
 
     - name: Check for force push
       id: force_push
@@ -119,6 +130,17 @@ runs:
         base: ${{ steps.force_push.outputs.base }}
         list-files: json
 
+    - name: Require manifest trigger label in pull requests
+      id: require_stack_label
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const labels = `${{ inputs.pr_labels }}`;
+          const triggerLabel = `${{ inputs.manifest_trigger_label }}`;
+          const hasTriggerLabel = labels.split(',').map(l => l.trim()).includes(triggerLabel);
+          console.log(`Detected labels ${labels} on PR. Has ${triggerLabel} label? ${hasTriggerLabel}`);
+          core.setOutput('should_deploy', hasTriggerLabel);
+
     - name: Check if build should run
       id: final_check
       uses: actions/github-script@v7
@@ -126,4 +148,6 @@ runs:
         script: |
           const branchMatched = `${{ steps.branch_filter.outputs.match }}` === 'true';
           const filesMatched = `${{ steps.file_filter.outputs.run_on }}` === 'true';
-          core.setOutput('should_build', filesMatched && branchMatched);
+          const shouldBuild = filesMatched && branchMatched;
+          core.setOutput('should_build', shouldBuild);
+          console.log(`Branch matched? ${branchMatched}. Files matched? ${filesMatched}. Build should run? ${shouldBuild}`);
