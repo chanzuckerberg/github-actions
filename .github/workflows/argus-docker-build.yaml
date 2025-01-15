@@ -240,6 +240,7 @@ jobs:
       - name: Determine manifests to update
         uses: actions/github-script@v7
         id: determine_manifests
+        if: steps.should_update_manifests.outputs.result == 'true'
         with:
           result-encoding: string
           script: |
@@ -249,7 +250,7 @@ jobs:
             return argusRootDirs.join(',');
 
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@v3.4.1
-        if: steps.determine_manifests.outputs.result != '' && steps.should_update_manifests.outputs.result == 'true'
+        if: steps.should_update_manifests.outputs.result == 'true' && steps.determine_manifests.outputs.result != ''
         with:
           envs: ${{ inputs.envs }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
