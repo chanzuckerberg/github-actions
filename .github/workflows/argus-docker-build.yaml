@@ -219,16 +219,22 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: always() && inputs.update_manifests && needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
+    if: always() && needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     steps:
       - name: Check build status
         uses: actions/github-script@v7
+        id: should_update_manifests
         with:
+          result-encoding: string
           script: |
             if (${{ !contains(needs.build-docker.result, 'success') }}) {
               core.setFailed("We won't update the manifest because one or more Docker builds did not succeed");
-            } else {
+            } else if (${{ inputs.update_manifests }}) {
               core.info('All builds passed, continuing with manifest update...');
+              return true;
+            } else {
+              core.info('All builds passed, but manifest update is disabled');
+              return false;
             }
 
       - name: Determine manifests to update
@@ -243,7 +249,7 @@ jobs:
             return argusRootDirs.join(',');
 
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@v3.4.1
-        if: steps.determine_manifests.outputs.result != ''
+        if: steps.determine_manifests.outputs.result != '' && steps.should_update_manifests.outputs.result == 'true'
         with:
           envs: ${{ inputs.envs }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
