@@ -215,8 +215,8 @@ jobs:
           build_args: ${{ matrix.image.build_args }}
           secret_files: ${{ matrix.image.secret_files }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
-          github_app_id: ${{ secrets.CZI_GITHUB_HELPER_APP_ID }}
-          github_private_key: ${{ secrets.CZI_GITHUB_HELPER_PK }}
+          github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
 
   update-manifests:
     name: Update ArgoCD manifests
@@ -254,5 +254,5 @@ jobs:
           envs: ${{ inputs.envs }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
           argus_project_dirs: ${{ steps.determine_manifests.outputs.result }}
-          github_app_id: ${{ secrets.CZI_GITHUB_HELPER_APP_ID }}
-          github_private_key: ${{ secrets.CZI_GITHUB_HELPER_PK }}
+          github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
