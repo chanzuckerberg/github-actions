@@ -60,7 +60,7 @@ jobs:
         with:
           filterOutClosed: true
           filterOutDraft: false
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@3.6.1
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@v3.6.1
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
