@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.1](https://github.com/chanzuckerberg/github-actions/compare/v3.6.0...v3.6.1) (2025-01-24)
+
+
+### BugFixes
+
+* do not update manifest on PRs without stack label ([#331](https://github.com/chanzuckerberg/github-actions/issues/331)) ([90e3b17](https://github.com/chanzuckerberg/github-actions/commit/90e3b174f84caefcc4ca67fa282f2297a230391d))
+
 ## [3.6.0](https://github.com/chanzuckerberg/github-actions/compare/v3.5.0...v3.6.0) (2024-12-10)
 
 
