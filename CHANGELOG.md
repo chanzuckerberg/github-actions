@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.0.0](https://github.com/chanzuckerberg/github-actions/compare/v3.6.1...v4.0.0) (2025-01-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* CCIE-3896 rename CZI_GITHUB_HELPER_* to GH_ACTIONS_HELPER_* ([#333](https://github.com/chanzuckerberg/github-actions/issues/333))
+
+### Features
+
+* CCIE-3896 rename CZI_GITHUB_HELPER_* to GH_ACTIONS_HELPER_* ([#333](https://github.com/chanzuckerberg/github-actions/issues/333)) ([f53ac72](https://github.com/chanzuckerberg/github-actions/commit/f53ac72b29a9d435f6c4f177a5beaa423842f3e5))
+
+
+### Misc
+
+* CCIE-3899 use build-prep@3.6.1 ([#335](https://github.com/chanzuckerberg/github-actions/issues/335)) ([8d3d492](https://github.com/chanzuckerberg/github-actions/commit/8d3d492c470de3394b3b20be0caac66405eeb222))
+* fix build-prep tag ([#337](https://github.com/chanzuckerberg/github-actions/issues/337)) ([64ab808](https://github.com/chanzuckerberg/github-actions/commit/64ab8080958b220ebf87692510bd907e911721f4))
+
 ## [3.6.1](https://github.com/chanzuckerberg/github-actions/compare/v3.6.0...v3.6.1) (2025-01-24)
 
 
