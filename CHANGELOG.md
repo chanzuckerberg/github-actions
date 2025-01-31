@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/chanzuckerberg/github-actions/compare/v4.0.0...v4.0.1) (2025-01-31)
+
+
+### Misc
+
+* CCIE-3899 use sha to fetch PR in argus-docker-build ([#340](https://github.com/chanzuckerberg/github-actions/issues/340)) ([36a44c2](https://github.com/chanzuckerberg/github-actions/commit/36a44c2cb5e7f0c8b7646f80c56478109bb241bf))
+
 ## [4.0.0](https://github.com/chanzuckerberg/github-actions/compare/v3.6.1...v4.0.0) (2025-01-27)
 
 
