@@ -108,9 +108,11 @@ runs:
         script: |
           let issueNumber;
           if (context.issue.number) {
+            console.log("...> 1")
             // use issue number from context if present
             issueNumber = context.issue.number;
           } else {
+            console.log("...> 2")
             // Otherwise use issue number from commit
             issueNumber = (
               await github.rest.repos.listPullRequestsAssociatedWithCommit({
@@ -120,6 +122,7 @@ runs:
               })
             ).data[0].number;
           }
+          console.log("...> 3")
           const body = `
           :rotating_light: **Vulnerabilities found in image**: ${{ steps.ecr_metadata.outputs.IMAGE_URI }} :rotating_light:
 
@@ -128,9 +131,11 @@ runs:
 
           ${{ steps.scan.outputs.inspector_scan_results_markdown }}
           `;
+          console.log("...> 4")
           await github.rest.issues.createComment({
             issue_number: issueNumber,
             owner: context.repo.owner,
             repo: context.repo.repo,
             body,
           });
+          console.log("...> 4")
