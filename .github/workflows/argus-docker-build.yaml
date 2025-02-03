@@ -68,7 +68,7 @@ on:
         default: 'stack'
       enable_vuln_container_scan:
         description: |
-          Opt in to scan containers with AWS inspector 
+          Opt in to scan containers with AWS inspector
         required: false
         type: boolean
         default: false
@@ -98,9 +98,11 @@ jobs:
           branches_ignore: ${{ inputs.branches_ignore }}
           manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@00ea3d32a43c9317d4318dab7fd037c2b5fafe6d
         name: Validate images input
-        with: 
+        with:
           schema: |
             {
               "type": "object",
@@ -228,6 +230,7 @@ jobs:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
       - uses: actions/checkout@v4
+        persist-credentials: false
       - name: Log image config
         id: log_image
         uses: actions/github-script@v7
