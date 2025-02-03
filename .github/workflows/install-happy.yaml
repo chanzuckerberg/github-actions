@@ -7,6 +7,8 @@ jobs:
     runs-on: [ARM64]
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/install-happy
       - run: happy version
       - run: gh auth status
@@ -14,6 +16,8 @@ jobs:
     runs-on: [ARM64]
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/install-happy
         with:
           happy_version: "0.81.0"
@@ -23,6 +27,8 @@ jobs:
     runs-on: [amd64]
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/install-happy
       - run: happy version
       - run: gh auth status
