@@ -87,6 +87,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      issues: write
     strategy:
       fail-fast: false
       matrix:
