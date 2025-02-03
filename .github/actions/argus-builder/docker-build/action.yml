@@ -76,6 +76,7 @@ runs:
         echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
     - name: Create ECR repo if necessary
       uses: int128/create-ecr-repository-action@v1
+      id: create_ecr_repo
       with:
         repository: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
         lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
@@ -97,7 +98,7 @@ runs:
       uses: chanzuckerberg/github-actions/.github/actions/container-scanning@CCIE-3099-embed-docker-scanning-into-argus-builder-gh-actions
       id: scan
       with:
-        image_uri: ${{ inputs.image_name }}:${{ inputs.image_tag }}
+        image_uri: ${{ steps.create_ecr_repo.outputs.repository-uri }}:${{ inputs.image_tag }}
         fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
 
     - name: Notify on skipped vulnerabilities
