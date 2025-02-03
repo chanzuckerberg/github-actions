@@ -94,7 +94,7 @@ runs:
           ${{ inputs.build_args }}
 
     - name: Scan for vulnerabilities
-      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@d5f287c67911c671c691b2c67baf59fd9d640442
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@CCIE-3099-embed-docker-scanning-into-argus-builder-gh-actions
       id: scan
       with:
         image_uri: ${{ inputs.image_name }}:${{ inputs.image_tag }}
