@@ -1,5 +1,36 @@
 # Changelog
 
+## [4.0.1](https://github.com/chanzuckerberg/github-actions/compare/v4.0.0...v4.0.1) (2025-01-31)
+
+
+### Misc
+
+* CCIE-3899 use sha to fetch PR in argus-docker-build ([#340](https://github.com/chanzuckerberg/github-actions/issues/340)) ([36a44c2](https://github.com/chanzuckerberg/github-actions/commit/36a44c2cb5e7f0c8b7646f80c56478109bb241bf))
+
+## [4.0.0](https://github.com/chanzuckerberg/github-actions/compare/v3.6.1...v4.0.0) (2025-01-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* CCIE-3896 rename CZI_GITHUB_HELPER_* to GH_ACTIONS_HELPER_* ([#333](https://github.com/chanzuckerberg/github-actions/issues/333))
+
+### Features
+
+* CCIE-3896 rename CZI_GITHUB_HELPER_* to GH_ACTIONS_HELPER_* ([#333](https://github.com/chanzuckerberg/github-actions/issues/333)) ([f53ac72](https://github.com/chanzuckerberg/github-actions/commit/f53ac72b29a9d435f6c4f177a5beaa423842f3e5))
+
+
+### Misc
+
+* CCIE-3899 use build-prep@3.6.1 ([#335](https://github.com/chanzuckerberg/github-actions/issues/335)) ([8d3d492](https://github.com/chanzuckerberg/github-actions/commit/8d3d492c470de3394b3b20be0caac66405eeb222))
+* fix build-prep tag ([#337](https://github.com/chanzuckerberg/github-actions/issues/337)) ([64ab808](https://github.com/chanzuckerberg/github-actions/commit/64ab8080958b220ebf87692510bd907e911721f4))
+
+## [3.6.1](https://github.com/chanzuckerberg/github-actions/compare/v3.6.0...v3.6.1) (2025-01-24)
+
+
+### BugFixes
+
+* do not update manifest on PRs without stack label ([#331](https://github.com/chanzuckerberg/github-actions/issues/331)) ([90e3b17](https://github.com/chanzuckerberg/github-actions/commit/90e3b174f84caefcc4ca67fa282f2297a230391d))
+
 ## [3.6.0](https://github.com/chanzuckerberg/github-actions/compare/v3.5.0...v3.6.0) (2024-12-10)
 
 
