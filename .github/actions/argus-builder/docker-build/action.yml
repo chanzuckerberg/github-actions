@@ -47,6 +47,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
+        persist-credentials: false
         clean: ${{ inputs.clean_checkout }}
         fetch-depth: 0
         path: ${{ github.event.repository.name }}
@@ -64,6 +65,7 @@ runs:
         private_key: ${{ inputs.github_private_key }}
     - uses: actions/checkout@v4
       with:
+        persist-credentials: false
         repository: chanzuckerberg/core-platform-settings
         path: core-platform-settings
         token: ${{ steps.generate_token.outputs.token }}

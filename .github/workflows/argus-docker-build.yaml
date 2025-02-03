@@ -69,6 +69,8 @@ jobs:
           branches_ignore: ${{ inputs.branches_ignore }}
           pr_labels: ${{ steps.findPr.outputs.pr_labels }}
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v3.4.1
         name: Validate images input
         with:
@@ -199,6 +201,7 @@ jobs:
         image: ${{ fromJson(needs.prep.outputs.images) }}
     steps:
       - uses: actions/checkout@v4
+        persist-credentials: false
       - name: Log image config
         id: log_image
         uses: actions/github-script@v7
