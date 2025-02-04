@@ -124,9 +124,7 @@ runs:
           :rotating_light: **Vulnerabilities found in image**: ${{ steps.ecr_metadata.outputs.IMAGE_URI }} :rotating_light:
 
           Please review the vulnerabilities found in the image and take appropriate action:
-          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ github.job_id }}
-
-          ${{ steps.scan.outputs.inspector_scan_results_markdown }}
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           `;
           await github.rest.issues.createComment({
             issue_number: issueNumber,
