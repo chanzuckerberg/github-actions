@@ -88,6 +88,7 @@ jobs:
       id-token: write
       contents: read
       pull-requests: read
+      issues: write
     strategy:
       fail-fast: false
       matrix:
