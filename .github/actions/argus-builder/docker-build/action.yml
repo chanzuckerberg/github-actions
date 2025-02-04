@@ -36,6 +36,10 @@ inputs:
     description: "Whether to clean the repository before checking out"
     required: false
     default: false
+  fail_on_vulnerabilities:
+    description: 'whether to fail the action if vulnerabilities are found'
+    required: false
+    default: "true"
 
 outputs:
   image_uri:
@@ -86,6 +90,7 @@ runs:
           core.setOutput('ECR_REPO_NAME', ECR_REPO_NAME);
           core.setOutput('IMAGE_URI', IMAGE_URI);
     - name: Create ECR repo if necessary
+      id: create_ecr_repo
       uses: int128/create-ecr-repository-action@v1
       with:
         repository: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
@@ -105,10 +110,40 @@ runs:
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret_files }}
 
-    # TODO: scan image for vulnerabilities
-    # - name: Scan for vulnerabilities
-    #   uses: chanzuckerberg/github-actions/.github/actions/argus-builder/scan-for-vulnerabilities@main
-    #   with:
-    #     image_uri: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}/${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}:${{ inputs.image_tag }}
-    #     github_app_id: ${{ inputs.github_app_id }}
-    #     github_private_key: ${{ inputs.github_private_key }}
+    - name: Scan for vulnerabilities
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@CCIE-3099-embed-docker-scanning-into-argus-builder-gh-actions-2
+      id: scan
+      with:
+        image_uri: ${{ steps.create_ecr_repo.outputs.repository-uri }}:${{ inputs.image_tag }}
+        fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
+
+    - name: Notify on skipped vulnerabilities
+      uses: actions/github-script@v7
+      if: inputs.fail_on_vulnerabilities != 'true' && steps.scan.outputs.vulnerability_threshold_exceeded == 1
+      with:
+        script: |
+          let issueNumber;
+          if (context.issue.number) {
+            // use issue number from context if present
+            issueNumber = context.issue.number;
+          } else {
+            // Otherwise use issue number from commit
+            issueNumber = (
+              await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                commit_sha: context.sha,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              })
+            ).data[0].number;
+          }
+          const body = `
+          :rotating_light: **Vulnerabilities found in image**: ${{ steps.ecr_metadata.outputs.IMAGE_URI }} :rotating_light:
+          Please review the vulnerabilities found in the image and take appropriate action:
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          `;
+          await github.rest.issues.createComment({
+            issue_number: issueNumber,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body,
+          });

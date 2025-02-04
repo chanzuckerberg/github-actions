@@ -44,6 +44,11 @@ on:
         required: false
         type: boolean
         default: false
+      fail_on_vulnerabilities:
+        description: 'whether to fail the action if vulnerabilities are found'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   prep:
@@ -191,14 +196,14 @@ jobs:
   build-docker:
     name: Build Docker Image
     needs: [prep]
-    runs-on: 
-      - self-hosted
-      - Linux
-      - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64' }}
+    runs-on:
+      - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64-dev' }}
     if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     permissions:
       id-token: write
       contents: read
+      pull-requests: write
+      issues: write
     strategy:
       fail-fast: false
       matrix:
@@ -211,7 +216,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@v3.4.1
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@CCIE-3099-embed-docker-scanning-into-argus-builder-gh-actions-2
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
@@ -223,6 +228,7 @@ jobs:
           image_tag: ${{ needs.prep.outputs.image_tag }}
           github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+          fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
 
   update-manifests:
     name: Update ArgoCD manifests
