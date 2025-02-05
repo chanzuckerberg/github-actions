@@ -29,6 +29,10 @@ inputs:
   platforms:
     description: "A list of target platforms for build (comma delimited)"
     required: false
+  load:
+    description: "Load the image into the Docker daemon"
+    required: false
+    default: 'false'
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -90,7 +94,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
         push: true
-        load: true
+        load: ${{ inputs.load }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: ${{ steps.cache-from.outputs.cacheFrom }}

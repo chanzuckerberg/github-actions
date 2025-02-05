@@ -109,6 +109,7 @@ runs:
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret_files }}
+        load: true
 
     - name: Scan for vulnerabilities
       uses: chanzuckerberg/github-actions/.github/actions/container-scanning@CCIE-3099-embed-docker-scanning-into-argus-builder-gh-actions-2
