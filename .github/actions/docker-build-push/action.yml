@@ -90,6 +90,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
         push: true
+        load: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: ${{ steps.cache-from.outputs.cacheFrom }}
