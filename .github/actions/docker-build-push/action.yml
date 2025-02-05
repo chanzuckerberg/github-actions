@@ -93,7 +93,7 @@ runs:
       with:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
-        push: false
+        push: true
         load: ${{ inputs.load }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
