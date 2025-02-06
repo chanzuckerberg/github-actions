@@ -8,7 +8,7 @@ on:
 
 jobs:
   find-changed-dirs:
-    runs-on: [ARM64,self-hosted,Linux]
+    runs-on: [ARM64]
     outputs:
       allChanges: ${{ steps.changedDirs.outputs.allChanges }}
     steps:
@@ -38,7 +38,7 @@ jobs:
             console.log(`changedEnvs: ${JSON.stringify(changedEnvs)}`)
             core.setOutput("allChanges", allChanges)
   tf-test-changed-dirs:
-    runs-on: [ARM64,self-hosted,Linux]
+    runs-on: [ARM64]
     needs: find-changed-dirs
     strategy:
       matrix:

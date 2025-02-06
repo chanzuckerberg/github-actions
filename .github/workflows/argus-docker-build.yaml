@@ -48,7 +48,7 @@ on:
 jobs:
   prep:
     name: Prep for Build
-    runs-on: [ARM64,self-hosted,Linux]
+    runs-on: [ARM64]
     if: contains(github.event.head_commit.message, '[no-deploy]') == false
     outputs:
       image_tag: ${{ steps.build_prep.outputs.image_tag }}
@@ -191,9 +191,7 @@ jobs:
   build-docker:
     name: Build Docker Image
     needs: [prep]
-    runs-on: 
-      - self-hosted
-      - Linux
+    runs-on:
       - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64' }}
     if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     permissions:
@@ -227,7 +225,7 @@ jobs:
   update-manifests:
     name: Update ArgoCD manifests
     needs: [prep, build-docker]
-    runs-on: [ARM64,self-hosted,Linux]
+    runs-on: [ARM64]
     permissions:
       id-token: write
       contents: read
