@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.2.0](https://github.com/chanzuckerberg/github-actions/compare/v4.1.0...v4.2.0) (2025-02-11)
+
+
+### Features
+
+* CCIE-3978 make argus-docker-build runs-on configurable ([#349](https://github.com/chanzuckerberg/github-actions/issues/349)) ([1ba083b](https://github.com/chanzuckerberg/github-actions/commit/1ba083b25bd297fb8a901fae0cf9d72e116dc6ed))
+
+
+### Misc
+
+* CCIE-3978 remove Linux & self-hosted github runner tags ([#345](https://github.com/chanzuckerberg/github-actions/issues/345)) ([2e67f39](https://github.com/chanzuckerberg/github-actions/commit/2e67f3938dd872bd70306e2dbe903458f52a6f39))
+
 ## [4.1.0](https://github.com/chanzuckerberg/github-actions/compare/v4.0.1...v4.1.0) (2025-02-05)
 
 
