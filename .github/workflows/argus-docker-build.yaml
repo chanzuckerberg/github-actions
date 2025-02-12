@@ -225,7 +225,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@CCIE-3099-embed-docker-scanning-into-argus-builder-gh-actions-2
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@ 529c400f92ad53f6d6832925a99f302cb200dd72
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
