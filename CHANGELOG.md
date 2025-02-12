@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.1.0](https://github.com/chanzuckerberg/github-actions/compare/v4.0.1...v4.1.0) (2025-02-05)
+
+
+### Features
+
+* CCIE-3899 Add force_update_manifest to argus-docker-build ([#342](https://github.com/chanzuckerberg/github-actions/issues/342)) ([1586e1e](https://github.com/chanzuckerberg/github-actions/commit/1586e1eba1252b7043722b108a259ff1126323d2))
+
+
+### Misc
+
+* fix release ([#347](https://github.com/chanzuckerberg/github-actions/issues/347)) ([a90dd27](https://github.com/chanzuckerberg/github-actions/commit/a90dd27095252da21f7102acad4ab352f3bf0ca7))
+* remove deprecated tags ([#332](https://github.com/chanzuckerberg/github-actions/issues/332)) ([7e24ee1](https://github.com/chanzuckerberg/github-actions/commit/7e24ee1e9cb7498b6985257653201929ab6f1c2f))
+
 ## [4.0.1](https://github.com/chanzuckerberg/github-actions/compare/v4.0.0...v4.0.1) (2025-01-31)
 
 

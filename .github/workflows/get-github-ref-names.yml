@@ -6,7 +6,7 @@ on:
 name: Test Get GitHub Ref Names
 jobs:
   test-github-ref-names:
-    runs-on: [self-hosted, ARM64]
+    runs-on: [ARM64]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/get-github-ref-names
