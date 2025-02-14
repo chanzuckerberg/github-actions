@@ -44,11 +44,21 @@ on:
         required: false
         type: boolean
         default: false
+      arm_runner_labels:
+        description: 'Runner label to use for steps that use an arm-based action runner'
+        required: false
+        type: string
+        default: "['ARM64']"
+      x64_runner_labels:
+        description: 'Runner label to use for steps that use an x64-based action runner'
+        required: false
+        type: string
+        default: "['X64']"
 
 jobs:
   prep:
     name: Prep for Build
-    runs-on: [ARM64]
+    runs-on: ${{ fromJSON(inputs.arm_runner_labels) }}
     if: contains(github.event.head_commit.message, '[no-deploy]') == false
     outputs:
       image_tag: ${{ steps.build_prep.outputs.image_tag }}
@@ -191,8 +201,7 @@ jobs:
   build-docker:
     name: Build Docker Image
     needs: [prep]
-    runs-on:
-      - ${{ matrix.image.platform == 'linux/amd64' && 'X64' || 'ARM64' }}
+    runs-on: ${{ matrix.image.platform == 'linux/amd64' && fromJSON(inputs.x64_runner_labels) || fromJSON(inputs.arm_runner_labels) }}
     if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     permissions:
       id-token: write
@@ -225,7 +234,7 @@ jobs:
   update-manifests:
     name: Update ArgoCD manifests
     needs: [prep, build-docker]
-    runs-on: [ARM64]
+    runs-on: ${{ fromJSON(inputs.arm_runner_labels) }}
     permissions:
       id-token: write
       contents: read
