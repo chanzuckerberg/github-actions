@@ -97,7 +97,7 @@ runs:
         lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
         repository-policy: core-platform-settings/ecr/repository-policy.json
     - name: Build And Push
-      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@529c400f92ad53f6d6832925a99f302cb200dd72
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@2a579106864660f1d0e0520bc8fc2f4ba32a6db6
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
@@ -111,7 +111,7 @@ runs:
         secret-files: ${{ inputs.secret_files }}
         load: true
     - name: Scan for vulnerabilities
-      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@529c400f92ad53f6d6832925a99f302cb200dd72
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@2a579106864660f1d0e0520bc8fc2f4ba32a6db6
       id: scan
       with:
         image_uri: ${{ steps.create_ecr_repo.outputs.repository-uri }}:${{ inputs.image_tag }}

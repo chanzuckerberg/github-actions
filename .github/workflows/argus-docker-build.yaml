@@ -81,7 +81,7 @@ jobs:
           filterOutClosed: true
           filterOutDraft: false
           sha: ${{ github.event.pull_request.head.sha }}
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@v3.6.1
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@v4.2.0
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
@@ -90,7 +90,7 @@ jobs:
           branches_ignore: ${{ inputs.branches_ignore }}
           pr_labels: ${{ steps.findPr.outputs.pr_labels }}
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v3.4.1
+      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v4.2.0
         name: Validate images input
         with:
           schema: |
@@ -225,7 +225,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@529c400f92ad53f6d6832925a99f302cb200dd72
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@2a579106864660f1d0e0520bc8fc2f4ba32a6db6
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
@@ -269,7 +269,7 @@ jobs:
             console.log('Argus root dirs:', argusRootDirs);
             return argusRootDirs.join(',');
 
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@v3.4.1
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@v4.2.0
         if: steps.determine_manifests.outputs.result != ''
         with:
           envs: ${{ inputs.envs }}
