@@ -44,6 +44,11 @@ on:
         required: false
         type: boolean
         default: false
+      fail_on_vulnerabilities:
+        description: 'whether to fail the action if vulnerabilities are found'
+        required: false
+        type: boolean
+        default: true
       arm_runner_labels:
         description: 'Runner label to use for steps that use an arm-based action runner'
         required: false
@@ -76,7 +81,7 @@ jobs:
           filterOutClosed: true
           filterOutDraft: false
           sha: ${{ github.event.pull_request.head.sha }}
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@v3.6.1
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@v4.2.0
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
@@ -85,7 +90,7 @@ jobs:
           branches_ignore: ${{ inputs.branches_ignore }}
           pr_labels: ${{ steps.findPr.outputs.pr_labels }}
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v3.4.1
+      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v4.2.0
         name: Validate images input
         with:
           schema: |
@@ -206,6 +211,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      pull-requests: write
+      issues: write
     strategy:
       fail-fast: false
       matrix:
@@ -218,7 +225,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@v3.4.1
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@5b6992378f747c4ffa74e7c4c88f2e5add7090d9
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
@@ -230,6 +237,7 @@ jobs:
           image_tag: ${{ needs.prep.outputs.image_tag }}
           github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+          fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
 
   update-manifests:
     name: Update ArgoCD manifests
@@ -261,7 +269,7 @@ jobs:
             console.log('Argus root dirs:', argusRootDirs);
             return argusRootDirs.join(',');
 
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@v3.4.1
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@v4.2.0
         if: steps.determine_manifests.outputs.result != ''
         with:
           envs: ${{ inputs.envs }}

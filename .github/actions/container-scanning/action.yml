@@ -28,6 +28,13 @@ inputs:
     description: 'whether to fail the action if vulnerabilities are found'
     required: false
     default: "true"
+outputs:
+  vulnerability_threshold_exceeded:
+    description: '1 if the vulnerability threshold was exceeded, 0 otherwise'
+    value: ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
+  inspector_scan_results_markdown:
+    description: 'path to the markdown file containing the Inspector scan results'
+    value: ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
 runs:
   using: "composite"
   steps:
@@ -38,7 +45,7 @@ runs:
         role-duration-seconds: 1800
         role-session-name: github-actions-inspector
     - name: Scan built image with Inspector
-      uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1.1.0
+      uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1.1.2
       id: inspector
       with:
         artifact_type: 'container'
@@ -56,3 +63,33 @@ runs:
       if: contains(inputs.fail_on_vulnerabilities, 'true')
       shell: bash
       run: exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
+    - name: Notify on vulnerabilities
+      uses: actions/github-script@v7
+      if: always() && steps.inspector.outputs.vulnerability_threshold_exceeded == 1
+      with:
+        script: |
+          let issueNumber;
+          if (context.issue.number) {
+            // use issue number from context if present
+            issueNumber = context.issue.number;
+          } else {
+            // Otherwise use issue number from commit
+            issueNumber = (
+              await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                commit_sha: context.sha,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              })
+            ).data[0].number;
+          }
+          const body = `
+          :rotating_light: **Vulnerabilities found in image**: ${{ steps.ecr_metadata.outputs.IMAGE_URI }} :rotating_light:
+          Please review the vulnerabilities found in the image and take appropriate action:
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          `;
+          await github.rest.issues.createComment({
+            issue_number: issueNumber,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body,
+          });
