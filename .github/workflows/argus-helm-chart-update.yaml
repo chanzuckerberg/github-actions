@@ -104,7 +104,7 @@ jobs:
         with:
           commit-message: update stack helm chart version
           title: 'chore: update stack helm chart version for ${{ matrix.env.name }}'
-          body: "```${{ steps.run_updatecli.outputs.update_logs }}```"
+          body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
           base: main
           branch: updatecli-bump-stack-chart-${{ matrix.env.name }}
           delete-branch: true
