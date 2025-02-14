@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.0](https://github.com/chanzuckerberg/github-actions/compare/v4.2.0...v4.3.0) (2025-02-14)
+
+
+### Features
+
+* add reusable workflow for keeping argus helm charts up to date ([#350](https://github.com/chanzuckerberg/github-actions/issues/350)) ([bbaab62](https://github.com/chanzuckerberg/github-actions/commit/bbaab62dea89f48856e61ea86e604e6b1edb6ed2))
+
 ## [4.2.0](https://github.com/chanzuckerberg/github-actions/compare/v4.1.0...v4.2.0) (2025-02-11)
 
 
