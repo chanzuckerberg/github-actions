@@ -1,0 +1,111 @@
+name: HelmDep Update
+
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        description: The app name to update the Helm dependencies for
+        required: true
+        type: string
+
+jobs:
+  fetch-app-info:
+    name: Fetch app info
+    runs-on: ubuntu-latest
+    outputs:
+      app_info: ${{ steps.get_app_info.outputs.app_info }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Get app info
+        id: get_app_info
+        uses: chanzuckerberg/argus-artifacts/ci/packages/get-app-info@v0.51.0
+        with:
+          app_name: ${{ inputs.app_name }}
+      - name: Log outputs
+        run: |
+          echo "The environments are: ${{ steps.get_app_info.outputs.app_info }}"
+  update-helm-deps:
+    name: Update Helm Dependencies
+    needs: [fetch-app-info]
+    runs-on: ubuntu-latest
+    if: needs.fetch-app-info.outputs.app_info.envs != '[]'
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        env: ${{ fromJson(needs.fetch-app-info.outputs.app_info).envs }}
+    steps:
+      - name: Log info
+        run: |
+          echo "Updating chart in env: ${{ matrix.env.name }} - app root dir: ${{ fromJson(needs.fetch-app-info.outputs.app_info).project_root_path }}"
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup updatecli
+        uses: updatecli/updatecli-action@v2
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+
+      - name: Write updatecli manifest
+        id: write_manifest
+        run: |
+          export UPDATECLI_MANIFEST_FILE=updatecli-${{ matrix.env.name }}.yaml
+          echo "UPDATECLI_MANIFEST_FILE=$UPDATECLI_MANIFEST_FILE" >> $GITHUB_OUTPUT
+          cat <<EOF > $UPDATECLI_MANIFEST_FILE
+          name: Helm chart update
+
+          # Defines how to get "source" information such as Jenkins version
+          sources:
+            stackHelmChart:
+              name: Get the latest Helm chart version
+              kind: helmchart
+              spec:
+                url: https://chanzuckerberg.github.io/argo-helm-charts
+                name: stack
+
+          # Defines "targets" which need to be updated if different than "source" information.
+          targets:
+            helmChartVersions:
+              name: Bump Helm chart versions
+              kind: yaml
+              spec:
+                engine: yamlpath
+                key: $.dependencies[?(@.name == 'stack')].version
+                file: ${{ fromJson(needs.fetch-app-info.outputs.app_info).project_root_path }}/.infra/${{ matrix.env.name }}/Chart.yaml
+          EOF
+
+      - name: Run updatecli
+        id: run_updatecli
+        run: |
+          export UPDATE_LOG_FILE=$(uuidgen)-update.log
+          echo "Running updatecli with manifest ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }}"
+          cat ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }}
+
+          echo "----------------------------------------"
+          updatecli apply --config ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }} >> $UPDATE_LOG_FILE
+          cat $UPDATE_LOG_FILE
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "update_logs<<$EOF" >> $GITHUB_OUTPUT
+          echo "$(cat $UPDATE_LOG_FILE)" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+          rm $UPDATE_LOG_FILE
+          rm ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }}
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: update stack helm chart version
+          title: 'chore: update stack helm chart version for ${{ matrix.env.name }}'
+          body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
+          base: main
+          branch: updatecli-bump-stack-chart-${{ matrix.env.name }}
+          delete-branch: true
+          token: ${{ steps.generate_token.outputs.token }}
