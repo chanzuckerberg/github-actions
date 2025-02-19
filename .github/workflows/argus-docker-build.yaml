@@ -77,7 +77,7 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@5375ea8d0b1ca74a390ae80b8a36c5824cf53a31
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@78daec2e0e6b6eb3913cc009cdb2a1d251a6f2db
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
