@@ -144,7 +144,7 @@ runs:
           const labels = `${{ steps.findPr.outputs.pr_labels }}`;
           const triggerLabels = `${{ inputs.manifest_trigger_labels }}`.split(',').map(l => l.trim());
           const hasTriggerLabel = labels.split(',').map(l => l.trim()).some(l => triggerLabels.includes(l));
-          console.log(`Detected labels ${labels} on PR. Has oneof ${triggerLabels} label? ${hasTriggerLabel}`);          
+          console.log(`Detected labels [${labels}] on PR. Has oneof [${triggerLabels}] label? ${hasTriggerLabel}`);
           core.setOutput('should_deploy', hasTriggerLabel);
 
     - name: Check if build should run
