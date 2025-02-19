@@ -58,10 +58,10 @@ runs:
         role-session-name: ArgusContainerBuilder
     - name: Generate token
       id: generate_token
-      uses: tibdex/github-app-token@v2
+      uses: actions/create-github-app-token@v1
       with:
-        app_id: ${{ inputs.github_app_id }}
-        private_key: ${{ inputs.github_private_key }}
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_private_key }}
     - uses: actions/checkout@v4
       with:
         repository: chanzuckerberg/core-platform-settings
