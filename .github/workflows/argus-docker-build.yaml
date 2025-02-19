@@ -54,6 +54,13 @@ on:
         required: false
         type: string
         default: "['X64']"
+      manifest_trigger_labels:
+        description: |
+          Labels that will trigger updating the manifest and committing a docker image change to values.yaml, comma delimited.
+          If ANY of the labels are found on the PR, the manifest will be updated.
+        required: false
+        type: string
+        default: 'stack'
 
 jobs:
   prep:
@@ -70,20 +77,14 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: 8BitJonny/gh-get-current-pr@3.0.0
-        id: findPr
-        with:
-          filterOutClosed: true
-          filterOutDraft: false
-          sha: ${{ github.event.pull_request.head.sha }}
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@v3.6.1
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@e14bcfd45b3762533fdcdfeee2bdcf1229724656
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
           path_filters_base: ${{ inputs.path_filters_base }}
           branches_include: ${{ inputs.branches_include }}
           branches_ignore: ${{ inputs.branches_ignore }}
-          pr_labels: ${{ steps.findPr.outputs.pr_labels }}
+          manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
       - uses: actions/checkout@v4
       - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v3.4.1
         name: Validate images input
