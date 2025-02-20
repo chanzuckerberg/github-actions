@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.0](https://github.com/chanzuckerberg/github-actions/compare/v5.0.0...v5.1.0) (2025-02-20)
+
+
+### Features
+
+* use ECR settings from argus-artifacts repo ([#355](https://github.com/chanzuckerberg/github-actions/issues/355)) ([fbdf971](https://github.com/chanzuckerberg/github-actions/commit/fbdf971fade05568971793b73439648a99615ef3))
+
 ## [5.0.0](https://github.com/chanzuckerberg/github-actions/compare/v4.3.0...v5.0.0) (2025-02-19)
 
 
