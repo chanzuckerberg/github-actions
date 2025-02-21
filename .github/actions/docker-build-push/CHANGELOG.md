@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.6.2...docker-build-push-v1.7.0) (2025-02-21)
+
+
+### Features
+
+* embed docker scanning into argus builder action ([#346](https://github.com/chanzuckerberg/github-actions/issues/346)) ([9ed240d](https://github.com/chanzuckerberg/github-actions/commit/9ed240d96a6ccd85012f13b09f0c4c6b3853afd5))
+
 ## [1.6.2](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.6.1...docker-build-push-v1.6.2) (2024-11-07)
 
 
