@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.0](https://github.com/chanzuckerberg/github-actions/compare/v5.1.0...v5.2.0) (2025-02-21)
+
+
+### Features
+
+* embed docker scanning into argus builder action ([#346](https://github.com/chanzuckerberg/github-actions/issues/346)) ([9ed240d](https://github.com/chanzuckerberg/github-actions/commit/9ed240d96a6ccd85012f13b09f0c4c6b3853afd5))
+
 ## [5.1.0](https://github.com/chanzuckerberg/github-actions/compare/v5.0.0...v5.1.0) (2025-02-20)
 
 
