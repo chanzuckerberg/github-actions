@@ -68,8 +68,8 @@ runs:
         private_key: ${{ inputs.github_private_key }}
     - uses: actions/checkout@v4
       with:
-        repository: chanzuckerberg/core-platform-settings
-        path: core-platform-settings
+        repository: chanzuckerberg/argus-artifacts
+        path: argus-artifacts
         token: ${{ steps.generate_token.outputs.token }}
     - name: ECR Metadata
       id: ecr_metadata
@@ -94,8 +94,8 @@ runs:
       uses: int128/create-ecr-repository-action@v1
       with:
         repository: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
-        lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
-        repository-policy: core-platform-settings/ecr/repository-policy.json
+        lifecycle-policy: argus-artifacts/settings/ecr/lifecycle-policy.json
+        repository-policy: argus-artifacts/settings/ecr/repository-policy.json
     - name: Build And Push
       uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@5b6992378f747c4ffa74e7c4c88f2e5add7090d9
       with:

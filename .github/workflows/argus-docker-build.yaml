@@ -59,6 +59,13 @@ on:
         required: false
         type: string
         default: "['X64']"
+      manifest_trigger_labels:
+        description: |
+          Labels that will trigger updating the manifest and committing a docker image change to values.yaml, comma delimited.
+          If ANY of the labels are found on the PR, the manifest will be updated.
+        required: false
+        type: string
+        default: 'stack'
 
 jobs:
   prep:
@@ -75,20 +82,14 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: 8BitJonny/gh-get-current-pr@3.0.0
-        id: findPr
-        with:
-          filterOutClosed: true
-          filterOutDraft: false
-          sha: ${{ github.event.pull_request.head.sha }}
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@v4.2.0
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@78daec2e0e6b6eb3913cc009cdb2a1d251a6f2db
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
           path_filters_base: ${{ inputs.path_filters_base }}
           branches_include: ${{ inputs.branches_include }}
           branches_ignore: ${{ inputs.branches_ignore }}
-          pr_labels: ${{ steps.findPr.outputs.pr_labels }}
+          manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
       - uses: actions/checkout@v4
       - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v4.2.0
         name: Validate images input
@@ -225,7 +226,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@5b6992378f747c4ffa74e7c4c88f2e5add7090d9
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@5c525e1a8eca45deeadd10d44727ddb2c653dadd
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}

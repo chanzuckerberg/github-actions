@@ -1,5 +1,30 @@
 # Changelog
 
+## [5.1.0](https://github.com/chanzuckerberg/github-actions/compare/v5.0.0...v5.1.0) (2025-02-20)
+
+
+### Features
+
+* use ECR settings from argus-artifacts repo ([#355](https://github.com/chanzuckerberg/github-actions/issues/355)) ([fbdf971](https://github.com/chanzuckerberg/github-actions/commit/fbdf971fade05568971793b73439648a99615ef3))
+
+## [5.0.0](https://github.com/chanzuckerberg/github-actions/compare/v4.3.0...v5.0.0) (2025-02-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* *BREAKING* allow passing multiple labels that should make argus builder update manifests ([#353](https://github.com/chanzuckerberg/github-actions/issues/353))
+
+### Features
+
+* *BREAKING* allow passing multiple labels that should make argus builder update manifests ([#353](https://github.com/chanzuckerberg/github-actions/issues/353)) ([89bc6f0](https://github.com/chanzuckerberg/github-actions/commit/89bc6f095035b2a37bd6abd3312a54fc265a4a3d))
+
+## [4.3.0](https://github.com/chanzuckerberg/github-actions/compare/v4.2.0...v4.3.0) (2025-02-14)
+
+
+### Features
+
+* add reusable workflow for keeping argus helm charts up to date ([#350](https://github.com/chanzuckerberg/github-actions/issues/350)) ([bbaab62](https://github.com/chanzuckerberg/github-actions/commit/bbaab62dea89f48856e61ea86e604e6b1edb6ed2))
+
 ## [4.2.0](https://github.com/chanzuckerberg/github-actions/compare/v4.1.0...v4.2.0) (2025-02-11)
 
 
