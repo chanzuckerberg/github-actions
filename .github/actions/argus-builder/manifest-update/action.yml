@@ -77,17 +77,25 @@ runs:
             return infraDirPath;
           });
           core.setOutput('infra_dir_paths', infraDirPaths.join(' '));
-    - name: Update Manifest
-      shell: bash
-      run: |
-        for env in ${{ steps.parse_envs.outputs.envs }}
-        do
-          for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
-          do
-            sed -i 's/tag: sha-\w\+/tag: ${{ inputs.image_tag }}/g' ${infra_dir_path}/${env}/values.yaml
-            cat ${infra_dir_path}/${env}/values.yaml
-          done
-        done
+    # - name: Which yq
+    #   shell: bash
+    #   run: |
+    #     which yq
+    # - name: Update Manifest
+    #   shell: bash
+    #   run: |
+    #     for env in ${{ steps.parse_envs.outputs.envs }}
+    #     do
+    #       for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
+    #       do
+    #         sed -i 's/tag: sha-\w\+/tag: ${{ inputs.image_tag }}/g' ${infra_dir_path}/${env}/values.yaml
+    #         cat ${infra_dir_path}/${env}/values.yaml
+    #       done
+    #     done
+    - uses: mikefarah/yq@v4
+      id: validate
+      with:
+        cmd: yq ${{matrix.file}} > /dev/null
     - name: Update Argus manifests
       uses: EndBug/add-and-commit@v9
       with:
