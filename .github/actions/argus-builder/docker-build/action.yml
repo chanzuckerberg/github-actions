@@ -36,6 +36,10 @@ inputs:
     description: "Whether to clean the repository before checking out"
     required: false
     default: false
+  fail_on_vulnerabilities:
+    description: 'whether to fail the action if vulnerabilities are found'
+    required: false
+    default: "true"
 
 outputs:
   image_uri:
@@ -64,8 +68,8 @@ runs:
         private_key: ${{ inputs.github_private_key }}
     - uses: actions/checkout@v4
       with:
-        repository: chanzuckerberg/core-platform-settings
-        path: core-platform-settings
+        repository: chanzuckerberg/argus-artifacts
+        path: argus-artifacts
         token: ${{ steps.generate_token.outputs.token }}
     - name: ECR Metadata
       id: ecr_metadata
@@ -86,13 +90,14 @@ runs:
           core.setOutput('ECR_REPO_NAME', ECR_REPO_NAME);
           core.setOutput('IMAGE_URI', IMAGE_URI);
     - name: Create ECR repo if necessary
+      id: create_ecr_repo
       uses: int128/create-ecr-repository-action@v1
       with:
         repository: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
-        lifecycle-policy: core-platform-settings/ecr/lifecycle-policy.json
-        repository-policy: core-platform-settings/ecr/repository-policy.json
+        lifecycle-policy: argus-artifacts/settings/ecr/lifecycle-policy.json
+        repository-policy: argus-artifacts/settings/ecr/repository-policy.json
     - name: Build And Push
-      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@74d720a183006c0fe0a82f52475befed7d992888
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@193e90c0872c379105b55b1d02cf55e9992f6f16
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
@@ -104,11 +109,10 @@ runs:
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret_files }}
-
-    # TODO: scan image for vulnerabilities
-    # - name: Scan for vulnerabilities
-    #   uses: chanzuckerberg/github-actions/.github/actions/argus-builder/scan-for-vulnerabilities@main
-    #   with:
-    #     image_uri: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}/${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}:${{ inputs.image_tag }}
-    #     github_app_id: ${{ inputs.github_app_id }}
-    #     github_private_key: ${{ inputs.github_private_key }}
+        load: true
+    - name: Scan for vulnerabilities
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@193e90c0872c379105b55b1d02cf55e9992f6f16
+      id: scan
+      with:
+        image_uri: ${{ steps.create_ecr_repo.outputs.repository-uri }}:${{ inputs.image_tag }}
+        fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
