@@ -54,6 +54,9 @@
 		".github/actions/happy-cleanup": {
 			"package-name": "happy-cleanup"
 		},
+		".github/actions/release-please-semvar": {
+			"package-name": "release-please-semvar"
+		},
 		".": {}
 	}
 }
