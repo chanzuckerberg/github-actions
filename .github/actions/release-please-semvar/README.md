@@ -11,6 +11,14 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/release-please-semvar@rzheng/CCIE-3947
-
+      - name: Generate token
+        uses: actions/create-github-app-token@v1
+        id: generate_token
+        with:
+          app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/release-please-semvar
+        with:
+            app_token: ${{ steps.generate_token.outputs.token }}
 ```

@@ -1,19 +1,17 @@
 name: Release please
 description: Runs release please and tags unpinned major and minor versions
+inputs:
+  app_token:
+    description: 'App token obtained using create-github-app-token'
+    required: true
 runs:
   using: "composite"
   steps:
-    - name: Generate token
-      uses: actions/create-github-app-token@v1
-      id: generate_token
-      with:
-        app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
-        private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
     - name: release please
       uses: googleapis/release-please-action@v4
       id: release
       with:
-        token: ${{ steps.generate_token.outputs.token }}
+        token: ${{ inputs.app_token }}
     - uses: actions/checkout@v4
     - name: tag major and minor versions
       run: |
