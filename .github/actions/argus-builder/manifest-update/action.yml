@@ -92,10 +92,21 @@ runs:
     #         cat ${infra_dir_path}/${env}/values.yaml
     #       done
     #     done
+
+    # yq -i '(.. | select(.tag == "sha-*")).tag = "sha-123"' test.yaml
+
     - uses: mikefarah/yq@v4
       id: validate
       with:
-        cmd: yq ${{matrix.file}} > /dev/null
+        cmd: |
+          for env in ${{ steps.parse_envs.outputs.envs }}
+          do
+            for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
+            do
+              yq -i '(.. | select(.tag == "sha-*")).tag = "${{ inputs.image_tag }}"' ${infra_dir_path}/${env}/values.yaml
+              cat ${infra_dir_path}/${env}/values.yaml
+            done
+          done
     - name: Update Argus manifests
       uses: EndBug/add-and-commit@v9
       with:
