@@ -8,4 +8,4 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/release-please-semvar@rzheng/CCIE-3947
+      - uses: ./.github/actions/release-please-semvar
