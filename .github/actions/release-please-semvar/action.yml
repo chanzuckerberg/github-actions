@@ -14,6 +14,7 @@ runs:
         token: ${{ inputs.app_token }}
     - uses: actions/checkout@v4
     - name: tag major and minor versions
+      shell: bash
       run: |
         git config user.name czi-github-helper[bot]
         git config user.email 95879977+czi-github-helper[bot]@users.noreply.github.com
