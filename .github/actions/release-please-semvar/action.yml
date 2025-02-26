@@ -4,6 +4,10 @@ inputs:
   app_token:
     description: 'App token obtained using create-github-app-token'
     required: true
+  include_component_in_tag:
+    description: 'If true, add prefix to tags and branches, allowing multiple libraries to be released from the same repository'
+    required: false
+    default: false
 runs:
   using: "composite"
   steps:
@@ -12,6 +16,7 @@ runs:
       id: release
       with:
         token: ${{ inputs.app_token }}
+        include-component-in-tag: ${{ inputs.include_component_in_tag }}
     - uses: actions/checkout@v4
     - name: tag major and minor versions
       shell: bash
