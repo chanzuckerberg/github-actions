@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.3.0](https://github.com/chanzuckerberg/github-actions/compare/v5.2.0...v5.3.0) (2025-02-26)
+
+
+### Features
+
+* CCIE-3947 tag unpinned major/minor versions ([#358](https://github.com/chanzuckerberg/github-actions/issues/358)) ([1fa67d3](https://github.com/chanzuckerberg/github-actions/commit/1fa67d3eeae04039695256249cfad3e89e2c9d14))
+
+
+### BugFixes
+
+* CCIE-3947 add checkout step to release.yaml ([#361](https://github.com/chanzuckerberg/github-actions/issues/361)) ([ab8e141](https://github.com/chanzuckerberg/github-actions/commit/ab8e141ebde81c4fecdc0b454abe9b4191c8f40b))
+* CCIE-3947 add shell property to release-please-semvar ([#363](https://github.com/chanzuckerberg/github-actions/issues/363)) ([a8c39d2](https://github.com/chanzuckerberg/github-actions/commit/a8c39d2b74ac2b4605bacbe338cc3ee0b07aecbe))
+* CCIE-3947 pass app token to release-please-semvar ([#362](https://github.com/chanzuckerberg/github-actions/issues/362)) ([e5209b3](https://github.com/chanzuckerberg/github-actions/commit/e5209b306fa3a3b1cd340c384ceb7e2a27180ba5))
+* CCIE-3947 unpin release please git rev in release.yaml ([#360](https://github.com/chanzuckerberg/github-actions/issues/360)) ([5278e0f](https://github.com/chanzuckerberg/github-actions/commit/5278e0f92e1b4b8fc09aacbbc066d71687c71978))
+
 ## [5.2.0](https://github.com/chanzuckerberg/github-actions/compare/v5.1.0...v5.2.0) (2025-02-21)
 
 
