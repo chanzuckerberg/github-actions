@@ -1,0 +1,29 @@
+name: Release please
+description: Runs release please and tags unpinned major and minor versions
+inputs:
+  app_token:
+    description: 'App token obtained using create-github-app-token'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: release please
+      uses: googleapis/release-please-action@v4
+      id: release
+      with:
+        token: ${{ inputs.app_token }}
+    - uses: actions/checkout@v4
+    - name: tag major and minor versions
+      shell: bash
+      run: |
+        git config user.name czi-github-helper[bot]
+        git config user.email 95879977+czi-github-helper[bot]@users.noreply.github.com
+        git tag -d v${{ steps.release.outputs.major }} || true
+        git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+        git push origin :v${{ steps.release.outputs.major }} || true
+        git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+        git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
+        git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
+        git push origin v${{ steps.release.outputs.major }}
+        git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
+      if: ${{ steps.release.outputs.release_created }}
