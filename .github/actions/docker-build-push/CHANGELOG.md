@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.7.0...docker-build-push-v1.8.0) (2025-02-27)
+
+
+### Features
+
+* don't use github actions cache; we use pull through cache ([#351](https://github.com/chanzuckerberg/github-actions/issues/351)) ([ef2e369](https://github.com/chanzuckerberg/github-actions/commit/ef2e36989bf32f7d52996a6d8b73fa99f4025d80))
+
 ## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.6.2...docker-build-push-v1.7.0) (2025-02-21)
 
 

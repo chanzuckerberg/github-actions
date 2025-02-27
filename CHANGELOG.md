@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.4.0](https://github.com/chanzuckerberg/github-actions/compare/v5.3.0...v5.4.0) (2025-02-27)
+
+
+### Features
+
+* don't use github actions cache; we use pull through cache ([#351](https://github.com/chanzuckerberg/github-actions/issues/351)) ([ef2e369](https://github.com/chanzuckerberg/github-actions/commit/ef2e36989bf32f7d52996a6d8b73fa99f4025d80))
+* make the argus builder work with yaml anchors ([#368](https://github.com/chanzuckerberg/github-actions/issues/368)) ([0927e22](https://github.com/chanzuckerberg/github-actions/commit/0927e2281bddff72d2d22491a3954bab7290e3a2))
+
 ## [5.3.0](https://github.com/chanzuckerberg/github-actions/compare/v5.2.0...v5.3.0) (2025-02-26)
 
 
