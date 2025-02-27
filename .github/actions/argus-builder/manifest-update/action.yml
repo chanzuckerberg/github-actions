@@ -60,7 +60,8 @@ runs:
       with:
         script: |
           const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
-          core.setOutput('envs', envs.join(' '));
+          const uniqueEnvs = [...new Set(envs)];
+          core.setOutput('envs', uniqueEnvs.join(' '));
     - name: Determine .infra path
       uses: actions/github-script@v7
       id: path
@@ -76,25 +77,8 @@ runs:
             }
             return infraDirPath;
           });
-          core.setOutput('infra_dir_paths', infraDirPaths.join(' '));
-    # - name: Which yq
-    #   shell: bash
-    #   run: |
-    #     which yq
-    # - name: Update Manifest
-    #   shell: bash
-    #   run: |
-    #     for env in ${{ steps.parse_envs.outputs.envs }}
-    #     do
-    #       for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
-    #       do
-    #         sed -i 's/tag: sha-\w\+/tag: ${{ inputs.image_tag }}/g' ${infra_dir_path}/${env}/values.yaml
-    #         cat ${infra_dir_path}/${env}/values.yaml
-    #       done
-    #     done
-
-    # yq -i '(.. | select(.tag == "sha-*")).tag = "sha-123"' test.yaml
-
+          const uniqueInfraDirPaths = [...new Set(infraDirPaths)];
+          core.setOutput('infra_dir_paths', uniqueInfraDirPaths.join(' '));
     - uses: mikefarah/yq@v4
       id: validate
       with:
@@ -103,7 +87,7 @@ runs:
           do
             for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
             do
-              yq -i '(.. | select(.tag == "sha-*")).tag = "${{ inputs.image_tag }}"' ${infra_dir_path}/${env}/values.yaml
+              yq -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${{ inputs.image_tag }}"' ${infra_dir_path}/${env}/values.yaml
               cat ${infra_dir_path}/${env}/values.yaml
             done
           done
