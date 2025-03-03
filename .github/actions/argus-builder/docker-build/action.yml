@@ -111,8 +111,9 @@ runs:
         secret-files: ${{ inputs.secret_files }}
         load: true
     - name: Scan for vulnerabilities
-      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@193e90c0872c379105b55b1d02cf55e9992f6f16
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@dcbf86c28e42fc41ed13818813d57dcb34dad3c0
       id: scan
       with:
+        image_name: ${{ inputs.image_name }}
         image_uri: ${{ steps.create_ecr_repo.outputs.repository-uri }}:${{ inputs.image_tag }}
         fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
