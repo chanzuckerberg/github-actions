@@ -78,20 +78,15 @@ runs:
             issueNumber = context.issue.number;
           } else {
             // Otherwise use issue number from commit
-            listPullRequestsAssociatedWithCommit = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+            pullRequestsAssociatedWithCommit = await github.rest.repos.listPullRequestsAssociatedWithCommit({
               commit_sha: context.sha,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            console.log("...using issue number from commit:", JSON.stringify(listPullRequestsAssociatedWithCommit, null, 2));
-            issueNumber = listPullRequestsAssociatedWithCommit.data[0].number;
-            // issueNumber = (
-            //   await github.rest.repos.listPullRequestsAssociatedWithCommit({
-            //     commit_sha: context.sha,
-            //     owner: context.repo.owner,
-            //     repo: context.repo.repo,
-            //   })
-            // ).data[0].number;
+            if (pullRequestsAssociatedWithCommit.data.length > 0) {
+              console.log("...using issue number from commit:", pullRequestsAssociatedWithCommit.data[0].number);
+              issueNumber = pullRequestsAssociatedWithCommit.data[0].number;
+            }
           }
           if (!issueNumber) {
             core.warning('Could not find issue number');
