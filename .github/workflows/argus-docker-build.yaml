@@ -226,7 +226,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@CCIE-4104-comment-replacement-in-container-scanning
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@5523f4a1eaf33eb6a6b64fb7523c8e6c7396dc98
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
