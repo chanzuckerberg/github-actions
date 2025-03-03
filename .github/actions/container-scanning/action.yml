@@ -73,7 +73,6 @@ runs:
         script: |
           let issueNumber;
           if (context.issue.number) {
-            console.log("...using issue number from context:", context.issue.number);
             // use issue number from context if present
             issueNumber = context.issue.number;
           } else {
@@ -84,7 +83,6 @@ runs:
               repo: context.repo.repo,
             });
             if (pullRequestsAssociatedWithCommit.data.length > 0) {
-              console.log("...using issue number from commit:", pullRequestsAssociatedWithCommit.data[0].number);
               issueNumber = pullRequestsAssociatedWithCommit.data[0].number;
             }
           }
