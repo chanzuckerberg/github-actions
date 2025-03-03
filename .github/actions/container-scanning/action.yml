@@ -85,6 +85,11 @@ runs:
               })
             ).data[0].number;
           }
+          if (!issueNumber) {
+            console.log('Could not find issue number');
+            core.warning('Could not find issue number');
+            return;
+          }
 
           // try to delete old comments about vulnerabilities
           const ownerAndRepo = '${{ github.repository }}';
@@ -92,7 +97,7 @@ runs:
           const { data: comments } = await github.rest.issues.listComments({
             owner,
             repo,
-            issue_number: ${{ github.event.pull_request.number }},
+            issue_number: issueNumber,
           });
           const commentHeader = ':rotating_light: **Vulnerabilities found in ${{ inputs.image_name }} image**: ${{ steps.ecr_metadata.outputs.IMAGE_URI }} :rotating_light:';
           for (let comment of comments) {
