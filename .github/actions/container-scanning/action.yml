@@ -73,20 +73,27 @@ runs:
         script: |
           let issueNumber;
           if (context.issue.number) {
+            console.log("...using issue number from context:", context.issue.number);
             // use issue number from context if present
             issueNumber = context.issue.number;
           } else {
             // Otherwise use issue number from commit
-            issueNumber = (
-              await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                commit_sha: context.sha,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-              })
-            ).data[0].number;
+            listPullRequestsAssociatedWithCommit = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              commit_sha: context.sha,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            console.log("...using issue number from commit:", JSON.stringify(listPullRequestsAssociatedWithCommit, null, 2));
+            issueNumber = listPullRequestsAssociatedWithCommit.data[0].number;
+            // issueNumber = (
+            //   await github.rest.repos.listPullRequestsAssociatedWithCommit({
+            //     commit_sha: context.sha,
+            //     owner: context.repo.owner,
+            //     repo: context.repo.repo,
+            //   })
+            // ).data[0].number;
           }
           if (!issueNumber) {
-            console.log('Could not find issue number');
             core.warning('Could not find issue number');
             return;
           }
