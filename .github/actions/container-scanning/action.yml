@@ -96,7 +96,7 @@ runs:
           });
           const commentHeader = ':rotating_light: **Vulnerabilities found in ${{ inputs.image_name }} image**: ${{ steps.ecr_metadata.outputs.IMAGE_URI }} :rotating_light:';
           for (let comment of comments) {
-            if (comment.body === noJiraIssueBody && comment.user.type === 'Bot') {
+            if (comment.body.includes(commentHeader) && comment.user.type === 'Bot') {
               console.log('Found comment to delete:', JSON.stringify(comment, null, 2));
               await github.rest.issues.deleteComment({
                 owner,

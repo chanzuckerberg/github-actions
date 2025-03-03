@@ -111,7 +111,7 @@ runs:
         secret-files: ${{ inputs.secret_files }}
         load: true
     - name: Scan for vulnerabilities
-      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@dcbf86c28e42fc41ed13818813d57dcb34dad3c0
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@CCIE-4104-comment-replacement-in-container-scanning
       id: scan
       with:
         image_name: ${{ inputs.image_name }}
