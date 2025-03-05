@@ -1,3 +1,4 @@
+# bump
 name: Release please
 description: Runs release please and tags unpinned major and minor versions
 inputs:
