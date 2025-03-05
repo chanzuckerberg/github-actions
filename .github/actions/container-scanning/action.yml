@@ -1,6 +1,9 @@
 name: Container Scanning
 description: 'A GitHub Action to scan a container image for security vulnerabilities that follows CZI Best Practices'
 inputs:
+  image_name:
+    description: "name of the image being scanned"
+    required: true
   image_uri:
     description: 'which image to scan'
     required: true
@@ -74,16 +77,43 @@ runs:
             issueNumber = context.issue.number;
           } else {
             // Otherwise use issue number from commit
-            issueNumber = (
-              await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                commit_sha: context.sha,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-              })
-            ).data[0].number;
+            pullRequestsAssociatedWithCommit = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              commit_sha: context.sha,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            if (pullRequestsAssociatedWithCommit.data.length > 0) {
+              issueNumber = pullRequestsAssociatedWithCommit.data[0].number;
+            }
           }
+          if (!issueNumber) {
+            core.warning('Could not find issue number');
+            return;
+          }
+
+          // try to delete old comments about vulnerabilities
+          const ownerAndRepo = '${{ github.repository }}';
+          const [owner, repo] = ownerAndRepo.split('/');
+          const { data: comments } = await github.rest.issues.listComments({
+            owner,
+            repo,
+            issue_number: issueNumber,
+          });
+          const commentHeader = ':rotating_light: **Vulnerabilities found in ${{ inputs.image_name }} image**: ${{ steps.ecr_metadata.outputs.IMAGE_URI }} :rotating_light:';
+          for (let comment of comments) {
+            if (comment.body.includes(commentHeader) && comment.user.type === 'Bot') {
+              console.log('Found comment to delete:', JSON.stringify(comment, null, 2));
+              await github.rest.issues.deleteComment({
+                owner,
+                repo,
+                comment_id: comment.id,
+              });
+            }
+          }
+
+          // create a new comment with the vulnerability information
           const body = `
-          :rotating_light: **Vulnerabilities found in image**: ${{ steps.ecr_metadata.outputs.IMAGE_URI }} :rotating_light:
+          ${commentHeader}
           Please review the vulnerabilities found in the image and take appropriate action:
           ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           `;
