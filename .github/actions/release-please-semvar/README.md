@@ -17,8 +17,15 @@ jobs:
         with:
           app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/release-please-semvar
+      - uses: chanzuckerberg/github-actions/.github/actions/release-please-semvar@main
         with:
             app_token: ${{ steps.generate_token.outputs.token }}
 ```
+
+For automatic component-level major and minor version tagging, you can pass in
+
+```
+          include_component_in_tag: true
+```
+
+or set the corresponding setting in the release please config file.
