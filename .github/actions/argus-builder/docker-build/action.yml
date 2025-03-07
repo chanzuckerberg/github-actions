@@ -64,8 +64,8 @@ runs:
       uses: actions/create-github-app-token@v1
       id: generate_token
       with:
-        app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
-        private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_private_key }}
     - uses: actions/checkout@v4
       with:
         repository: chanzuckerberg/argus-artifacts
