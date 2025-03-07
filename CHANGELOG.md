@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.5.1](https://github.com/chanzuckerberg/github-actions/compare/v5.5.0...v5.5.1) (2025-03-07)
+
+
+### BugFixes
+
+* use inputs for app id and PK ([1bd12ca](https://github.com/chanzuckerberg/github-actions/commit/1bd12ca7ee2fb4d38dcf0ebaca847975de95a21f))
+
+
+### Misc
+
+* CCIE-3947 update release-please-semvar readme ([#365](https://github.com/chanzuckerberg/github-actions/issues/365)) ([f174832](https://github.com/chanzuckerberg/github-actions/commit/f1748324a260af9d7f9fc7d000c24eb229d80fd4))
+
 ## [5.5.0](https://github.com/chanzuckerberg/github-actions/compare/v5.4.0...v5.5.0) (2025-03-05)
 
 
