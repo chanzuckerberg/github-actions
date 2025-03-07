@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.1.0...release-please-semvar-v0.1.1) (2025-03-07)
+
+
+### Misc
+
+* CCIE-3947 update release-please-semvar readme ([#365](https://github.com/chanzuckerberg/github-actions/issues/365)) ([f174832](https://github.com/chanzuckerberg/github-actions/commit/f1748324a260af9d7f9fc7d000c24eb229d80fd4))
+
 ## [0.1.0](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.0.1...release-please-semvar-v0.1.0) (2025-03-05)
 
 
