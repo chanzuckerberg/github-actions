@@ -82,14 +82,6 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@78daec2e0e6b6eb3913cc009cdb2a1d251a6f2db
-        id: build_prep
-        with:
-          path_filters: ${{ inputs.path_filters }}
-          path_filters_base: ${{ inputs.path_filters_base }}
-          branches_include: ${{ inputs.branches_include }}
-          branches_ignore: ${{ inputs.branches_ignore }}
-          manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
       - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v5.1.0
         name: Validate images input
         with:
@@ -135,6 +127,15 @@ jobs:
               }
             }
           data: ${{ inputs.images }}
+
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@78daec2e0e6b6eb3913cc009cdb2a1d251a6f2db
+        id: build_prep
+        with:
+          path_filters: ${{ inputs.path_filters }}
+          path_filters_base: ${{ inputs.path_filters_base }}
+          branches_include: ${{ inputs.branches_include }}
+          branches_ignore: ${{ inputs.branches_ignore }}
+          manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
 
       - uses: actions/checkout@v4
       - uses: tj-actions/changed-files@v45
