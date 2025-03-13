@@ -13,8 +13,7 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v4
-    - name: Set up Helm
-      uses: azure/setup-helm@v4
+    - uses: azure/setup-helm@v4
     - name: Helm lint
       shell: bash
       working-directory: ${{ inputs.chart_path }}
@@ -25,8 +24,10 @@ runs:
         helm dependency update .
         # produces `helm lint . --with-subcharts -f file1 -f file2` with values_files as file1,file2
         helm lint . --with-subcharts $(echo "${{ inputs.values_files }}" | sed 's/,/ -f /g' | sed 's/^/-f /')
-    - name: YAML lint
-      uses: karancode/yamllint-github-action@master
-      with:
-        yamllint_file_or_dir: ${{ inputs.chart_path }}
-        yamllint_strict: true
+    - name: Install
+      run: |
+        sudo apt update
+        sudo apt install yamllint
+    - working-directory: ${{ inputs.chart_path }}
+      run: |
+        yamllint .
