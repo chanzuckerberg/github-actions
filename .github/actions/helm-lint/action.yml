@@ -23,6 +23,5 @@ runs:
         set -o pipefail
 
         helm dependency update .
-        helm dependency build .
         # produces `helm lint . --with-subcharts -f file1 -f file2` with values_files as file1,file2
         helm lint . --with-subcharts $(echo "${{ inputs.values_files }}" | sed 's/,/ -f /g' | sed 's/^/-f /')
