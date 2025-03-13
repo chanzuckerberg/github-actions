@@ -19,6 +19,9 @@ runs:
       shell: bash
       working-directory: ${{ inputs.chart_path }}
       run: |
+        set -ue
+        set -o pipefail
+
         helm dependency update .
         helm dependency build .
         # produces `helm lint . --with-subcharts -f file1 -f file2` with values_files as file1,file2
