@@ -116,6 +116,9 @@ runs:
             core.setOutput('base', `${{ inputs.path_filters_base }}`);
           }
 
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Check for matching file changes
       uses: dorny/paths-filter@v3
       id: file_filter
