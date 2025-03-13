@@ -25,9 +25,11 @@ runs:
         # produces `helm lint . --with-subcharts -f file1 -f file2` with values_files as file1,file2
         helm lint . --with-subcharts $(echo "${{ inputs.values_files }}" | sed 's/,/ -f /g' | sed 's/^/-f /')
     - name: Install
+      shell: bash
       run: |
         sudo apt update
         sudo apt install yamllint
     - working-directory: ${{ inputs.chart_path }}
+      shell: bash
       run: |
         yamllint .
