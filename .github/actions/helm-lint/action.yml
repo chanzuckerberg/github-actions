@@ -1,0 +1,25 @@
+name: Helm Lint
+description: Run helm lint on the chart at a given path
+inputs:
+  chart_path:
+    description: The path of the chart
+    required: true
+    type: string
+  values_files:
+    description: The set of values files represented as a set of strings separated by a comma
+    required: true
+    type: string
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    - name: Set up Helm
+      uses: azure/setup-helm@v4
+    - name: Lint Chart
+      shell: bash
+      working-directory: ${{ inputs.chart_path }}
+      run: |
+        helm dependency update .
+        helm dependency build .
+        # produces `helm lint . --with-subcharts -f file1 -f file2` with values_files as file1,file2
+        helm lint . --with-subcharts $(echo "${{ inputs.values_files }}" | sed 's/,/ -f /g' | sed 's/^/-f /')
