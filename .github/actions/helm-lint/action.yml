@@ -28,7 +28,7 @@ runs:
       shell: bash
       run: |
         sudo apt update
-        sudo apt install yamllint
+        sudo apt install yamllint -y
     - working-directory: ${{ inputs.chart_path }}
       shell: bash
       run: |
