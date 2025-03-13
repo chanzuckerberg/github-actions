@@ -128,7 +128,7 @@ jobs:
             }
           data: ${{ inputs.images }}
 
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@78daec2e0e6b6eb3913cc009cdb2a1d251a6f2db
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@826552b3d324f69f50048a588967798b6c49110c
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
