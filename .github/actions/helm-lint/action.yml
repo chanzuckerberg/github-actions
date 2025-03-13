@@ -29,3 +29,4 @@ runs:
       uses: karancode/yamllint-github-action@master
       with:
         yamllint_file_or_dir: ${{ inputs.chart_path }}
+        yamllint_strict: true
