@@ -128,7 +128,7 @@ jobs:
             }
           data: ${{ inputs.images }}
 
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@826552b3d324f69f50048a588967798b6c49110c
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@78daec2e0e6b6eb3913cc009cdb2a1d251a6f2db
         id: build_prep
         with:
           path_filters: ${{ inputs.path_filters }}
@@ -143,7 +143,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install yaml minimatch
+      - run: npm install --no-save yaml minimatch
       - name: Parse inputs
         id: parse_images
         uses: actions/github-script@v7
