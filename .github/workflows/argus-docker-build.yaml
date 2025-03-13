@@ -91,7 +91,7 @@ jobs:
           branches_ignore: ${{ inputs.branches_ignore }}
           manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v5.1.0
+      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@5a99d87bb3980d90dbb3fbfdaea84f0404023f0e
         name: Validate images input
         with:
           schema: |
