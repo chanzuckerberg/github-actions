@@ -128,6 +128,13 @@ jobs:
             }
           data: ${{ inputs.images }}
 
+      # these need to happen before the checkout step below so the install doesn't try to install modules from the projects package.json
+      # build-prep also does a checkout so this needs to come before that
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install yaml minimatch
+
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@78daec2e0e6b6eb3913cc009cdb2a1d251a6f2db
         id: build_prep
         with:
@@ -136,12 +143,6 @@ jobs:
           branches_include: ${{ inputs.branches_include }}
           branches_ignore: ${{ inputs.branches_ignore }}
           manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
-
-      # these need to happen before the checkout step below so the install doesn't try to install modules from the projects package.json
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install yaml minimatch
 
       - uses: actions/checkout@v4
       - uses: tj-actions/changed-files@v45
