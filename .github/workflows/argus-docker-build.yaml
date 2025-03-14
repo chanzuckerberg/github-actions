@@ -91,7 +91,7 @@ jobs:
           branches_ignore: ${{ inputs.branches_ignore }}
           manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v5.1.0
+      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@CCIE-4115-investigate-co-mingling-yaml-and-ts-actions-in-github-actions-repo
         name: Validate images input
         with:
           schema: |
