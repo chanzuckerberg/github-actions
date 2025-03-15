@@ -12,6 +12,5 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ajv": "^8.17.1"
   }
 }
