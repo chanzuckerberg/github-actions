@@ -12,26 +12,3 @@ inputs:
 runs:
   using: 'node20'
   main: 'dist/index.js'
-  # using: composite
-  # steps:
-  #   - uses: actions/setup-node@v4
-  #     with:
-  #       node-version: '20'
-  #   - run: npm install ajv@8
-  #     shell: bash
-  #   - uses: actions/github-script@v7
-  #     with:
-  #       script: |
-  #         const Ajv = require('ajv');
-  #         const ajv = new Ajv();
-  #         const schema = ${{ inputs.schema }};
-  #         const data = ${{ inputs.data }};
-
-  #         core.info(`Validating JSON against schema: ${JSON.stringify(schema, null, 2)}`);
-  #         core.info(`Input data: ${JSON.stringify(data, null, 2)}`);
-
-  #         const validate = ajv.compile(schema);
-  #         const valid = validate(data);
-  #         if (!valid) {
-  #           throw new Error(`JSON is invalid: ${ajv.errorsText(validate.errors)}`);
-  #         }
