@@ -43,7 +43,7 @@ inputs:
   enable_vuln_container_scan:
     description: "Opt in to scan containers with AWS inspector"
     required: false
-    default: false
+    default: "false"
 
 outputs:
   image_uri:
@@ -115,7 +115,7 @@ runs:
         secret-files: ${{ inputs.secret_files }}
         load: true
     - name: Scan for vulnerabilities
-      if: ${{ inputs.enable_vuln_container_scan }}
+      if: ${{ inputs.enable_vuln_container_scan == 'true' }}
       uses: chanzuckerberg/github-actions/.github/actions/container-scanning@a8769e107f2f0d6377933835baaa370a60295724
       id: scan
       with:
