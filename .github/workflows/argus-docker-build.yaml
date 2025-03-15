@@ -66,6 +66,13 @@ on:
         required: false
         type: string
         default: 'stack'
+      enable_vuln_container_scan:
+        description: |
+          Opt in to scan containers with AWS inspector 
+        required: false
+        type: boolean
+        default: false
+
 
 jobs:
   prep:
@@ -93,7 +100,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@00ea3d32a43c9317d4318dab7fd037c2b5fafe6d
         name: Validate images input
-        with:
+        with: 
           schema: |
             {
               "type": "object",
@@ -136,7 +143,6 @@ jobs:
               }
             }
           data: ${{ inputs.images }}
-
       - uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@00ea3d32a43c9317d4318dab7fd037c2b5fafe6d
         id: changed_files
         with:
@@ -241,6 +247,7 @@ jobs:
           github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
           fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
+          enable_vuln_container_scan: ${{ inputs.enable_vuln_container_scan }}
 
   update-manifests:
     name: Update ArgoCD manifests
