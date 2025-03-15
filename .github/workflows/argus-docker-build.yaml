@@ -91,7 +91,7 @@ jobs:
           branches_ignore: ${{ inputs.branches_ignore }}
           manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@v5.1.0
+      - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@00ea3d32a43c9317d4318dab7fd037c2b5fafe6d
         name: Validate images input
         with:
           schema: |
@@ -137,8 +137,10 @@ jobs:
             }
           data: ${{ inputs.images }}
 
-      - uses: tj-actions/changed-files@v45
+      - uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@00ea3d32a43c9317d4318dab7fd037c2b5fafe6d
         id: changed_files
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
