@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.6.1](https://github.com/chanzuckerberg/github-actions/compare/v5.6.0...v5.6.1) (2025-03-15)
+
+
+### BugFixes
+
+* only run container scanning optin ([#379](https://github.com/chanzuckerberg/github-actions/issues/379)) ([e00ae88](https://github.com/chanzuckerberg/github-actions/commit/e00ae88355caeff8cf4910344913362fe74a4f2c))
+
 ## [5.6.0](https://github.com/chanzuckerberg/github-actions/compare/v5.5.1...v5.6.0) (2025-03-15)
 
 
