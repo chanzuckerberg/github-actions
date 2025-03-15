@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.6.0](https://github.com/chanzuckerberg/github-actions/compare/v5.5.1...v5.6.0) (2025-03-15)
+
+
+### Features
+
+* add find-changed-files and convert validate-json-schema to TS ([#377](https://github.com/chanzuckerberg/github-actions/issues/377)) ([ef32935](https://github.com/chanzuckerberg/github-actions/commit/ef32935a4340835f203ea23c84c5933d051c511d))
+
 ## [5.5.1](https://github.com/chanzuckerberg/github-actions/compare/v5.5.0...v5.5.1) (2025-03-07)
 
 
