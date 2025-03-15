@@ -1,0 +1,19 @@
+name: find-changed-files
+description: |
+  Finds files that have been changed in a pull request or push event.
+  For pull requests, it will find all files that have been added, copied, modified, renamed or deleted in the entire PR.
+  For push events, it will find all files that have been added, copied, modified, renamed or deleted in the latest commit.
+
+inputs:
+  github_token:
+    description: The GitHub token for authenticating with the GitHub API
+    required: true
+
+outputs:
+  all_modified_files:
+    description: |
+      Returns all changed files i.e. a combination of all added, copied, modified, renamed and deleted files (ACMRD)
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

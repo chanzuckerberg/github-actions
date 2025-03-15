@@ -137,8 +137,10 @@ jobs:
             }
           data: ${{ inputs.images }}
 
-      - uses: tj-actions/changed-files@v45
+      - uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@CCIE-4115-investigate-co-mingling-yaml-and-ts-actions-in-github-actions-repo
         id: changed_files
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
