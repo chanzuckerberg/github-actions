@@ -137,7 +137,7 @@ jobs:
             }
           data: ${{ inputs.images }}
 
-      - uses: tj-actions/changed-files@v45
+      - uses: step-security/changed-files@release
         id: changed_files
       - uses: actions/setup-node@v4
         with:
