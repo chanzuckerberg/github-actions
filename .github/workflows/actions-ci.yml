@@ -1,0 +1,78 @@
+name: CI for reusable Actions
+
+on:
+  - pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci_lint_and_build_artifacts:
+    runs-on: ARM64
+    outputs:
+      committed: ${{ steps.commit.outputs.committed }}
+    steps:
+      - name: Generate token
+        uses: actions/create-github-app-token@v1
+        id: generate_token
+        with:
+          app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com'
+          # cache-dependency-path: package.json
+
+      - run: npm install
+      #   working-directory: core
+      # - run: npm install
+      #   working-directory: ci
+
+      - name: Lint
+        run: npm run lint:fix --workspaces
+        # working-directory: ci
+
+      - name: Build Artifacts
+        run: npm run build --workspaces
+        # working-directory: ci
+
+      - uses: EndBug/add-and-commit@v9
+        id: commit
+        with:
+          add: -A
+          message: ci - fix linting / update build artifacts
+
+  ci_test_actions:
+    needs: ci_lint_and_build_artifacts
+    if: ${{ needs.ci_lint_and_build_artifacts.outputs.committed == 'false' }}
+    runs-on: ARM64
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com'
+          # cache-dependency-path: package.json
+
+      - run: npm install
+      #   working-directory: core
+      # - run: npm install
+      #   working-directory: ci
+
+      - name: Run Tests
+        run: npm run test
+        # working-directory: ci
