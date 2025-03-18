@@ -87,7 +87,7 @@ runs:
         do
           for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
           do
-            yq -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${{ inputs.image_tag }}"' ${infra_dir_path}/${env}/values.yaml
+            yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${{ inputs.image_tag }}"' ${infra_dir_path}/${env}/values.yaml
             cat ${infra_dir_path}/${env}/values.yaml
           done
         done
