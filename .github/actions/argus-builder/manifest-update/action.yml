@@ -79,18 +79,18 @@ runs:
           });
           const uniqueInfraDirPaths = [...new Set(infraDirPaths)];
           core.setOutput('infra_dir_paths', uniqueInfraDirPaths.join(' '));
-    - uses: mikefarah/yq@v4
+    - name: Update Manifest
       id: validate
-      with:
-        cmd: |
-          for env in ${{ steps.parse_envs.outputs.envs }}
+      shell: bash
+      run: |
+        for env in ${{ steps.parse_envs.outputs.envs }}
+        do
+          for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
           do
-            for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
-            do
-              yq -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${{ inputs.image_tag }}"' ${infra_dir_path}/${env}/values.yaml
-              cat ${infra_dir_path}/${env}/values.yaml
-            done
+            yq -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${{ inputs.image_tag }}"' ${infra_dir_path}/${env}/values.yaml
+            cat ${infra_dir_path}/${env}/values.yaml
           done
+        done
     - name: Update Argus manifests
       uses: EndBug/add-and-commit@v9
       with:
