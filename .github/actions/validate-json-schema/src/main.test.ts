@@ -28,25 +28,58 @@ describe('validate-json-schema', () => {
     await expect(async () => main()).rejects.toThrow('JSON is invalid: data must be string');
   });
 
-  // it('should succeed when data matches schema [complex]', () => {
-  //   when(mockedCore.getInput)
-  //     .calledWith('data', { required: true })
-  //     .mockReturnValue(JSON.stringify('testvalue'));
-  //   when(mockedCore.getInput)
-  //     .calledWith('schema', { required: true })
-  //     .mockReturnValue(JSON.stringify({ type: 'string' }));
+  it('should succeed when data matches schema [complex]', () => {
+    when(mockedCore.getInput)
+      .calledWith('data', { required: true })
+      .mockReturnValue(JSON.stringify({
+        key: 'value',
+        nested: {
+          key: 'value',
+        },
+      }));
+    when(mockedCore.getInput)
+      .calledWith('schema', { required: true })
+      .mockReturnValue(JSON.stringify({
+        type: 'object',
+        properties: {
+          key: { type: 'string' },
+          nested: {
+            type: 'object',
+            properties: {
+              key: { type: 'string' },
+            },
+          },
+        },
+        required: ['key', 'nested'],
+      }));
 
-  //   main();
-  // });
+    main();
+  });
 
-  // it('should fail when data does not match schema [complex]', async () => {
-  //   when(mockedCore.getInput)
-  //     .calledWith('data', { required: true })
-  //     .mockReturnValue(JSON.stringify({ key: 'value' }));
-  //   when(mockedCore.getInput)
-  //     .calledWith('schema', { required: true })
-  //     .mockReturnValue(JSON.stringify({ type: 'string' }));
+  it('should fail when data does not match schema [complex]', async () => {
+    when(mockedCore.getInput)
+      .calledWith('data', { required: true })
+      .mockReturnValue(JSON.stringify({
+        key: 'value',
+        nested: {},
+      }));
+    when(mockedCore.getInput)
+      .calledWith('schema', { required: true })
+      .mockReturnValue(JSON.stringify({
+        type: 'object',
+        properties: {
+          key: { type: 'string' },
+          nested: {
+            type: 'object',
+            properties: {
+              key: { type: 'string' },
+            },
+            required: ['key'],
+          },
+        },
+        required: ['key', 'nested'],
+      }));
 
-  //   await expect(async () => await main()).rejects.toThrow('JSON is invalid: data must be string');
-  // });
+    await expect(async () => main()).rejects.toThrow("JSON is invalid: data/nested must have required property 'key'");
+  });
 });
