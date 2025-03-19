@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.6.2](https://github.com/chanzuckerberg/github-actions/compare/v5.6.1...v5.6.2) (2025-03-18)
+
+
+### BugFixes
+
+* don't use docker image for yq ([#382](https://github.com/chanzuckerberg/github-actions/issues/382)) ([7d4cf33](https://github.com/chanzuckerberg/github-actions/commit/7d4cf33879e7ae128c4ded659619e7792e20e76b))
+
 ## [5.6.1](https://github.com/chanzuckerberg/github-actions/compare/v5.6.0...v5.6.1) (2025-03-15)
 
 
