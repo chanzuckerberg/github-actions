@@ -30,20 +30,14 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
           registry-url: 'https://npm.pkg.github.com'
-          # cache-dependency-path: package.json
 
       - run: npm install
-      #   working-directory: core
-      # - run: npm install
-      #   working-directory: ci
 
       - name: Lint
         run: npm run lint:fix --workspaces
-        # working-directory: ci
 
       - name: Build Artifacts
         run: npm run build --workspaces
-        # working-directory: ci
 
       - uses: EndBug/add-and-commit@v9
         id: commit
@@ -66,13 +60,8 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
           registry-url: 'https://npm.pkg.github.com'
-          # cache-dependency-path: package.json
 
       - run: npm install
-      #   working-directory: core
-      # - run: npm install
-      #   working-directory: ci
 
       - name: Run Tests
         run: npm run test
-        # working-directory: ci
