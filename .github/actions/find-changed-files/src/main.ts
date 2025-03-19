@@ -33,7 +33,6 @@ export async function main() {
     const changedFilePaths = listFilesResp.data.map((file) => file.filename);
     core.info(`Changed files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
     core.setOutput('all_modified_files', changedFilePaths.join(','));
-
   } else if (github.context.eventName === 'push') {
     const commitSha = github.context.sha;
     const commitResp = await gitClient.rest.repos.getCommit({
@@ -45,7 +44,6 @@ export async function main() {
     const changedFilePaths = (commitResp.data.files || []).map((file) => file.filename);
     core.info(`Changed files in commit: ${JSON.stringify(changedFilePaths, null, 2)}`);
     core.setOutput('all_modified_files', changedFilePaths.join(','));
-
   } else {
     throw new Error(`EventName ${github.context.eventName} not supported`);
   }

@@ -22,10 +22,10 @@ export async function main() {
 
   const ajv = new Ajv();
   const { data, schema } = inputs;
-  
+
   core.info(`Validating JSON against schema: ${JSON.stringify(schema, null, 2)}`);
   core.info(`Input data: ${JSON.stringify(data, null, 2)}`);
-  
+
   const validate = ajv.compile(schema);
   const valid = validate(data);
   if (!valid) {

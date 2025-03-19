@@ -25,7 +25,7 @@ describe('validate-json-schema', () => {
       .calledWith('schema', { required: true })
       .mockReturnValue(JSON.stringify({ type: 'string' }));
 
-    await expect(async () => await main()).rejects.toThrow('JSON is invalid: data must be string');
+    await expect(async () => main()).rejects.toThrow('JSON is invalid: data must be string');
   });
 
   // it('should succeed when data matches schema [complex]', () => {
