@@ -44,7 +44,7 @@ export async function findChangedFiles(inputs: Inputs): Promise<Output> {
     const changedFilePaths = listFilesResp.data.map((file) => file.filename);
     core.info(`Changed files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
     return { allModifiedFiles: changedFilePaths };
-  } else if (github.context.eventName === 'push') {
+  } if (github.context.eventName === 'push') {
     const commitSha = github.context.sha;
     const commitResp = await gitClient.rest.repos.getCommit({
       owner,
@@ -55,9 +55,8 @@ export async function findChangedFiles(inputs: Inputs): Promise<Output> {
     const changedFilePaths = (commitResp.data.files || []).map((file) => file.filename);
     core.info(`Changed files in commit: ${JSON.stringify(changedFilePaths, null, 2)}`);
     return { allModifiedFiles: changedFilePaths };
-  } else {
-    throw new Error(`EventName ${github.context.eventName} not supported`);
   }
+  throw new Error(`EventName ${github.context.eventName} not supported`);
 }
 
 if (process.env.NODE_ENV !== 'test') {
