@@ -17,7 +17,7 @@ describe('validate-json-schema', () => {
     main();
   });
 
-  it('should fail when data does not match schema [simple]', async () => {
+  it('should fail when data does not match schema [simple]', () => {
     when(mockedCore.getInput)
       .calledWith('data', { required: true })
       .mockReturnValue(JSON.stringify({ key: 'value' }));
@@ -25,7 +25,7 @@ describe('validate-json-schema', () => {
       .calledWith('schema', { required: true })
       .mockReturnValue(JSON.stringify({ type: 'string' }));
 
-    await expect(async () => main()).rejects.toThrow('JSON is invalid: data must be string');
+    expect(() => main()).toThrow('JSON is invalid: data must be string');
   });
 
   it('should succeed when data matches schema [complex]', () => {
@@ -56,7 +56,7 @@ describe('validate-json-schema', () => {
     main();
   });
 
-  it('should fail when data does not match schema [complex]', async () => {
+  it('should fail when data does not match schema [complex]', () => {
     when(mockedCore.getInput)
       .calledWith('data', { required: true })
       .mockReturnValue(JSON.stringify({
@@ -80,6 +80,6 @@ describe('validate-json-schema', () => {
         required: ['key', 'nested'],
       }));
 
-    await expect(async () => main()).rejects.toThrow("JSON is invalid: data/nested must have required property 'key'");
+    expect(() => main()).toThrow("JSON is invalid: data/nested must have required property 'key'");
   });
 });

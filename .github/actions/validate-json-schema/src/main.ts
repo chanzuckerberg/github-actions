@@ -16,13 +16,18 @@ export function getInputs(): Inputs {
   };
 }
 
-export async function main() {
+export function main() {
   const inputs = getInputs();
   core.info(`Received input: ${JSON.stringify(inputs, null, 2)}`);
 
-  const ajv = new Ajv();
   const { data, schema } = inputs;
 
+  validateJsonSchema(data, schema);
+  core.info('JSON is valid');
+}
+
+export function validateJsonSchema(data: object, schema: object) {
+  const ajv = new Ajv();
   core.info(`Validating JSON against schema: ${JSON.stringify(schema, null, 2)}`);
   core.info(`Input data: ${JSON.stringify(data, null, 2)}`);
 
