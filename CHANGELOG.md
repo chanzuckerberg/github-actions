@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.6.3](https://github.com/chanzuckerberg/github-actions/compare/v5.6.2...v5.6.3) (2025-03-20)
+
+
+### Misc
+
+* add tests and workflow to run tests in CI ([#384](https://github.com/chanzuckerberg/github-actions/issues/384)) ([85706b3](https://github.com/chanzuckerberg/github-actions/commit/85706b317c52de7c9b4b7249d15d81f41bc5ac2e))
+
 ## [5.6.2](https://github.com/chanzuckerberg/github-actions/compare/v5.6.1...v5.6.2) (2025-03-18)
 
 
