@@ -16,6 +16,6 @@
     "jest.config.ts"
   ],
   "include": [
-    "./.github/actions/**/*"
+    ".github/actions/**/src/*"
   ]
 }
