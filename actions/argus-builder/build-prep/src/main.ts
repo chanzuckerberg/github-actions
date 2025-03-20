@@ -75,7 +75,11 @@ export async function main() {
   validateJsonSchema(inputs.images, imagesInputSchema);
   core.info('Images input is valid');
 
-  const branchMatched = isMatchingBranch(inputs);
+  const branchMatched = isMatchingBranch({
+    branchesInclude: inputs.branchesInclude,
+    branchesIgnore: inputs.branchesIgnore,
+    branch: getCurrentBranch(),
+  });
 
   const changedFiles = (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
   const matchedFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map(f => [f]));
@@ -100,18 +104,24 @@ function wildcardMatch(text: string, pattern: string): boolean {
   return regexPattern.test(text);
 }
 
-function isMatchingBranch(inputs: Inputs): boolean {
-  core.info(`Branches to run on: ${inputs.branchesInclude}`);
-  core.info(`Branches to ignore: ${inputs.branchesIgnore}`);
-  const branch = github.context.ref.replace('refs/heads/', '');
+function isMatchingBranch(
+  { branchesInclude, branchesIgnore, branch }: { branchesInclude: string[], branchesIgnore: string[], branch: string},
+): boolean {
+  core.info(`Branches to run on: ${branchesInclude}`);
+  core.info(`Branches to ignore: ${branchesIgnore}`);
+  core.info(`Branch to check: ${branch}`);
 
-  const shouldRun = inputs.branchesInclude.some(b => wildcardMatch(branch, b)) && !inputs.branchesIgnore.some(b => wildcardMatch(branch, b));
+  const shouldRun = branchesInclude.some(b => wildcardMatch(branch, b)) && !branchesIgnore.some(b => wildcardMatch(branch, b));
   if (shouldRun) {
-    core.info('Job will run');
+    core.info(`Current branch "${branch}" matches the branch filters`);
   } else {
-    core.info(`Job will be skipped because branch name "${branch}" does not match the filters`);
+    core.info(`Current branch "${branch}" does NOT match the branch filters`);
   }
   return shouldRun;
+}
+
+function getCurrentBranch(): string {
+  return github.context.ref.replace('refs/heads/', '');
 }
 
 function getBuildTag(): string {
@@ -138,8 +148,6 @@ function getTriggerSha(): string {
 }
 
 function processImagesInput(inputs: Inputs, changedFiles: string[]): object[] {
-  const currentBranch = github.context.ref.replace('refs/heads/', '');
-
   const processedImages = Object.entries(inputs.images).map(([name, image]) => {
     image.name = name;
 
@@ -161,12 +169,11 @@ function processImagesInput(inputs: Inputs, changedFiles: string[]): object[] {
 
     const branchesInclude = (image.branches_include || ['*']).map(b => b.trim()).filter(b => b.length > 0);
     const branchesIgnore = (image.branches_ignore || []).map(b => b.trim()).filter(b => b.length > 0);
-    console.log('branches include:', branchesInclude);
-    console.log('branches ignore:', branchesIgnore);
-    console.log('current branch:', currentBranch);
-
-    const branchMatched = branchesInclude.some(b => wildcardMatch(currentBranch, b)) && !branchesIgnore.some(b => wildcardMatch(currentBranch, b));
-    image.branch_matched = branchMatched;
+    image.branch_matched = isMatchingBranch({
+      branchesInclude,
+      branchesIgnore,
+      branch: getCurrentBranch(),
+    });
 
     image.should_build = image.files_matched && image.branch_matched;
 
