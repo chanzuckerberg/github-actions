@@ -81,7 +81,7 @@ jobs:
       image_tag: ${{ steps.build_prep.outputs.image_tag }}
       should_build: ${{ steps.build_prep.outputs.should_build }}
       should_deploy: ${{ steps.build_prep.outputs.should_deploy }}
-      images: ${{ steps.parse_images.outputs.images }}
+      images: ${{ steps.build_prep.outputs.images }}
     permissions:
       id-token: write
       contents: read
@@ -97,118 +97,6 @@ jobs:
           branches_include: ${{ inputs.branches_include }}
           branches_ignore: ${{ inputs.branches_ignore }}
           manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
-      # - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@00ea3d32a43c9317d4318dab7fd037c2b5fafe6d
-      #   name: Validate images input
-      #   with:
-      #     schema: |
-      #       {
-      #         "type": "object",
-      #         "additionalProperties": {
-      #           "type": "object",
-      #           "additionalProperties": false,
-      #           "properties": {
-      #             "context": { "type": "string" },
-      #             "dockerfile": { "type": "string" },
-      #             "platform": { "type": "string" },
-      #             "build_args": {
-      #               "type": "array",
-      #               "items": { "type": "string" }
-      #             },
-      #             "secret_files": {
-      #               "type": "array",
-      #               "items": { "type": "string" }
-      #             },
-      #             "argus_root": { "type": "string" },
-      #             "path_filters": {
-      #               "type": "array",
-      #               "items": {
-      #                 "oneOf": [
-      #                   { "type": "string" },
-      #                   { "type": "array", "items": { "type": "string" } }
-      #                 ]
-      #               }
-      #             },
-      #             "branches_include": {
-      #               "type": "array",
-      #               "items": { "type": "string" }
-      #             },
-      #             "branches_ignore": {
-      #               "type": "array",
-      #               "items": { "type": "string" }
-      #             },
-      #             "skip_manifest_update": { "type": "boolean" }
-      #           },
-      #           "required": ["context", "dockerfile"]
-      #         }
-      #       }
-      #     data: ${{ inputs.images }}
-      # - uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@00ea3d32a43c9317d4318dab7fd037c2b5fafe6d
-      #   id: changed_files
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      # - uses: actions/setup-node@v4
-      #   with:
-      #     node-version: '20'
-      # - run: npm install yaml minimatch
-      # - name: Parse inputs
-      #   id: parse_images
-      #   uses: actions/github-script@v7
-      #   with:
-      #     script: |
-      #       const YAML = require('yaml');
-      #       const { minimatch } = require('minimatch');
-      #       function wildcardMatch(text, pattern) {
-      #         const regexPattern = new RegExp('^' + pattern.replace(/\?/g, '.').replace(/\*/g, '.*') + '$');
-      #         return regexPattern.test(text);
-      #       }
-
-      #       const currentBranch = `${{ github.ref }}`.replace('refs/heads/', '');
-      #       const changedFiles = `${{ steps.changed_files.outputs.all_modified_files }}`.split(' ');
-      #       console.log('Changed files:', changedFiles);
-
-      #       const images = JSON.parse(`${{ inputs.images }}`);
-      #       const processedImages = Object.entries(images).map(([name, image]) => {
-      #         image.name = name;
-
-      #         const buildArgs = image.build_args || [];
-      #         image.build_args = buildArgs.join("\n");
-
-      #         const secretFiles = image.secret_files || [];
-      #         image.secret_files = secretFiles.join("\n");
-
-      #         const argusRoot = image.argus_root || '.';
-      #         image.argus_root = argusRoot;
-
-      #         const pathFilters = (image.path_filters || ['**/*']).map(f => Array.isArray(f) ? f : [f]);
-
-      #         console.log('---\nLooking for file changes that match the filters for image:', name);
-      #         const filesMatched = changedFiles.filter(file => {
-      #           console.log('Checking file:', file);
-      #           return pathFilters.some(filters => {
-      #             console.log('- checking filters:', filters);
-      #             const matchedFile = filters.every(filter => minimatch(file, filter, { dot: true }));
-      #             console.log(`- matched file ${file} with filters ${filters}?`, matchedFile);
-      #             return matchedFile;
-      #           });
-      #         });
-      #         console.log('Files matched:', filesMatched);
-      #         image.files_matched = filesMatched.length > 0;
-
-      #         const branchesInclude = (image.branches_include || ['*']).map(b => b.trim()).filter(b => b.length > 0);
-      #         const branchesIgnore = (image.branches_ignore || []).map(b => b.trim()).filter(b => b.length > 0);
-      #         console.log('branches include:', branchesInclude);
-      #         console.log('branches ignore:', branchesIgnore);
-      #         console.log('current branch:', currentBranch);
-
-      #         const branchMatched = branchesInclude.some(b => wildcardMatch(currentBranch, b)) && !branchesIgnore.some(b => wildcardMatch(currentBranch, b));
-      #         image.branch_matched = branchMatched;
-
-      #         image.should_build = image.files_matched && image.branch_matched;
-
-      #         return image;
-      #       });
-      #       core.info(`Images configuration: ${JSON.stringify(processedImages, null, 2)}`);
-      #       core.setOutput('images', processedImages);
 
   build-docker:
     name: Build Docker Image
