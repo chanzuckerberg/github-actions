@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { findChangedFiles } from '../../../../.github/actions/find-changed-files/src/main';
-import { validateJsonSchema } from '../../../../.github/actions/validate-json-schema/src/main';
+import { validateJsonSchema } from '../../../../.github/actions/validate-json-schema/src/validateJsonSchema';
 import { minimatch } from 'minimatch';
 
 type Inputs = {
@@ -57,14 +57,8 @@ const imagesInputSchema = {
           ],
         },
       },
-      branches_include: {
-        type: 'array',
-        items: { type: 'string' },
-      },
-      branches_ignore: {
-        type: 'array',
-        items: { type: 'string' },
-      },
+      branches_include: { type: 'array', items: { type: 'string' } },
+      branches_ignore: { type: 'array', items: { type: 'string' } },
       skip_manifest_update: { type: 'boolean' },
     },
     required: ['context', 'dockerfile'],
