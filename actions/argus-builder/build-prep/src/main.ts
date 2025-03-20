@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { findChangedFiles } from '../../../find-changed-files/src/main';
+import { findChangedFiles } from '../../../../.github/actions/find-changed-files/src/main';
 import { validateJsonSchema } from '../../../../.github/actions/validate-json-schema/src/main';
 import { minimatch } from 'minimatch';
 
