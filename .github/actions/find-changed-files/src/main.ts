@@ -45,7 +45,34 @@ export async function findChangedFiles(inputs: Inputs): Promise<Output> {
     core.info(`Changed files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
     return { allModifiedFiles: changedFilePaths };
   } if (github.context.eventName === 'push') {
+    console.log('Push event detected', JSON.stringify(github.context.payload, null, 2));
     const commitSha = github.context.sha;
+
+    const isForcedPush = github.context.payload.forced || false;
+    if (isForcedPush) {
+      const result = await gitClient.rest.repos.listPullRequestsAssociatedWithCommit({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        commit_sha: commitSha,
+      });
+
+      const openPRs = result.data.filter(pr => pr.state === 'open');
+      if (openPRs.length === 0) {
+        return { allModifiedFiles: [] };
+      }
+
+      const pr = openPRs[0];
+      const listFilesResp = await gitClient.rest.pulls.listFiles({
+        owner,
+        repo,
+        pull_number: pr.number,
+      });
+
+      const changedFilePaths = listFilesResp.data.map((file) => file.filename);
+      core.info(`Force push detected, checking all files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
+      return { allModifiedFiles: changedFilePaths };
+    }
+
     const commitResp = await gitClient.rest.repos.getCommit({
       owner,
       repo,
