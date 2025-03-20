@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { findChangedFiles } from '../../../../.github/actions/find-changed-files/src/main';
+import { findChangedFiles } from '../../../../.github/actions/find-changed-files/src/findChangedFiles';
 import { validateJsonSchema } from '../../../../.github/actions/validate-json-schema/src/validateJsonSchema';
 import { minimatch } from 'minimatch';
 
@@ -77,7 +77,7 @@ export async function main() {
 
   const branchMatched = isMatchingBranch(inputs);
 
-  const changedFiles = (await findChangedFiles({ githubToken: inputs.githubToken })).allModifiedFiles;
+  const changedFiles = (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
   const matchedFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map(f => [f]));
   const filesMatched: boolean = matchedFiles.length > 0;
 

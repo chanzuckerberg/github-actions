@@ -3,6 +3,9 @@ description: |
   TODO
 
 inputs:
+  github_token:
+    description: The GitHub token for authenticating with the GitHub API
+    required: true
   images:
     description: 'JSON object specifying the images to build'
     required: true

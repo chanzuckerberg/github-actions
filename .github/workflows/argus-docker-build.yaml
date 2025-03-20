@@ -91,6 +91,7 @@ jobs:
       - uses: chanzuckerberg/github-actions/actions/argus-builder/build-prep@CCIE-4230-rewrite-argus-build-prep-in-ts
         id: build_prep
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           images: ${{ inputs.images }}
           path_filters: ${{ inputs.path_filters }}
           path_filters_base: ${{ inputs.path_filters_base }}
