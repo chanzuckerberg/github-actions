@@ -10,6 +10,7 @@ concurrency:
 jobs:
   ci_lint_and_build_artifacts:
     runs-on: ARM64
+    permissions: {}
     outputs:
       committed: ${{ steps.commit.outputs.committed }}
     steps:
@@ -49,6 +50,8 @@ jobs:
     needs: ci_lint_and_build_artifacts
     if: ${{ needs.ci_lint_and_build_artifacts.outputs.committed == 'false' }}
     runs-on: ARM64
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
