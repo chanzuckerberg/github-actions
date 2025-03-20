@@ -53,12 +53,12 @@ on:
         description: 'Runner label to use for steps that use an arm-based action runner'
         required: false
         type: string
-        default: "['ARM64']"
+        default: "['arm64-privileged']"
       x64_runner_labels:
         description: 'Runner label to use for steps that use an x64-based action runner'
         required: false
         type: string
-        default: "['X64']"
+        default: "['x64-privileged']"
       manifest_trigger_labels:
         description: |
           Labels that will trigger updating the manifest and committing a docker image change to values.yaml, comma delimited.
