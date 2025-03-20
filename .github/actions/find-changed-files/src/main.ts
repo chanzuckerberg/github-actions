@@ -45,7 +45,7 @@ export async function findChangedFiles(inputs: Inputs): Promise<Output> {
     core.info(`Changed files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
     return { allModifiedFiles: changedFilePaths };
   } if (github.context.eventName === 'push') {
-    console.log('Push event detected', JSON.stringify(github.context.payload, null, 2));
+    core.info(`Push event detected ${JSON.stringify(github.context.payload, null, 2)}`);
     const commitSha = github.context.sha;
 
     const isForcedPush = github.context.payload.forced || false;
