@@ -2,9 +2,9 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { minimatch } from 'minimatch';
 // eslint-disable-next-line import/no-relative-packages
-import { findChangedFiles } from '../../../../.github/actions/find-changed-files/src/findChangedFiles';
+import { findChangedFiles } from '../../find-changed-files/src/findChangedFiles';
 // eslint-disable-next-line import/no-relative-packages
-import { validateJsonSchema } from '../../../../.github/actions/validate-json-schema/src/validateJsonSchema';
+import { validateJsonSchema } from '../../validate-json-schema/src/validateJsonSchema';
 
 type Inputs = {
   githubToken: string
