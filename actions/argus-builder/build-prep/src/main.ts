@@ -103,12 +103,12 @@ export async function main() {
   core.setOutput('images', JSON.stringify(processedImages, null, 2));
 }
 
-function wildcardMatch(text: string, pattern: string): boolean {
+export function wildcardMatch(text: string, pattern: string): boolean {
   const regexPattern = new RegExp(`^${pattern.replace(/\?/g, '.').replace(/\*/g, '.*')}$`);
   return regexPattern.test(text);
 }
 
-function isMatchingBranch(
+export function isMatchingBranch(
   { branchesInclude, branchesIgnore, branch }: { branchesInclude: string[], branchesIgnore: string[], branch: string },
 ): boolean {
   core.info('Checking if branch matches the branch filters');
@@ -207,14 +207,7 @@ async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean> {
   const labels = pr.labels.map((label: { name: string }) => label.name);
   core.info(`- Pull request labels: ${labels}`);
 
-  const hasTriggerLabel = !!labels.find((label) => inputs.manifestTriggerLabels.find((triggerLabel) => {
-    const match = wildcardMatch(label, triggerLabel);
-    if (match) {
-      core.info(`> Pull request contains label [${label}] which matches trigger label [${triggerLabel}]`);
-    }
-    return match;
-  }));
-
+  const hasTriggerLabel = isLabelOnPullRequest(labels, inputs.manifestTriggerLabels);
   if (!hasTriggerLabel) {
     core.info(
       `> Pull request contains labels [${labels.join(',')}] but none of them match the trigger labels: ${inputs.manifestTriggerLabels}`,
@@ -224,7 +217,17 @@ async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean> {
   return hasTriggerLabel;
 }
 
-function findMatchingChangedFiles(changedFiles: string[], pathFilters: string[][]): string[] {
+export function isLabelOnPullRequest(labels: string[], triggerLabels: string[]): boolean {
+  return !!labels.find((label) => triggerLabels.find((triggerLabel) => {
+    const match = wildcardMatch(label, triggerLabel);
+    if (match) {
+      core.info(`> Pull request contains label [${label}] which matches trigger label [${triggerLabel}]`);
+    }
+    return match;
+  }));
+}
+
+export function findMatchingChangedFiles(changedFiles: string[], pathFilters: string[][]): string[] {
   return changedFiles.filter((file) => {
     core.info(`Checking file: ${file}`);
     return pathFilters.some((filters) => {
