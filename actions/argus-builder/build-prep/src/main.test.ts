@@ -1,9 +1,6 @@
-// import { when } from 'jest-when';
-import * as core from '@actions/core';
-import { findMatchingChangedFiles, isLabelOnPullRequest, isMatchingBranch, wildcardMatch } from './main';
-
-jest.mock('@actions/core');
-// const mockedCore = core as jest.Mocked<typeof core>;
+import {
+  findMatchingChangedFiles, isLabelOnPullRequest, isMatchingBranch, wildcardMatch,
+} from './main';
 
 describe('validate-json-schema', () => {
   describe('wildcardMatch', () => {
@@ -18,7 +15,6 @@ describe('validate-json-schema', () => {
     it('should not match', () => {
       expect(wildcardMatch('test', 't')).toBe(false);
     });
-
 
     it('should match wildcards with extra characters', () => {
       expect(wildcardMatch('test', 't*st')).toBe(true);
@@ -61,9 +57,9 @@ describe('validate-json-schema', () => {
       expect(findMatchingChangedFiles(['src/main.ts'], [['src/*.ts']])).toEqual(['src/main.ts']);
       expect(findMatchingChangedFiles(['src/main.ts'], [['**/*']])).toEqual(['src/main.ts']);
       expect(findMatchingChangedFiles(['src/main.ts', 'src/test.ts'], [['src/*.ts']])).toEqual(['src/main.ts', 'src/test.ts']);
-      expect(findMatchingChangedFiles(
-        ['lib/main.ts', 'src/test.ts'], [['lib/*.ts'], ['src/test.ts']],
-      )).toEqual(['lib/main.ts', 'src/test.ts']);
+      expect(
+        findMatchingChangedFiles(['lib/main.ts', 'src/test.ts'], [['lib/*.ts'], ['src/test.ts']]),
+      ).toEqual(['lib/main.ts', 'src/test.ts']);
     });
 
     it('should not match', () => {
