@@ -206,13 +206,13 @@ async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean> {
 
   const pr = openPRs[0];
   const labels = pr.labels.map((label: { name: string }) => label.name);
-  core.info(`- Pull request labels: ${labels}`);
+  const prLabelsJoined = labels.join(',');
+  core.info(`- Pull request labels: [${prLabelsJoined}]`);
 
   const hasTriggerLabel = isLabelOnPullRequest(labels, inputs.manifestTriggerLabels);
   if (!hasTriggerLabel) {
-    core.info(
-      `> Pull request contains labels [${labels.join(',')}] but none of them match the trigger labels: ${inputs.manifestTriggerLabels}`,
-    );
+    const triggerLabelsJoined = inputs.manifestTriggerLabels.join(',');
+    core.info(`> Pull request contains labels [${prLabelsJoined}] but none of them match the trigger labels: [${triggerLabelsJoined}]`);
   }
 
   return hasTriggerLabel;

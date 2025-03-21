@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import {GitHub} from '@actions/github/lib/utils';
+import { GitHub } from '@actions/github/lib/utils';
 
 type Output = {
   allModifiedFiles: string[]
@@ -55,7 +55,12 @@ export async function findChangedFiles(githubToken: string): Promise<Output> {
   throw new Error(`EventName ${github.context.eventName} not supported`);
 }
 
-async function getChangedFilesInPR(gitClient: InstanceType<typeof GitHub>, repo: string, owner: string, prNumber: number): Promise<string[]> {
+async function getChangedFilesInPR(
+  gitClient: InstanceType<typeof GitHub>,
+  repo: string,
+  owner: string,
+  prNumber: number,
+): Promise<string[]> {
   const listFilesResp = await gitClient.rest.pulls.listFiles({
     owner,
     repo,
