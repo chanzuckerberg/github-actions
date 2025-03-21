@@ -18,6 +18,7 @@ on:
         default: '**/*'
       path_filters_base:
         description: |
+          TODO: Deprecated - remove later as this is no longer used
           Git reference (e.g. branch name) against which the changes will be detected. Defaults to the current branch.
           If it references same branch it was pushed to, changes are detected against the most recent commit before the push.
           This option is ignored if action is triggered by pull_request event.
@@ -94,7 +95,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           images: ${{ inputs.images }}
           path_filters: ${{ inputs.path_filters }}
-          path_filters_base: ${{ inputs.path_filters_base }}
           branches_include: ${{ inputs.branches_include }}
           branches_ignore: ${{ inputs.branches_ignore }}
           manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}

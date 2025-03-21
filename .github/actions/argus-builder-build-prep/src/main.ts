@@ -10,7 +10,6 @@ type Inputs = {
   githubToken: string
   images: Record<string, any>
   pathFilters: string[]
-  // pathFiltersBase: string
   branchesInclude: string[]
   branchesIgnore: string[]
   manifestTriggerLabels: string[]
@@ -25,9 +24,8 @@ export function getInputs(): Inputs {
     githubToken: core.getInput('github_token', { required: true }),
     images: JSON.parse(core.getInput('images', { required: true })),
     pathFilters: getCommaDelimitedArrayInput('path_filters', { required: true }),
-    // pathFiltersBase: core.getInput('path_filters_base', { required: true }),
     branchesInclude: getCommaDelimitedArrayInput('branches_include', { required: true }),
-    branchesIgnore: getCommaDelimitedArrayInput('branches_ignore', { required: true }),
+    branchesIgnore: getCommaDelimitedArrayInput('branches_ignore', { required: false }),
     manifestTriggerLabels: getCommaDelimitedArrayInput('manifest_trigger_labels', { required: true }),
   };
 }
