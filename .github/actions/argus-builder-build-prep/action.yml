@@ -1,6 +1,5 @@
-name: argus-builder/build-prep
-description: |
-  TODO
+name: argus-builder-build-prep
+description: Prepare for building a Docker Image for Argus
 
 inputs:
   github_token:
