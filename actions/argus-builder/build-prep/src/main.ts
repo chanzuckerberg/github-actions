@@ -186,7 +186,7 @@ function processImagesInput(inputs: Inputs, changedFiles: string[]): object[] {
       branch: getCurrentBranch(),
     });
 
-    processedImage.should_build = image.files_matched && image.branch_matched;
+    processedImage.should_build = processedImage.files_matched && processedImage.branch_matched;
 
     return processedImage;
   });
