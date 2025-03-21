@@ -17,7 +17,7 @@ export async function findChangedFiles(githubToken: string): Promise<Output> {
       throw new Error('No pull request number found');
     }
     const changedFilePaths = await getChangedFilesInPR(gitClient, repo, owner, prNumber);
-    core.info(`Changed files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
+    core.info(`Triggered by pull_request event, found changed files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
     return { allModifiedFiles: changedFilePaths };
   } if (github.context.eventName === 'push') {
     core.debug(`Push event detected ${JSON.stringify(github.context.payload, null, 2)}`);
@@ -38,7 +38,7 @@ export async function findChangedFiles(githubToken: string): Promise<Output> {
 
       const pr = openPRs[0];
       const changedFilePaths = await getChangedFilesInPR(gitClient, repo, owner, pr.number);
-      core.info(`Force push detected, checking all files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
+      core.info(`Triggered by push (force=true), found changed files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
       return { allModifiedFiles: changedFilePaths };
     }
 
@@ -49,7 +49,7 @@ export async function findChangedFiles(githubToken: string): Promise<Output> {
     });
 
     const changedFilePaths = (commitResp.data.files || []).map((file) => file.filename);
-    core.info(`Changed files in commit: ${JSON.stringify(changedFilePaths, null, 2)}`);
+    core.info(`Triggered by push (force=false), found changed files in commit: ${JSON.stringify(changedFilePaths, null, 2)}`);
     return { allModifiedFiles: changedFilePaths };
   }
   throw new Error(`EventName ${github.context.eventName} not supported`);

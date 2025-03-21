@@ -85,7 +85,6 @@ export async function main() {
   });
 
   const changedFiles = (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
-  core.info(`> Found changed files: ${JSON.stringify(changedFiles, null, 2)}`);
   const matchedFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map((f: string) => [f]));
   const filesMatched: boolean = matchedFiles.length > 0;
 
