@@ -97,7 +97,12 @@ export async function main() {
 
   const shouldBuild = filesMatched && branchMatched;
   core.setOutput('should_build', shouldBuild);
-  core.info(`> Branch matched? ${branchMatched}. Files matched? ${filesMatched}. Build should run? ${shouldBuild}`);
+  core.info(`> Overall build conditions: ${JSON.stringify({
+    'Branch matched?': branchMatched,
+    'Files matched?': filesMatched,
+    'Build should run?': shouldBuild,
+    'Manifests should be updated?': hasTriggerLabel,
+  }, null, 2)}`);
 
   core.info('Checking image-specific build conditions...');
   const processedImages = processImagesInput(inputs, changedFiles);
