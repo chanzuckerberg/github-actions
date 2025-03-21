@@ -1,14 +1,16 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { findChangedFiles } from '../../../../.github/actions/find-changed-files/src/findChangedFiles';
-import { validateJsonSchema } from '../../../../.github/actions/validate-json-schema/src/validateJsonSchema';
 import { minimatch } from 'minimatch';
+// eslint-disable-next-line import/no-relative-packages
+import { findChangedFiles } from '../../../../.github/actions/find-changed-files/src/findChangedFiles';
+// eslint-disable-next-line import/no-relative-packages
+import { validateJsonSchema } from '../../../../.github/actions/validate-json-schema/src/validateJsonSchema';
 
 type Inputs = {
   githubToken: string
-  images: object
+  images: Record<string, any>
   pathFilters: string[]
-  pathFiltersBase: string
+  // pathFiltersBase: string
   branchesInclude: string[]
   branchesIgnore: string[]
   manifestTriggerLabels: string[]
@@ -23,7 +25,7 @@ export function getInputs(): Inputs {
     githubToken: core.getInput('github_token', { required: true }),
     images: JSON.parse(core.getInput('images', { required: true })),
     pathFilters: getCommaDelimitedArrayInput('path_filters', { required: true }),
-    pathFiltersBase: core.getInput('path_filters_base', { required: true }),
+    // pathFiltersBase: core.getInput('path_filters_base', { required: true }),
     branchesInclude: getCommaDelimitedArrayInput('branches_include', { required: true }),
     branchesIgnore: getCommaDelimitedArrayInput('branches_ignore', { required: true }),
     manifestTriggerLabels: getCommaDelimitedArrayInput('manifest_trigger_labels', { required: true }),
@@ -75,6 +77,7 @@ export async function main() {
   validateJsonSchema(inputs.images, imagesInputSchema);
   core.info('Images input is valid');
 
+  core.info('Checking overall build conditions...');
   const branchMatched = isMatchingBranch({
     branchesInclude: inputs.branchesInclude,
     branchesIgnore: inputs.branchesIgnore,
@@ -82,7 +85,7 @@ export async function main() {
   });
 
   const changedFiles = (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
-  const matchedFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map(f => [f]));
+  const matchedFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map((f: string) => [f]));
   const filesMatched: boolean = matchedFiles.length > 0;
 
   const imageTag = getBuildTag();
@@ -93,29 +96,31 @@ export async function main() {
 
   const shouldBuild = filesMatched && branchMatched;
   core.setOutput('should_build', shouldBuild);
-  console.log(`Branch matched? ${branchMatched}. Files matched? ${filesMatched}. Build should run? ${shouldBuild}`);
+  core.info(`> Branch matched? ${branchMatched}. Files matched? ${filesMatched}. Build should run? ${shouldBuild}`);
 
+  core.info('Checking image-specific build conditions...');
   const processedImages = processImagesInput(inputs, changedFiles);
-  core.setOutput('images', JSON.stringify(processedImages, null, 2)); // TODO: is this right?
+  core.setOutput('images', JSON.stringify(processedImages, null, 2));
 }
 
 function wildcardMatch(text: string, pattern: string): boolean {
-  const regexPattern = new RegExp('^' + pattern.replace(/\?/g, '.').replace(/\*/g, '.*') + '$');
+  const regexPattern = new RegExp(`^${pattern.replace(/\?/g, '.').replace(/\*/g, '.*')}$`);
   return regexPattern.test(text);
 }
 
 function isMatchingBranch(
-  { branchesInclude, branchesIgnore, branch }: { branchesInclude: string[], branchesIgnore: string[], branch: string},
+  { branchesInclude, branchesIgnore, branch }: { branchesInclude: string[], branchesIgnore: string[], branch: string },
 ): boolean {
-  core.info(`Branches to run on: ${branchesInclude}`);
-  core.info(`Branches to ignore: ${branchesIgnore}`);
-  core.info(`Branch to check: ${branch}`);
+  core.info('Checking if branch matches the branch filters');
+  core.info(`- Branches to run on: [${branchesInclude.join(',')}]`);
+  core.info(`- Branches to ignore: [${branchesIgnore.join(',')}]`);
+  core.info(`- Branch to check: ${branch}`);
 
-  const shouldRun = branchesInclude.some(b => wildcardMatch(branch, b)) && !branchesIgnore.some(b => wildcardMatch(branch, b));
+  const shouldRun = branchesInclude.some((b) => wildcardMatch(branch, b)) && !branchesIgnore.some((b) => wildcardMatch(branch, b));
   if (shouldRun) {
-    core.info(`Current branch "${branch}" matches the branch filters`);
+    core.info(`> Current branch "${branch}" matches the branch filters`);
   } else {
-    core.info(`Current branch "${branch}" does NOT match the branch filters`);
+    core.info(`> Current branch "${branch}" does NOT match the branch filters`);
   }
   return shouldRun;
 }
@@ -127,63 +132,63 @@ function getCurrentBranch(): string {
 function getBuildTag(): string {
   const imageTag = `sha-${getTriggerSha().slice(0, 7)}`;
   if (imageTag === 'sha-') {
-    core.setFailed('The image tag [${imageTag}] is invalid.');
+    core.setFailed(`The image tag [${imageTag}] is invalid.`);
   }
 
-  core.info(`Image tag: ${imageTag}`);
+  core.info(`> Image tag: ${imageTag}`);
   return imageTag;
 }
 
 function getTriggerSha(): string {
-  const eventName = github.context.eventName;
-  if (eventName === "pull_request") {
+  const { eventName } = github.context;
+  if (eventName === 'pull_request') {
     return github.context.payload.pull_request?.head.sha;
-  } else if (eventName === "push") {
+  } if (eventName === 'push') {
     return github.context.sha;
-  } else {
-    const errMsg = `EventName ${eventName} not supported`;
-    core.setFailed(errMsg);
-    throw new Error(errMsg);
   }
+  const errMsg = `EventName ${eventName} not supported`;
+  core.setFailed(errMsg);
+  throw new Error(errMsg);
 }
 
 function processImagesInput(inputs: Inputs, changedFiles: string[]): object[] {
   const processedImages = Object.entries(inputs.images).map(([name, image]) => {
-    image.name = name;
+    const processedImage = { ...image };
+    processedImage.name = name;
 
     const buildArgs = image.build_args || [];
-    image.build_args = buildArgs.join("\n");
+    processedImage.build_args = buildArgs.join('\n');
 
     const secretFiles = image.secret_files || [];
-    image.secret_files = secretFiles.join("\n");
+    processedImage.secret_files = secretFiles.join('\n');
 
     const argusRoot = image.argus_root || '.';
-    image.argus_root = argusRoot;
+    processedImage.argus_root = argusRoot;
 
-    const pathFilters: string[][] = (image.path_filters || ['**/*']).map(f => Array.isArray(f) ? f : [f]);
+    const pathFilters: string[][] = (image.path_filters || ['**/*']).map((f: any) => (Array.isArray(f) ? f : [f]));
 
-    console.log('---\nLooking for file changes that match the filters for image:', name);
+    core.info(`---\nLooking for file changes that match the filters for image: ${name}`);
     const filesMatched = findMatchingChangedFiles(changedFiles, pathFilters);
-    console.log('Files matched:', filesMatched);
-    image.files_matched = filesMatched.length > 0;
+    core.info(`> Files matched: ${filesMatched}`);
+    processedImage.files_matched = filesMatched.length > 0;
 
-    const branchesInclude = (image.branches_include || ['*']).map(b => b.trim()).filter(b => b.length > 0);
-    const branchesIgnore = (image.branches_ignore || []).map(b => b.trim()).filter(b => b.length > 0);
-    image.branch_matched = isMatchingBranch({
+    const branchesInclude = (image.branches_include || ['*']).map((b: string) => b.trim()).filter((b: string) => b.length > 0);
+    const branchesIgnore = (image.branches_ignore || []).map((b: string) => b.trim()).filter((b: string) => b.length > 0);
+    processedImage.branch_matched = isMatchingBranch({
       branchesInclude,
       branchesIgnore,
       branch: getCurrentBranch(),
     });
 
-    image.should_build = image.files_matched && image.branch_matched;
+    processedImage.should_build = image.files_matched && image.branch_matched;
 
-    return image;
+    return processedImage;
   });
-  core.info(`Images configuration: ${JSON.stringify(processedImages, null, 2)}`);
+  core.info(`> Images configuration: ${JSON.stringify(processedImages, null, 2)}`);
   return processedImages;
 }
 
-async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean | undefined> {
+async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean> {
   const gitClient = github.getOctokit(inputs.githubToken);
 
   const sha = getTriggerSha();
@@ -193,39 +198,39 @@ async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean | undef
     commit_sha: sha,
   });
 
-  const openPRs = result.data.filter(pr => pr.state === 'open');
+  const openPRs = result.data.filter((pr) => pr.state === 'open');
   if (openPRs.length === 0) {
-    return;
+    return false;
   }
 
   const pr = openPRs[0];
   const labels = pr.labels.map((label: { name: string }) => label.name);
-  core.info(`Pull request labels: ${labels}`);
+  core.info(`- Pull request labels: ${labels}`);
 
-  const hasTriggerLabel = !!labels.find(label => {
-    return inputs.manifestTriggerLabels.find(triggerLabel => {
-      const match = wildcardMatch(label, triggerLabel)
-      if (match) {
-        core.info(`Pull request contains label [${label}] which matches trigger label [${triggerLabel}]`);
-      }
-      return match;
-    });
-  });
+  const hasTriggerLabel = !!labels.find((label) => inputs.manifestTriggerLabels.find((triggerLabel) => {
+    const match = wildcardMatch(label, triggerLabel);
+    if (match) {
+      core.info(`> Pull request contains label [${label}] which matches trigger label [${triggerLabel}]`);
+    }
+    return match;
+  }));
 
   if (!hasTriggerLabel) {
-    core.info(`Pull request contains labels [${labels.join(',')}] but none of them match the trigger labels: ${inputs.manifestTriggerLabels}`);
+    core.info(
+      `> Pull request contains labels [${labels.join(',')}] but none of them match the trigger labels: ${inputs.manifestTriggerLabels}`,
+    );
   }
 
   return hasTriggerLabel;
 }
 
 function findMatchingChangedFiles(changedFiles: string[], pathFilters: string[][]): string[] {
-  return changedFiles.filter(file => {
-    console.log('Checking file:', file);
-    return pathFilters.some(filters => {
-      console.log('- checking filters:', filters);
-      const matchedFile = filters.every(filter => minimatch(file, filter, { dot: true }));
-      console.log(`- matched file ${file} with filters ${filters}?`, matchedFile);
+  return changedFiles.filter((file) => {
+    core.info(`Checking file: ${file}`);
+    return pathFilters.some((filters) => {
+      core.info(`- checking filters: ${filters}`);
+      const matchedFile = filters.every((filter) => minimatch(file, filter, { dot: true }));
+      core.info(`- matched file ${file} with filters ${filters}? ${matchedFile}`);
       return matchedFile;
     });
   });

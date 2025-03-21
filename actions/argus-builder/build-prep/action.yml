@@ -13,13 +13,13 @@ inputs:
     description: 'Glob patterns to match against changed files in the repository, comma delimited'
     required: false
     default: '**/*'
-  path_filters_base:
-    description: |
-      Git reference (e.g. branch name) against which the changes will be detected. Defaults to the current branch.
-      If it references same branch it was pushed to, changes are detected against the most recent commit before the push.
-      This option is ignored if action is triggered by pull_request event.
-    required: false
-    default: ${{ github.ref }}
+  # path_filters_base:
+  #   description: |
+  #     Git reference (e.g. branch name) against which the changes will be detected. Defaults to the current branch.
+  #     If it references same branch it was pushed to, changes are detected against the most recent commit before the push.
+  #     This option is ignored if action is triggered by pull_request event.
+  #   required: false
+  #   default: ${{ github.ref }}
   branches_include:
     description: 'Branch names to run this job on, supports wildcards, comma delimited'
     required: false

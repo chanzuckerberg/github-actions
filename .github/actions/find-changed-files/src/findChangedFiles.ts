@@ -36,7 +36,7 @@ export async function findChangedFiles(githubToken: string): Promise<Output> {
         commit_sha: commitSha,
       });
 
-      const openPRs = result.data.filter(pr => pr.state === 'open');
+      const openPRs = result.data.filter((pr) => pr.state === 'open');
       if (openPRs.length === 0) {
         return { allModifiedFiles: [] };
       }
