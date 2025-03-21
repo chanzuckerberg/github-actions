@@ -92,7 +92,7 @@ export async function main() {
   const imageTag = getBuildTag();
   core.setOutput('image_tag', imageTag);
 
-  const hasTriggerLabel = checkPullRequestForLabel(inputs);
+  const hasTriggerLabel = await checkPullRequestForLabel(inputs);
   core.setOutput('should_deploy', hasTriggerLabel);
 
   const shouldBuild = filesMatched && branchMatched;
