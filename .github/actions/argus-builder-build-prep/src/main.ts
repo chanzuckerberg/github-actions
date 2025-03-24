@@ -59,10 +59,34 @@ const imagesInputSchema = {
       },
       branches_include: { type: 'array', items: { type: 'string' } },
       branches_ignore: { type: 'array', items: { type: 'string' } },
-      skip_manifest_update: { type: 'boolean' },
     },
     required: ['context', 'dockerfile'],
   },
+};
+
+type ImageInput = {
+  context: string
+  dockerfile: string
+  platform?: string
+  build_args?: string[]
+  secret_files?: string[]
+  argus_root?: string
+  path_filters?: string[] | string[][]
+  branches_include?: string[]
+  branches_ignore?: string[]
+};
+
+export type ProcessedImage = {
+  name: string
+  context: string
+  dockerfile: string
+  platform: string
+  build_args: string
+  secret_files: string
+  argus_root: string
+  files_matched: boolean
+  branch_matched: boolean
+  should_build: boolean
 };
 
 if (process.env.NODE_ENV !== 'test') {
@@ -76,10 +100,11 @@ export async function main() {
   core.info('Images input is valid');
 
   core.info('Checking overall build conditions...');
+  const currentBranch = github.context.ref.replace('refs/heads/', '');
   const branchMatched = isMatchingBranch({
     branchesInclude: inputs.branchesInclude,
     branchesIgnore: inputs.branchesIgnore,
-    branch: getCurrentBranch(),
+    branch: currentBranch,
   });
 
   const changedFiles = (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
@@ -102,7 +127,7 @@ export async function main() {
   }, null, 2)}`);
 
   core.info('Checking image-specific build conditions...');
-  const processedImages = processImagesInput(inputs, changedFiles);
+  const processedImages = processImagesInput(inputs.images, changedFiles, currentBranch);
   core.setOutput('images', JSON.stringify(processedImages, null, 2));
 }
 
@@ -128,10 +153,6 @@ export function isMatchingBranch(
   return shouldRun;
 }
 
-function getCurrentBranch(): string {
-  return github.context.ref.replace('refs/heads/', '');
-}
-
 function getBuildTag(): string {
   const imageTag = `sha-${getTriggerSha().slice(0, 7)}`;
   if (imageTag === 'sha-') {
@@ -154,38 +175,39 @@ function getTriggerSha(): string {
   throw new Error(errMsg);
 }
 
-function processImagesInput(inputs: Inputs, changedFiles: string[]): object[] {
-  const processedImages = Object.entries(inputs.images).map(([name, image]) => {
-    const processedImage = { ...image };
-    processedImage.name = name;
-
-    const buildArgs = image.build_args || [];
-    processedImage.build_args = buildArgs.join('\n');
-
-    const secretFiles = image.secret_files || [];
-    processedImage.secret_files = secretFiles.join('\n');
-
+export function processImagesInput(images: Record<string, ImageInput>, changedFiles: string[], currentBranch: string): ProcessedImage[] {
+  const processedImages = Object.entries(images).map(([name, image]) => {
+    const buildArgs = (image.build_args || []).map((arg: string) => arg.trim()).filter((arg: string) => arg.length > 0).join('\n');
+    const secretFiles = (image.secret_files || []).map((f: string) => f.trim()).filter((f: string) => f.length > 0).join('\n');
     const argusRoot = image.argus_root || '.';
-    processedImage.argus_root = argusRoot;
 
     const pathFilters: string[][] = (image.path_filters || ['**/*']).map((f: any) => (Array.isArray(f) ? f : [f]));
 
     core.info(`---\nLooking for file changes that match the filters for image: ${name}`);
-    const filesMatched = findMatchingChangedFiles(changedFiles, pathFilters);
-    core.info(`> Files matched: ${filesMatched}`);
-    processedImage.files_matched = filesMatched.length > 0;
+    const matchingFiles = findMatchingChangedFiles(changedFiles, pathFilters);
+    core.info(`> Files matched: ${matchingFiles}`);
+    const filesMatched = matchingFiles.length > 0;
 
     const branchesInclude = (image.branches_include || ['*']).map((b: string) => b.trim()).filter((b: string) => b.length > 0);
     const branchesIgnore = (image.branches_ignore || []).map((b: string) => b.trim()).filter((b: string) => b.length > 0);
-    processedImage.branch_matched = isMatchingBranch({
+    const branchMatched = isMatchingBranch({
       branchesInclude,
       branchesIgnore,
-      branch: getCurrentBranch(),
+      branch: currentBranch,
     });
 
-    processedImage.should_build = processedImage.files_matched && processedImage.branch_matched;
-
-    return processedImage;
+    return {
+      name,
+      context: image.context,
+      dockerfile: image.dockerfile,
+      platform: image.platform || 'linux/arm64',
+      build_args: buildArgs,
+      secret_files: secretFiles,
+      argus_root: argusRoot,
+      files_matched: filesMatched,
+      branch_matched: branchMatched,
+      should_build: filesMatched && branchMatched,
+    };
   });
   core.info(`> Images configuration: ${JSON.stringify(processedImages, null, 2)}`);
   return processedImages;
