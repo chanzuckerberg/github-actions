@@ -228,6 +228,7 @@ async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean> {
 
   const openPRs = result.data.filter((pr) => pr.state === 'open');
   if (openPRs.length === 0) {
+    core.info('> No open pull requests found - manifests will not be updated');
     return false;
   }
 
