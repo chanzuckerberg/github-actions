@@ -96,8 +96,12 @@ export async function main() {
   const inputs = getInputs();
   core.info(`Received input: ${JSON.stringify(inputs, null, 2)}`);
 
+  core.info('Validating images input...');
   validateJsonSchema(inputs.images, imagesInputSchema);
-  core.info('Images input is valid');
+  core.info('> Images input is valid');
+
+  core.info('Finding changed files...');
+  const changedFiles = (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
 
   core.info('Checking overall build conditions...');
   const currentBranch = github.context.ref.replace('refs/heads/', '');
@@ -107,9 +111,8 @@ export async function main() {
     branch: currentBranch,
   });
 
-  const changedFiles = (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
-  const matchedFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map((f: string) => [f]));
-  const filesMatched: boolean = matchedFiles.length > 0;
+  const matchingFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map((f: string) => [f]));
+  const filesMatched: boolean = matchingFiles.length > 0;
 
   const imageTag = getBuildTag();
   core.setOutput('image_tag', imageTag);
