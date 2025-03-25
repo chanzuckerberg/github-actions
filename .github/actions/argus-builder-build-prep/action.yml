@@ -33,7 +33,7 @@ inputs:
       Labels that will trigger updating the manifest and committing a docker image change to values.yaml, comma delimited.
       If ANY of the labels are found on the PR, the manifest will be updated.
     required: false
-    default: 'stack'
+    default: 'stack,stack-*'
 
 outputs:
   image_tag:

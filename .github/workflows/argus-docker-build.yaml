@@ -66,7 +66,7 @@ on:
           If ANY of the labels are found on the PR, the manifest will be updated.
         required: false
         type: string
-        default: 'stack'
+        default: 'stack,stack-*'
       enable_vuln_container_scan:
         description: Opt in to scan containers with AWS inspector
         required: false
