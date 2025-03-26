@@ -5,6 +5,10 @@ type Inputs = {
   githubToken: string
 };
 
+type Output = {
+  allModifiedFiles: string[]
+};
+
 export function getInputs(): Inputs {
   return {
     githubToken: core.getInput('github_token', { required: true }),
@@ -15,6 +19,13 @@ export async function main() {
   const inputs = getInputs();
   core.info(`Received input: ${JSON.stringify(inputs, null, 2)}`);
 
+  const res = await findChangedFiles(inputs);
+
+  core.info(`Result: ${JSON.stringify(res, null, 2)}`);
+  core.setOutput('all_modified_files', res.allModifiedFiles.join(','));
+}
+
+export async function findChangedFiles(inputs: Inputs): Promise<Output> {
   const gitClient = github.getOctokit(inputs.githubToken);
 
   const { owner, repo } = github.context.repo;
@@ -32,9 +43,8 @@ export async function main() {
 
     const changedFilePaths = listFilesResp.data.map((file) => file.filename);
     core.info(`Changed files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
-    core.setOutput('all_modified_files', changedFilePaths.join(','));
-
-  } else if (github.context.eventName === 'push') {
+    return { allModifiedFiles: changedFilePaths };
+  } if (github.context.eventName === 'push') {
     const commitSha = github.context.sha;
     const commitResp = await gitClient.rest.repos.getCommit({
       owner,
@@ -44,11 +54,9 @@ export async function main() {
 
     const changedFilePaths = (commitResp.data.files || []).map((file) => file.filename);
     core.info(`Changed files in commit: ${JSON.stringify(changedFilePaths, null, 2)}`);
-    core.setOutput('all_modified_files', changedFilePaths.join(','));
-
-  } else {
-    throw new Error(`EventName ${github.context.eventName} not supported`);
+    return { allModifiedFiles: changedFilePaths };
   }
+  throw new Error(`EventName ${github.context.eventName} not supported`);
 }
 
 if (process.env.NODE_ENV !== 'test') {
