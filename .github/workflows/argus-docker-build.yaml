@@ -155,7 +155,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: always() && needs.prep.outputs.should_build == 'true' && (inputs.force_update_manifests || inputs.update_manifests && needs.prep.outputs.should_deploy == 'true' && needs.prep.outputs.images != '[]')
+    if: always() && needs.prep.outputs.should_deploy == 'true' && needs.prep.outputs.images != '[]'
     steps:
       - name: Check build status
         uses: actions/github-script@v7
