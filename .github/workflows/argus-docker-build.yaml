@@ -16,16 +16,6 @@ on:
         required: false
         type: string
         default: '**/*'
-      path_filters_base:
-        description: |
-          TODO: Deprecated - this is no longer used but can't be removed without a MAJOR version bump because it is used by some workflows on v5.
-
-          Git reference (e.g. branch name) against which the changes will be detected. Defaults to the current branch.
-          If it references same branch it was pushed to, changes are detected against the most recent commit before the push.
-          This option is ignored if action is triggered by pull_request event.
-        required: false
-        type: string
-        default: ${{ github.ref }}
       branches_include:
         description: 'Branch names to run this job on, supports wildcards, comma delimited'
         required: false
@@ -36,14 +26,6 @@ on:
         required: false
         type: string
         default: ''
-      update_manifests:
-        description: |
-          TODO: Deprecated - this is no longer used but can't be removed without a MAJOR version bump because it is used by some workflows on v5.
-
-          Whether to update ArgoCD manifests after building the Docker images'
-        required: false
-        type: boolean
-        default: true
       force_update_manifests:
         description: 'Whether to always update ArgoCD manifests after building the Docker images, regardless of which labels are present on the PR'
         required: false
@@ -59,13 +41,6 @@ on:
         required: false
         type: string
         default: "['arm64-privileged']"
-      x64_runner_labels:
-        description: |
-          DO NOT USE. This is a deprecated input. Use amd_runner_labels instead.
-          Runner label to use for steps that use an x64-based action runner
-        required: false
-        type: string
-        default: "[]"
       amd_runner_labels:
         description: 'Runner label to use for steps that use an amd64-based action runner'
         required: false
@@ -100,7 +75,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@cf682df3853b61f467a4050d0b326353b381a129
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@a45c23de4c71e8fa6ed3eb7454e52f74322b6037
         id: build_prep
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -114,7 +89,7 @@ jobs:
   build-docker:
     name: Build Docker Image
     needs: [prep]
-    runs-on: ${{ (matrix.image.platform == 'linux/amd64' && inputs.x64_runner_labels != '[]' && fromJSON(inputs.x64_runner_labels)) || (matrix.image.platform == 'linux/amd64' && fromJSON(inputs.amd_runner_labels)) || fromJSON(inputs.arm_runner_labels) }}
+    runs-on: ${{ matrix.image.platform == 'linux/amd64' && fromJSON(inputs.amd_runner_labels) || fromJSON(inputs.arm_runner_labels) }}
     if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     permissions:
       id-token: write
