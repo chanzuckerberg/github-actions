@@ -51,14 +51,14 @@ export async function main() {
     return infraDirPath;
   });
   const uniqueInfraDirPaths = [...new Set(infraDirPaths)];
-  core.info(`Updating [uniqueInfraDirPaths.join(',')] to use image tag ${inputs.imageTag}`);
+  core.info(`Updating [${uniqueInfraDirPaths.join(',')}] to use image tag ${inputs.imageTag}`);
 
   inputs.envs.forEach((env) => {
     uniqueInfraDirPaths.forEach((infraDir) => {
       const filePath = path.join(infraDir, env, 'values.yaml');
       child_process.execSync(`yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${inputs.imageTag}"' ${filePath}`);
       core.info(`Updated ${infraDir}/${env}/values.yaml`);
-      child_process.execSync(`cat ${filePath}`);
+      child_process.execSync(`cat ${filePath}`, { stdio: 'inherit' });
     });
   });
 }
