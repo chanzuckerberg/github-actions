@@ -1,4 +1,4 @@
-name: argus-docker-manifest-update
+name: argus-builder-manifest-update
 description: Updates manifests for Argus after the Docker image is built
 
 inputs:
@@ -20,79 +20,5 @@ inputs:
     required: true
 
 runs:
-  using: composite
-  steps:
-    - run: |
-        echo "Image Tag: ${{ inputs.image_tag }}"
-      shell: bash
-    - name: Generate token
-      uses: actions/create-github-app-token@v1
-      id: generate_token
-      with:
-        app-id: ${{ inputs.github_app_id }}
-        private-key: ${{ inputs.github_private_key }}
-    - name: Determine checkout ref
-      id: ref
-      uses: actions/github-script@v7
-      with:
-        result-encoding: string
-        script: |
-          const eventName = context.eventName;
-          if (eventName === "pull_request") {
-            // use PR head branch name if triggered by PR
-            return context.payload.pull_request.head.ref;
-          } else if (eventName === "push") {
-            // return empty string if triggered by push, this is to ensure the checkout action uses the 
-            // default behavior which will prevent race condition commits from multiple builders triggered back-to-back
-            return '';
-          } else {
-            core.setFailed(`EventName ${eventName} not supported`);
-            return;
-          }
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ steps.generate_token.outputs.token }}
-        ref: ${{ steps.ref.outputs.result }}
-    - name: Parse envs
-      id: parse_envs
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const envs = `${{ inputs.envs }}`.split(',').map(env => env.trim()).filter(b => b.length > 0);
-          const uniqueEnvs = [...new Set(envs)];
-          core.setOutput('envs', uniqueEnvs.join(' '));
-    - name: Determine .infra path
-      uses: actions/github-script@v7
-      id: path
-      with:
-        script: |
-          const path = require('path');
-          const fs = require('fs');
-          const workingDirs = `${{ inputs.argus_project_dirs }}`.split(',').map(dir => dir.trim()).filter(b => b.length > 0);
-          const infraDirPaths = workingDirs.map(dir => {
-            const infraDirPath = path.join(dir, '.infra');
-            if (!fs.existsSync(infraDirPath)) {
-              throw new Error(`.infra directory not found at ${infraDirPath}`);
-            }
-            return infraDirPath;
-          });
-          const uniqueInfraDirPaths = [...new Set(infraDirPaths)];
-          core.setOutput('infra_dir_paths', uniqueInfraDirPaths.join(' '));
-    - name: Update Manifest
-      id: validate
-      shell: bash
-      run: |
-        for env in ${{ steps.parse_envs.outputs.envs }}
-        do
-          for infra_dir_path in ${{ steps.path.outputs.infra_dir_paths }}
-          do
-            yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${{ inputs.image_tag }}"' ${infra_dir_path}/${env}/values.yaml
-            cat ${infra_dir_path}/${env}/values.yaml
-          done
-        done
-    - name: Update Argus manifests
-      uses: EndBug/add-and-commit@v9
-      with:
-        add: -A
-        message: 'chore: Updated [${{ steps.parse_envs.outputs.envs }}] values.yaml image tags to ${{ inputs.image_tag }}'
+  using: 'node20'
+  main: 'dist/index.js'
