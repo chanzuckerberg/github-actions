@@ -55,6 +55,7 @@ on:
         type: string
         default: "['arm64-privileged']"
       x64_runner_labels:
+        deprecationMessage: DO NOT USE. This is a deprecated input. Use amd_runner_labels instead.
         description: |
           DO NOT USE. This is a deprecated input. Use amd_runner_labels instead.
           Runner label to use for steps that use an x64-based action runner
@@ -75,7 +76,7 @@ on:
         default: 'stack'
       enable_vuln_container_scan:
         description: |
-          Opt in to scan containers with AWS inspector 
+          Opt in to scan containers with AWS inspector
         required: false
         type: boolean
         default: false
@@ -107,7 +108,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: chanzuckerberg/github-actions/.github/actions/validate-json-schema@00ea3d32a43c9317d4318dab7fd037c2b5fafe6d
         name: Validate images input
-        with: 
+        with:
           schema: |
             {
               "type": "object",
