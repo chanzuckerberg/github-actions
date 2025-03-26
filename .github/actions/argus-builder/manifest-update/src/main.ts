@@ -7,6 +7,7 @@ import * as child_process from 'child_process';
 import { getCommaDelimitedArrayInput, ProcessedImage } from '../../common';
 
 type Inputs = {
+  githubToken: string
   shouldDeploy: boolean
   images: ProcessedImage[]
   imageTag: string
@@ -16,6 +17,7 @@ type Inputs = {
 
 export function getInputs(): Inputs {
   return {
+    githubToken: core.getInput('github_token', { required: true }),
     shouldDeploy: core.getBooleanInput('should_deploy', { required: true }),
     images: JSON.parse(core.getInput('images', { required: true })),
     imageTag: core.getInput('image_tag', { required: true }),
@@ -42,26 +44,22 @@ export async function main() {
   }
   core.info('All builds passed, continuing with manifest update...');
 
-  const argusInfraDirs = determineArgusAppDirs(inputs.images);
+  const valuesFilesToUpdate = determineArgusVaulesFilesToUpdate(inputs.images, inputs.envs);
 
-  const uniqueArgusInfraDirs = [...new Set(argusInfraDirs)];
-  core.info(`Argus infra dirs to update: [${uniqueArgusInfraDirs.join(',')}]`);
+  valuesFilesToUpdate.forEach((filePath) => {
+    core.info(`Updating ${filePath} to use image tag ${inputs.imageTag}`);
+    updateTagsInFile(filePath, inputs.imageTag);
 
-  uniqueArgusInfraDirs.forEach((infraDir) => {
-    inputs.envs.forEach((env) => {
-      const filePath = path.join(infraDir, env, 'values.yaml');
-      core.info(`Updating ${filePath} to use image tag ${inputs.imageTag}`);
-      child_process.execSync(`yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${inputs.imageTag}"' ${filePath}`);
-
-      core.info(`Updated ${infraDir}/${env}/values.yaml\n---`);
-      child_process.execSync(`cat ${filePath}`, { stdio: 'inherit' });
-      core.info('---');
-    });
+    core.info(`Updated ${filePath}\n---`);
+    child_process.execSync(`cat ${filePath}`, { stdio: 'inherit' });
+    core.info('---');
   });
+
+  // github.getOctokit(inputs.githubToken)
 }
 
-export function determineArgusAppDirs(images: ProcessedImage[]): string[] {
-  return images.map((image) => {
+export function determineArgusVaulesFilesToUpdate(images: ProcessedImage[], envs: string[]): string[] {
+  const argusInfraDirs = images.map((image) => {
     if (!image.should_build) {
       core.info(`Skipping manifest update for image ${image.name} because should_build is false`);
       return '';
@@ -79,4 +77,20 @@ export function determineArgusAppDirs(images: ProcessedImage[]): string[] {
     }
     return infraDirPath;
   }).filter((dir) => dir.length > 0);
+
+  const uniqueArgusInfraDirs = [...new Set(argusInfraDirs)];
+  core.info(`Argus infra dirs to update: [${uniqueArgusInfraDirs.join(',')}] for envs: [${envs.join(',')}]`);
+
+  const files: string[] = [];
+  uniqueArgusInfraDirs.forEach((infraDir) => {
+    envs.forEach((env) => {
+      files.push(path.join(infraDir, env, 'values.yaml'));
+    });
+  });
+
+  return files;
+}
+
+export function updateTagsInFile(filePath: string, imageTag: string): void {
+  child_process.execSync(`yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${imageTag}"' ${filePath}`);
 }

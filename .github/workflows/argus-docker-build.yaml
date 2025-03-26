@@ -169,4 +169,4 @@ jobs:
           image_tag: ${{ needs.prep.outputs.image_tag }}
           build_results: ${{ needs.build-docker.result }},${{ needs.build-docker.result }}
           envs: ${{ inputs.envs }}
-          # - github_token
+          github_token: ${{ steps.generate_token.outputs.token }}

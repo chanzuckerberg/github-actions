@@ -2,6 +2,9 @@ name: argus-builder-manifest-update
 description: Updates manifests for Argus after the Docker image is built
 
 inputs:
+  github_token:
+    description: The GitHub token for authenticating with the GitHub API
+    required: true
   envs:
     description: 'Env names, comma delimited'
     required: true
