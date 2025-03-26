@@ -100,7 +100,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@CCIE-4230-rewrite-argus-build-prep-in-ts
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@cf682df3853b61f467a4050d0b326353b381a129
         id: build_prep
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
