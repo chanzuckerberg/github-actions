@@ -55,7 +55,6 @@ on:
         type: string
         default: "['arm64-privileged']"
       x64_runner_labels:
-        deprecationMessage: DO NOT USE. This is a deprecated input. Use amd_runner_labels instead.
         description: |
           DO NOT USE. This is a deprecated input. Use amd_runner_labels instead.
           Runner label to use for steps that use an x64-based action runner
