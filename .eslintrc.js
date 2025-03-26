@@ -1,9 +1,9 @@
 module.exports = {
+  root: true,
   extends: [
     'airbnb-base',
     'airbnb-typescript/base',
   ],
-  // ignorePatterns: ['.github/actions/**/dist/'],
   parserOptions: { project: '../../../tsconfig.json' },
   rules: {
     'import/extensions': 0,

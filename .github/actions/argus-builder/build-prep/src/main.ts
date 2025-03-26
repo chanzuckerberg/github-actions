@@ -6,8 +6,9 @@ import { findChangedFiles } from '../../../find-changed-files/src/findChangedFil
 // eslint-disable-next-line import/no-relative-packages
 import { validateJsonSchema } from '../../../validate-json-schema/src/validateJsonSchema';
 // eslint-disable-next-line import/no-relative-packages
-// import { getCommaDelimitedArrayInput, ProcessedImage } from '../../src/common';
 import { getCommaDelimitedArrayInput, ProcessedImage } from '../../common';
+
+// eslint-disable-next-line import/no-relative-packages
 export { ProcessedImage } from '../../common';
 
 type Inputs = {
