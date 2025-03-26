@@ -11,9 +11,6 @@ inputs:
   images:
     description: TODO
     required: true
-  should_build:
-    description: TODO
-    required: true
   should_deploy:
     description: TODO
     required: true

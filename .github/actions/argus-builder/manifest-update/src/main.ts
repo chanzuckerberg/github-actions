@@ -7,7 +7,6 @@ import * as child_process from 'child_process';
 import { getCommaDelimitedArrayInput, ProcessedImage } from '../../common';
 
 type Inputs = {
-  shouldBuild: boolean
   shouldDeploy: boolean
   images: ProcessedImage[]
   imageTag: string
@@ -17,7 +16,6 @@ type Inputs = {
 
 export function getInputs(): Inputs {
   return {
-    shouldBuild: core.getBooleanInput('should_build', { required: true }),
     shouldDeploy: core.getBooleanInput('should_deploy', { required: true }),
     images: JSON.parse(core.getInput('images', { required: true })),
     imageTag: core.getInput('image_tag', { required: true }),
@@ -34,31 +32,51 @@ export async function main() {
   const inputs = getInputs();
   core.info(`Received input: ${JSON.stringify(inputs, null, 2)}`);
 
-  const allBuildsPassed = inputs.buildResults.every((result) => result === 'success');
-  if (!allBuildsPassed) {
+  if (!inputs.shouldDeploy) {
+    core.info('Skipping manifest update because should_deploy is false');
+    return;
+  }
+
+  if (!inputs.buildResults.every((result) => result === 'success')) {
     throw new Error('We won\'t update the manifest because one or more Docker builds did not succeed');
   }
   core.info('All builds passed, continuing with manifest update...');
 
-  const argusRootDirs = inputs.images.filter((image) => image.should_build).map((image) => image.argus_root.trim()).filter((b) => b.length > 0);
-  console.log('Argus root dirs:', argusRootDirs);
+  const argusInfraDirs = determineArgusAppDirs(inputs.images);
 
-  const infraDirPaths = argusRootDirs.map((dir) => {
-    const infraDirPath = path.join(dir, '.infra');
+  const uniqueArgusInfraDirs = [...new Set(argusInfraDirs)];
+  core.info(`Argus infra dirs to update: [${uniqueArgusInfraDirs.join(',')}]`);
+
+  uniqueArgusInfraDirs.forEach((infraDir) => {
+    inputs.envs.forEach((env) => {
+      const filePath = path.join(infraDir, env, 'values.yaml');
+      core.info(`Updating ${filePath} to use image tag ${inputs.imageTag}`);
+      child_process.execSync(`yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${inputs.imageTag}"' ${filePath}`);
+
+      core.info(`Updated ${infraDir}/${env}/values.yaml\n---`);
+      child_process.execSync(`cat ${filePath}`, { stdio: 'inherit' });
+      core.info('---');
+    });
+  });
+}
+
+export function determineArgusAppDirs(images: ProcessedImage[]): string[] {
+  return images.map((image) => {
+    if (!image.should_build) {
+      core.info(`Skipping manifest update for image ${image.name} because should_build is false`);
+      return '';
+    }
+
+    const argusRootDir = image.argus_root.trim();
+    if (argusRootDir.length === 0) {
+      core.info(`Skipping manifest update for image ${image.name} because argus_root is not set`);
+      return '';
+    }
+
+    const infraDirPath = path.join(argusRootDir, '.infra');
     if (!fs.existsSync(infraDirPath)) {
       throw new Error(`.infra directory not found at ${infraDirPath}`);
     }
     return infraDirPath;
-  });
-  const uniqueInfraDirPaths = [...new Set(infraDirPaths)];
-  core.info(`Updating [${uniqueInfraDirPaths.join(',')}] to use image tag ${inputs.imageTag}`);
-
-  inputs.envs.forEach((env) => {
-    uniqueInfraDirPaths.forEach((infraDir) => {
-      const filePath = path.join(infraDir, env, 'values.yaml');
-      child_process.execSync(`yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${inputs.imageTag}"' ${filePath}`);
-      core.info(`Updated ${infraDir}/${env}/values.yaml`);
-      child_process.execSync(`cat ${filePath}`, { stdio: 'inherit' });
-    });
-  });
+  }).filter((dir) => dir.length > 0);
 }
