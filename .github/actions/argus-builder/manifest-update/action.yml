@@ -17,7 +17,7 @@ inputs:
   should_deploy:
     description: TODO
     required: true
-  build_result:
+  build_results:
     description: TODO
     required: true
 

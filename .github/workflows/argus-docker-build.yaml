@@ -182,7 +182,7 @@ jobs:
           should_deploy: ${{ needs.prep.outputs.should_deploy }}
           images: ${{ needs.prep.outputs.images }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
-          build_result: ${{ needs.build-docker.result }}
+          build_results: ${{ needs.build-docker.result }},${{ needs.build-docker.result }}
           envs: ${{ inputs.envs }}
           # - force_update_manifests
           # - update_manifests

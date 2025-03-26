@@ -8,7 +8,7 @@ type Inputs = {
   shouldDeploy: boolean
   images: ProcessedImage[]
   imageTag: string
-  buildResult: string
+  buildResults: string[]
   envs: string[]
 };
 
@@ -18,7 +18,7 @@ export function getInputs(): Inputs {
     shouldDeploy: core.getBooleanInput('should_deploy', { required: true }),
     images: JSON.parse(core.getInput('images', { required: true })),
     imageTag: core.getInput('image_tag', { required: true }),
-    buildResult: core.getInput('build_result', { required: true }),
+    buildResults: getCommaDelimitedArrayInput('build_results', { required: true }),
     envs: getCommaDelimitedArrayInput('envs', { required: true }),
   };
 }
