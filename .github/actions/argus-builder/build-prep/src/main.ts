@@ -18,6 +18,7 @@ type Inputs = {
   branchesInclude: string[]
   branchesIgnore: string[]
   manifestTriggerLabels: string[]
+  forceUpdateManifests: boolean
 };
 
 export function getInputs(): Inputs {
@@ -28,6 +29,7 @@ export function getInputs(): Inputs {
     branchesInclude: getCommaDelimitedArrayInput('branches_include', { required: true }),
     branchesIgnore: getCommaDelimitedArrayInput('branches_ignore', { required: false }),
     manifestTriggerLabels: getCommaDelimitedArrayInput('manifest_trigger_labels', { required: true }),
+    forceUpdateManifests: core.getBooleanInput('force_update_manifests', { required: false }),
   };
 }
 
@@ -105,16 +107,19 @@ export async function main() {
   const imageTag = getBuildTag();
   core.setOutput('image_tag', imageTag);
 
-  const hasTriggerLabel = await checkPullRequestForLabel(inputs);
-  core.setOutput('should_deploy', hasTriggerLabel);
-
   const shouldBuild = filesMatched && branchMatched;
   core.setOutput('should_build', shouldBuild);
+
+  const hasTriggerLabel = await checkPullRequestForLabel(inputs);
+  // only update manifests if the build should run and the trigger label is present (or forceUpdateManifests is true)
+  const shouldDeploy = shouldBuild && (hasTriggerLabel || inputs.forceUpdateManifests);
+  core.setOutput('should_deploy', shouldDeploy);
+
   core.info(`> Overall build conditions: ${JSON.stringify({
     'Branch matched?': branchMatched,
     'Files matched?': filesMatched,
     'Build should run?': shouldBuild,
-    'Manifests should be updated?': hasTriggerLabel,
+    'Manifests should be updated?': shouldDeploy,
   }, null, 2)}`);
 
   core.info('Checking image-specific build conditions...');
