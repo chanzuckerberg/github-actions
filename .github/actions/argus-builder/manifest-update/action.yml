@@ -8,15 +8,17 @@ inputs:
   image_tag:
     description: The tag of the image that should be updated
     required: true
-  argus_project_dirs:
-    description: 'Comma-delimited list of Argus project roots (directories that contain the .infra/ directory for each app)'
-    default: '.'
-    required: false
-  github_app_id:
-    description: 'GitHub App ID'
+  images:
+    description: TODO
     required: true
-  github_private_key:
-    description: 'GitHub App private key'
+  should_build:
+    description: TODO
+    required: true
+  should_deploy:
+    description: TODO
+    required: true
+  build_result:
+    description: TODO
     required: true
 
 runs:
