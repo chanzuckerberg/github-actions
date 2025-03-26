@@ -2,9 +2,13 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { minimatch } from 'minimatch';
 // eslint-disable-next-line import/no-relative-packages
-import { findChangedFiles } from '../../find-changed-files/src/findChangedFiles';
+import { findChangedFiles } from '../../../find-changed-files/src/findChangedFiles';
 // eslint-disable-next-line import/no-relative-packages
-import { validateJsonSchema } from '../../validate-json-schema/src/validateJsonSchema';
+import { validateJsonSchema } from '../../../validate-json-schema/src/validateJsonSchema';
+// eslint-disable-next-line import/no-relative-packages
+// import { getCommaDelimitedArrayInput, ProcessedImage } from '../../src/common';
+import { getCommaDelimitedArrayInput, ProcessedImage } from '../../common';
+export { ProcessedImage } from '../../common';
 
 type Inputs = {
   githubToken: string
@@ -14,10 +18,6 @@ type Inputs = {
   branchesIgnore: string[]
   manifestTriggerLabels: string[]
 };
-
-function getCommaDelimitedArrayInput(name: string, opts: core.InputOptions): string[] {
-  return core.getInput(name, opts).split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
-}
 
 export function getInputs(): Inputs {
   return {
@@ -74,19 +74,6 @@ type ImageInput = {
   path_filters?: string[] | string[][]
   branches_include?: string[]
   branches_ignore?: string[]
-};
-
-export type ProcessedImage = {
-  name: string
-  context: string
-  dockerfile: string
-  platform: string
-  build_args: string
-  secret_files: string
-  argus_root: string
-  files_matched: boolean
-  branch_matched: boolean
-  should_build: boolean
 };
 
 if (process.env.NODE_ENV !== 'test') {
@@ -179,9 +166,11 @@ function getTriggerSha(): string {
 }
 
 export function processImagesInput(images: Record<string, ImageInput>, changedFiles: string[], currentBranch: string): ProcessedImage[] {
+  const cleanArray = (arr: string[]) => arr.map((arg: string) => arg.trim()).filter((arg: string) => arg.length > 0);
+
   const processedImages = Object.entries(images).map(([name, image]) => {
-    const buildArgs = (image.build_args || []).map((arg: string) => arg.trim()).filter((arg: string) => arg.length > 0).join('\n');
-    const secretFiles = (image.secret_files || []).map((f: string) => f.trim()).filter((f: string) => f.length > 0).join('\n');
+    const buildArgs = cleanArray(image.build_args || []).join('\n');
+    const secretFiles = cleanArray(image.secret_files || []).join('\n');
     const argusRoot = image.argus_root || '.';
 
     const pathFilters: string[][] = (image.path_filters || ['**/*']).map((f: any) => (Array.isArray(f) ? f : [f]));
@@ -191,8 +180,8 @@ export function processImagesInput(images: Record<string, ImageInput>, changedFi
     core.info(`> Files matched: ${matchingFiles}`);
     const filesMatched = matchingFiles.length > 0;
 
-    const branchesInclude = (image.branches_include || ['*']).map((b: string) => b.trim()).filter((b: string) => b.length > 0);
-    const branchesIgnore = (image.branches_ignore || []).map((b: string) => b.trim()).filter((b: string) => b.length > 0);
+    const branchesInclude = cleanArray(image.branches_include || ['*']);
+    const branchesIgnore = cleanArray(image.branches_ignore || []);
     const branchMatched = isMatchingBranch({
       branchesInclude,
       branchesIgnore,

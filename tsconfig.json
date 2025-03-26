@@ -17,5 +17,5 @@
   ],
   "include": [
     ".github/actions/**/src/*"
-  ]
+, ".github/actions/argus-builder/common.ts"  ]
 }

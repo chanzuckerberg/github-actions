@@ -1,18 +1,17 @@
-name: argus-docker-build-prep
+name: argus-builder/build-prep
 description: Prepare for building a Docker Image for Argus
 
 inputs:
+  github_token:
+    description: The GitHub token for authenticating with the GitHub API
+    required: true
+  images:
+    description: 'JSON object specifying the images to build'
+    required: true
   path_filters:
     description: 'Glob patterns to match against changed files in the repository, comma delimited'
     required: false
     default: '**/*'
-  path_filters_base:
-    description: |
-      Git reference (e.g. branch name) against which the changes will be detected. Defaults to the current branch.
-      If it references same branch it was pushed to, changes are detected against the most recent commit before the push.
-      This option is ignored if action is triggered by pull_request event.
-    required: false
-    default: ${{ github.ref }}
   branches_include:
     description: 'Branch names to run this job on, supports wildcards, comma delimited'
     required: false
@@ -23,137 +22,21 @@ inputs:
     default: ''
   manifest_trigger_labels:
     description: |
-      Labels that will trigger updating the manifest and committing a docker image change to values.yaml, comma delimited.
+      Labels that will trigger updating the manifest and committing a docker image change to values.yaml, comma delimited, supports wildcards (*).
       If ANY of the labels are found on the PR, the manifest will be updated.
     required: false
-    default: 'stack'
+    default: 'stack,stack-*'
 
 outputs:
   image_tag:
     description: A custom tag to apply to the images that are built
-    value: ${{ steps.build_tags.outputs.image_tag }}
   should_build:
-    description: Whether the job should run
-    value: ${{ steps.final_check.outputs.should_build }}
+    description: Whether the build should run
   should_deploy:
-    description: Whether or not the build is to be deployed to a stack
-    value: ${{ steps.require_stack_label.outputs.should_deploy }}
+    description: Whether or not the image tag should be written to the manifest
+  images:
+    description: Processed images object
 
 runs:
-  using: composite
-  steps:
-    - name: Check for matching branch
-      id: branch_filter
-      uses: actions/github-script@v7
-      with:
-        script: |
-          function wildcardMatch(text, pattern) {
-            const regexPattern =
-            new RegExp('^' + pattern.replace(/\?/g, '.').replace(/\*/g, '.*') + '$');
-            return regexPattern.test(text);
-          }
-          const branchesInclude = `${{ inputs.branches_include }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
-          console.log('Branches to run against:', branchesInclude);
-          const branchesIgnore = `${{ inputs.branches_ignore }}`.split(',').map(b => b.trim()).filter(b => b.length > 0);
-          console.log('Branches to ignore:', branchesIgnore);
-          const branch = `${{ github.ref }}`.replace('refs/heads/', '');
-          const shouldRun = branchesInclude.some(b => wildcardMatch(branch, b)) && !branchesIgnore.some(b => wildcardMatch(branch, b));
-          if (shouldRun) {
-            console.log('Job will run');
-          } else {
-            console.log(`Job will be skipped because branch name "${branch}" does not match the filters`);
-          }
-          core.setOutput('match', shouldRun);
-
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Get build tag
-      id: build_tags
-      uses: actions/github-script@v7
-      with:
-        script: |
-          let sha;
-          const eventName = context.eventName;
-          if (eventName === "pull_request") {
-            console.log('pull_request:', context.payload.pull_request.head.sha);
-            sha = context.payload.pull_request.head.sha;
-          } else if (eventName === "push") {
-            console.log('push:', context.sha);
-            sha = context.sha;
-          } else {
-            core.setFailed(`EventName ${eventName} not supported`);
-            return;
-          }
-
-          const imageTag = `sha-${sha.slice(0, 7)}`;
-          if (imageTag === 'sha-') {
-            core.setFailed('The image tag [${imageTag}] is invalid.');
-          }
-
-          console.log('imageTag:', imageTag);
-          core.setOutput('image_tag', imageTag);
-
-    - name: Parse inputs
-      id: parse_filters
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const filters = `${{ inputs.path_filters }}`.split(',').map(f => f.trim()).filter(b => b.length > 0);
-          const filtersStr = "run_on:\n" + filters.map(f => `  - '${f}'`).join('\n');
-          core.setOutput('filters', filtersStr);
-          console.log(`Filters: ${filtersStr}`);
-
-    - name: Check for force push
-      id: force_push
-      uses: actions/github-script@v7
-      with:
-        # if the push was forced, use the default branch as the base -- otherwise, use the most recent commit before the push
-        # this is necessary because when you force push the previous commit is not available in the repo, thus no changes can be detected
-        script: |
-          if (`${{ github.event_name }}` === 'push' && ${{ github.event.forced || false }}) {
-            core.info(`Force push detected, using the repo's default branch (${{ github.event.repository.default_branch }}) as the base`)
-            core.setOutput('base', `${{ github.event.repository.default_branch }}`);
-          } else {
-            core.info(`Push was not forced, using the most recent commit before the push as the base`)
-            core.setOutput('base', `${{ inputs.path_filters_base }}`);
-          }
-
-    - name: Check for matching file changes
-      uses: dorny/paths-filter@v3
-      id: file_filter
-      with:
-        filters: |
-          ${{ steps.parse_filters.outputs.filters }}
-        base: ${{ steps.force_push.outputs.base }}
-        list-files: json
-
-    - uses: 8BitJonny/gh-get-current-pr@3.0.0
-      id: findPr
-      with:
-        filterOutClosed: true
-        filterOutDraft: false
-        sha: ${{ github.event.pull_request.head.sha }}
-
-    - name: Require manifest trigger label in pull requests
-      id: require_stack_label
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const labels = `${{ steps.findPr.outputs.pr_labels }}`;
-          const triggerLabels = `${{ inputs.manifest_trigger_labels }}`.split(',').map(l => l.trim());
-          const hasTriggerLabel = labels.split(',').map(l => l.trim()).some(l => triggerLabels.includes(l));
-          console.log(`Detected labels [${labels}] on PR. Has oneof [${triggerLabels}] label? ${hasTriggerLabel}`);
-          core.setOutput('should_deploy', hasTriggerLabel);
-
-    - name: Check if build should run
-      id: final_check
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const branchMatched = `${{ steps.branch_filter.outputs.match }}` === 'true';
-          const filesMatched = `${{ steps.file_filter.outputs.run_on }}` === 'true';
-          const shouldBuild = filesMatched && branchMatched;
-          core.setOutput('should_build', shouldBuild);
-          console.log(`Branch matched? ${branchMatched}. Files matched? ${filesMatched}. Build should run? ${shouldBuild}`);
+  using: 'node20'
+  main: 'dist/index.js'
