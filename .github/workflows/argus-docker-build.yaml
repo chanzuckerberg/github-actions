@@ -41,13 +41,6 @@ on:
         required: false
         type: string
         default: "['arm64-privileged']"
-      x64_runner_labels:
-        description: |
-          DO NOT USE. This is a deprecated input. Use amd_runner_labels instead.
-          Runner label to use for steps that use an x64-based action runner
-        required: false
-        type: string
-        default: "[]"
       amd_runner_labels:
         description: 'Runner label to use for steps that use an amd64-based action runner'
         required: false
@@ -96,7 +89,7 @@ jobs:
   build-docker:
     name: Build Docker Image
     needs: [prep]
-    runs-on: ${{ (matrix.image.platform == 'linux/amd64' && inputs.x64_runner_labels != '[]' && fromJSON(inputs.x64_runner_labels)) || (matrix.image.platform == 'linux/amd64' && fromJSON(inputs.amd_runner_labels)) || fromJSON(inputs.arm_runner_labels) }}
+    runs-on: ${{ matrix.image.platform == 'linux/amd64' && fromJSON(inputs.amd_runner_labels) || fromJSON(inputs.arm_runner_labels) }}
     if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     permissions:
       id-token: write
