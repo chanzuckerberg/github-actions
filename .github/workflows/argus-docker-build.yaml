@@ -222,7 +222,7 @@ jobs:
   build-docker:
     name: Build Docker Image
     needs: [prep]
-    runs-on: matrix.image.platform == 'linux/amd64' && fromJSON(inputs.x64_runner_labels) || matrix.image.platform == 'linux/amd64' && fromJSON(inputs.amd_runner_labels) || fromJSON(inputs.arm_runner_labels)
+    runs-on: matrix.image.platform == 'linux/amd64' && inputs.x64_runner_labels != '[]' && fromJSON(inputs.x64_runner_labels) || matrix.image.platform == 'linux/amd64' && fromJSON(inputs.amd_runner_labels) || fromJSON(inputs.arm_runner_labels)
     if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
     permissions:
       id-token: write
