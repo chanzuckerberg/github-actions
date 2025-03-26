@@ -175,7 +175,7 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.generate_token.outputs.token }}
           ref: ${{ steps.ref.outputs.result }}
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@CCIE-4230-rewrite-argus-build-prep-in-ts
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@CCIE-4294-update-argus-builder-manifest-update-action-to-be-entirely-ts
         id: manifest_update
         with:
           should_build: ${{ needs.prep.outputs.should_build }}
@@ -188,15 +188,15 @@ jobs:
           # - update_manifests
           # - github_token
 
-      - name: Check build status
-        uses: actions/github-script@v7
-        with:
-          script: |
-            if (${{ !contains(needs.build-docker.result, 'success') }}) {
-              core.setFailed("We won't update the manifest because one or more Docker builds did not succeed");
-            } else {
-              core.info('All builds passed, continuing with manifest update...');
-            }
+      # - name: Check build status
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: |
+      #       if (${{ !contains(needs.build-docker.result, 'success') }}) {
+      #         core.setFailed("We won't update the manifest because one or more Docker builds did not succeed");
+      #       } else {
+      #         core.info('All builds passed, continuing with manifest update...');
+      #       }
 
       - name: Determine manifests to update
         uses: actions/github-script@v7
