@@ -37,12 +37,15 @@ on:
         type: string
         default: ''
       update_manifests:
-        description: 'Whether to update ArgoCD manifests after building the Docker images'
+        description: |
+          TODO: Deprecated - this is no longer used but can't be removed without a MAJOR version bump because it is used by some workflows on v5.
+
+          Whether to update ArgoCD manifests after building the Docker images'
         required: false
         type: boolean
         default: true
       force_update_manifests:
-        description: 'Whether to always update ArgoCD manifests after building the Docker images'
+        description: 'Whether to always update ArgoCD manifests after building the Docker images, regardless of which labels are present on the PR'
         required: false
         type: boolean
         default: false
@@ -97,7 +100,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@2097a18f71490e8bbb478b538477651ac9b571ed
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@CCIE-4230-rewrite-argus-build-prep-in-ts
         id: build_prep
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -106,6 +109,7 @@ jobs:
           branches_include: ${{ inputs.branches_include }}
           branches_ignore: ${{ inputs.branches_ignore }}
           manifest_trigger_labels: ${{ inputs.manifest_trigger_labels }}
+          force_update_manifests: ${{ inputs.force_update_manifests }}
 
   build-docker:
     name: Build Docker Image
