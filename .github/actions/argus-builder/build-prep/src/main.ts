@@ -127,10 +127,11 @@ export async function main() {
     'Manifests should be updated?': shouldDeploy,
   }, null, 2)}`);
 
-  core.group('Checking image-specific build conditions...', async () => {
-    const processedImages = processImagesInput(inputs.images, changedFiles, currentBranch);
-    core.setOutput('images', JSON.stringify(processedImages, null, 2));
+  const processedImages = core.group('Checking image-specific build conditions...', async () => {
+    processImagesInput(inputs.images, changedFiles, currentBranch);
   });
+  core.info(`> Images configuration: ${JSON.stringify(processedImages, null, 2)}`);
+  core.setOutput('images', processedImages);
 }
 
 export function wildcardMatch(text: string, pattern: string): boolean {
@@ -213,7 +214,6 @@ export function processImagesInput(images: Record<string, ImageInput>, changedFi
       should_build: filesMatched && branchMatched,
     };
   });
-  core.info(`> Images configuration: ${JSON.stringify(processedImages, null, 2)}`);
   return processedImages;
 }
 
