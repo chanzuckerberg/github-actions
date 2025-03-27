@@ -68,12 +68,12 @@ runs:
       uses: actions/github-script@v7
       env:
         HEADREF: ${{ github.head_ref }}
-        PRBODY: "abc" #steps.getPullRequest.outputs.prBody
-        PRTITLE: steps.getPullRequest.outputs.prTitle
+        PRBODY: ${{ steps.getPullRequest.outputs.prBody }}
+        PRTITLE: ${{ steps.getPullRequest.outputs.prTitle }}
       with:
         script: |
-          const prBody = $PRBODY;
-          const prTitle = $PRTITLE;
+          const prBody = '$PRBODY';
+          const prTitle = '$PRTITLE';
 
           let jiraIssueRef = null;
           const issueRegex = new RegExp(`${{ inputs.projectKey }}-\\d+`);
