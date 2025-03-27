@@ -130,7 +130,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: always() && needs.prep.outputs.should_deploy == 'true' && needs.prep.outputs.images != '[]'
+    if: always()
     steps:
       - name: Generate token
         uses: actions/create-github-app-token@v1

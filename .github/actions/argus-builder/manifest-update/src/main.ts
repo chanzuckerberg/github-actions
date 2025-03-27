@@ -53,9 +53,21 @@ export async function main() {
     core.info(`Updated ${filePath}\n---`);
     child_process.execSync(`cat ${filePath}`, { stdio: 'inherit' });
     core.info('---');
+    child_process.execSync(`git add ${filePath}`);
   });
 
-  // github.getOctokit(inputs.githubToken)
+  child_process.execSync(`git diff`, { stdio: 'inherit' });
+  try {
+    const result = child_process.execSync(`git diff --staged --exit-code`);
+    core.info(`Command succeeded with output: ${result.toString()}`);
+  } catch (error: any) {
+    core.error(`Command failed with exit code: ${JSON.stringify(error, null, 2)}`);
+    // core.error(`Error message: ${error.message}`);
+  }
+  // child_process.execSync(`git commit -m "chore: Updated [${{ steps.parse_envs.outputs.envs }}] values.yaml image tags to ${{ inputs.image_tag }}"`)
+  // child_process.execSync(`git push`)
+
+  // const gitClient = github.getOctokit(inputs.githubToken)
 }
 
 export function determineArgusVaulesFilesToUpdate(images: ProcessedImage[], envs: string[]): string[] {
