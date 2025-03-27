@@ -75,7 +75,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@a45c23de4c71e8fa6ed3eb7454e52f74322b6037
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@f04753bd911e16400a7be6d5b21816f50312997e
         id: build_prep
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -90,7 +90,7 @@ jobs:
     name: Build Docker Image
     needs: [prep]
     runs-on: ${{ matrix.image.platform == 'linux/amd64' && fromJSON(inputs.amd_runner_labels) || fromJSON(inputs.arm_runner_labels) }}
-    if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
+    if: needs.prep.outputs.should_build == 'true'
     permissions:
       id-token: write
       contents: read
