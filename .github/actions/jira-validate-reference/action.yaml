@@ -68,7 +68,7 @@ runs:
       uses: actions/github-script@v7
       env:
         HEADREF: ${{ github.head_ref }}
-        PRBODY: steps.getPullRequest.outputs.prBody
+        PRBODY: "abc" #steps.getPullRequest.outputs.prBody
         PRTITLE: steps.getPullRequest.outputs.prTitle
       with:
         script: |
