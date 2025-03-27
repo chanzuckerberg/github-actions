@@ -78,7 +78,7 @@ runs:
           let jiraIssueRef = null;
           const issueRegex = new RegExp(`${{ inputs.projectKey }}-\\d+`);
           [
-            { label: 'branch', value: '$HEADREF' },
+            { label: 'branch', value: "$HEADREF" },
             { label: 'title', value: prTitle },
             { label: 'body', value: prBody },
           ].find(({label, value}) => {
