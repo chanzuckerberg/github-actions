@@ -37,6 +37,11 @@ describe('argus-builder-manifest-update', () => {
           should_build: true,
         }]));
 
+      // pass through to original core.group implementation
+      jest.spyOn(core, 'group').mockImplementation((arg, arg2) => {
+        return jest.requireActual('@actions/core').group(arg, arg2);
+      });
+
       await main();
 
       expect(core.info).toHaveBeenCalledWith('> Skipping manifest update because should_deploy is false');
@@ -66,6 +71,11 @@ describe('argus-builder-manifest-update', () => {
           branch_matched: true,
           should_build: true,
         }]));
+
+        // pass through to original core.group implementation
+      jest.spyOn(core, 'group').mockImplementation((arg, arg2) => {
+        return jest.requireActual('@actions/core').group(arg, arg2);
+      });
 
       expect(() => main()).rejects.toThrow('We won\'t update the manifest because one or more Docker builds did not succeed');
     });
@@ -118,7 +128,11 @@ describe('argus-builder-manifest-update', () => {
 
     it('should return the correct values for a simple example', () => {
       mockFs({
-        '.infra': {},
+        '.infra': {
+          'rdev': {
+            'values.yaml': '',
+          },
+        },
       });
 
       expect(determineValuesFilesToUpdate([{
@@ -138,10 +152,24 @@ describe('argus-builder-manifest-update', () => {
     it('should return the correct values for a more complex example', () => {
       mockFs({
         frontend: {
-          '.infra': {},
+          '.infra': {
+            'staging': {
+              'values.yaml': '',
+            },
+            'prod': {
+              'values.yaml': '',
+            },
+          },
         },
         backend: {
-          '.infra': {},
+          '.infra': {
+            'staging': {
+              'values.yaml': '',
+            },
+            'prod': {
+              'values.yaml': '',
+            },
+          },
         },
       });
 
@@ -178,6 +206,64 @@ describe('argus-builder-manifest-update', () => {
       expect(result.sort()).toEqual([
         'frontend/.infra/staging/values.yaml',
         'frontend/.infra/prod/values.yaml',
+        'backend/.infra/staging/values.yaml',
+        'backend/.infra/prod/values.yaml',
+      ].sort());
+    });
+
+    it('should not include files that don\'t exist', () => {
+      mockFs({
+        frontend: {
+          '.infra': {
+            'staging': {
+              'values.yaml': '',
+            },
+          },
+        },
+        backend: {
+          '.infra': {
+            'staging': {
+              'values.yaml': '',
+            },
+            'prod': {
+              'values.yaml': '',
+            },
+          },
+        },
+      });
+
+      const result = determineValuesFilesToUpdate(
+        [
+          {
+            name: 'frontend',
+            argus_root: 'frontend',
+            context: 'frontend',
+            dockerfile: 'frontend/Dockerfile',
+            platform: 'linux/arm64',
+            build_args: '',
+            secret_files: '',
+            files_matched: true,
+            branch_matched: true,
+            should_build: true,
+          },
+          {
+            name: 'backend',
+            argus_root: 'backend',
+            context: 'backend',
+            dockerfile: 'backend/Dockerfile',
+            platform: 'linux/arm64',
+            build_args: '',
+            secret_files: '',
+            files_matched: true,
+            branch_matched: true,
+            should_build: true,
+          },
+        ],
+        ['staging', 'prod'],
+      );
+
+      expect(result.sort()).toEqual([
+        'frontend/.infra/staging/values.yaml',
         'backend/.infra/staging/values.yaml',
         'backend/.infra/prod/values.yaml',
       ].sort());
