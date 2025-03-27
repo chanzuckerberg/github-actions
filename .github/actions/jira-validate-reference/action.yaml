@@ -72,8 +72,11 @@ runs:
         PRTITLE: ${{ steps.getPullRequest.outputs.prTitle }}
       with:
         script: |
-          const prBody = "$PRBODY";
-          const prTitle = "$PRTITLE";
+          const { HEADREF, PRBODY, PRTITLE } = process.env
+
+          console.log(`Hello ${HEADREF} ${PRTITLE}`)
+          const prBody = PRBODY;
+          const prTitle = PRTITLE;
           console.log("Show PRBODY");
           console.log(prBody);
           console.log("Show PRTITLE");
