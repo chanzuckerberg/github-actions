@@ -74,6 +74,10 @@ runs:
         script: |
           const prBody = "$PRBODY";
           const prTitle = "$PRTITLE";
+          console.log("Show PRBODY");
+          console.log(prBody);
+          console.log("Show PRTITLE");
+          console.log(prTitle);
 
           let jiraIssueRef = null;
           const issueRegex = new RegExp(`${{ inputs.projectKey }}-\\d+`);
@@ -93,7 +97,7 @@ runs:
 
           const ownerAndRepo = '${{ github.repository }}';
           const [owner, repo] = ownerAndRepo.split('/');
-          const noJiraIssueBody = `Title was ${{ prTitle }}. No Jira issue reference found in branch, title, or body of PR.\n\nPlease add a reference to a Jira issue in the form of ${{ inputs.projectKey }}-#### (eg: ${{ inputs.projectKey }}-1234) to the branch name, title, or body of your PR.`;
+          const noJiraIssueBody = `No Jira issue reference found in branch, title, or body of PR.\n\nPlease add a reference to a Jira issue in the form of ${{ inputs.projectKey }}-#### (eg: ${{ inputs.projectKey }}-1234) to the branch name, title, or body of your PR.`;
 
           const { data: comments } = await github.rest.issues.listComments({
             owner,
