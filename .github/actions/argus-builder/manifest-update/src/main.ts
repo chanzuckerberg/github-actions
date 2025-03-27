@@ -63,6 +63,8 @@ export async function main() {
     child_process.execSync(`git diff --staged --exit-code`);
   } catch (error: any) {
     // If there are changes to commit, the "git diff --staged --exit-code" command will throw an error
+    child_process.execSync('git config --global user.email "czihelperbot@chanzuckerberg.com"')
+    child_process.execSync('git config --global user.name "Argus Builder Bot"')
     child_process.execSync(`git commit -m "chore: Updated [${inputs.envs.join(',')}}] values.yaml image tags to ${inputs.imageTag}"`);
     child_process.execSync(`git push`);
   }
