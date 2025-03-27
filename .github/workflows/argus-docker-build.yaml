@@ -75,7 +75,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@a45c23de4c71e8fa6ed3eb7454e52f74322b6037
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@9b377787b77a6a8665a994a63dfc455ce90844a8
         id: build_prep
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
