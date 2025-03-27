@@ -11,28 +11,6 @@ import { getCommaDelimitedArrayInput, ProcessedImage } from '../../common';
 // eslint-disable-next-line import/no-relative-packages
 export { ProcessedImage } from '../../common';
 
-type Inputs = {
-  githubToken: string
-  images: Record<string, any>
-  pathFilters: string[]
-  branchesInclude: string[]
-  branchesIgnore: string[]
-  manifestTriggerLabels: string[]
-  forceUpdateManifests: boolean
-};
-
-export function getInputs(): Inputs {
-  return {
-    githubToken: core.getInput('github_token', { required: true }),
-    images: JSON.parse(core.getInput('images', { required: true })),
-    pathFilters: getCommaDelimitedArrayInput('path_filters', { required: true }),
-    branchesInclude: getCommaDelimitedArrayInput('branches_include', { required: true }),
-    branchesIgnore: getCommaDelimitedArrayInput('branches_ignore', { required: false }),
-    manifestTriggerLabels: getCommaDelimitedArrayInput('manifest_trigger_labels', { required: true }),
-    forceUpdateManifests: core.getBooleanInput('force_update_manifests', { required: false }),
-  };
-}
-
 const imagesInputSchema = {
   type: 'object',
   additionalProperties: {
@@ -79,19 +57,41 @@ type ImageInput = {
   branches_ignore?: string[]
 };
 
+type Inputs = {
+  githubToken: string
+  images: Record<string, ImageInput>
+  pathFilters: string[]
+  branchesInclude: string[]
+  branchesIgnore: string[]
+  manifestTriggerLabels: string[]
+  forceUpdateManifests: boolean
+};
+
+export function getInputs(): Promise<Inputs> {
+  return core.group('Gather inputs', async () => {
+    const inputs = {
+      githubToken: core.getInput('github_token', { required: true }),
+      images: JSON.parse(core.getInput('images', { required: true })),
+      pathFilters: getCommaDelimitedArrayInput('path_filters', { required: true }),
+      branchesInclude: getCommaDelimitedArrayInput('branches_include', { required: true }),
+      branchesIgnore: getCommaDelimitedArrayInput('branches_ignore', { required: false }),
+      manifestTriggerLabels: getCommaDelimitedArrayInput('manifest_trigger_labels', { required: true }),
+      forceUpdateManifests: core.getBooleanInput('force_update_manifests', { required: false }),
+    };
+
+    core.info(`Received inputs: ${JSON.stringify(inputs, null, 2)}`);
+
+    core.info('Validating images input...');
+    validateJsonSchema(inputs.images, imagesInputSchema);
+    return inputs;
+  });
+}
+
 if (process.env.NODE_ENV !== 'test') {
   main();
 }
 export async function main() {
-  const inputs = await core.group('Gather inputs', async () => {
-    const ins = getInputs();
-    core.info(`Received input: ${JSON.stringify(ins, null, 2)}`);
-
-    core.info('Validating images input...');
-    validateJsonSchema(ins.images, imagesInputSchema);
-    return ins;
-  });
-  core.info('> Input is valid');
+  const inputs = await getInputs();
 
   const changedFiles = await core.group(
     'Finding changed files...',
