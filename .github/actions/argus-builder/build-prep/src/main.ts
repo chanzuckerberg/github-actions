@@ -83,7 +83,7 @@ if (process.env.NODE_ENV !== 'test') {
   main();
 }
 export async function main() {
-  const inputs = await core.group('', async () => {
+  const inputs = await core.group('Gather inputs', async () => {
     const ins = getInputs();
     core.info(`Received input: ${JSON.stringify(ins, null, 2)}`);
 
@@ -93,9 +93,10 @@ export async function main() {
   });
   core.info('> Input is valid');
 
-  const changedFiles = await core.group('Finding changed files...', async () => {
-    return (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
-  });
+  const changedFiles = await core.group(
+    'Finding changed files...',
+    async () => (await findChangedFiles(inputs.githubToken)).allModifiedFiles,
+  );
 
   const currentBranch = github.context.ref.replace('refs/heads/', '');
   const imageTag = getBuildTag();
@@ -139,9 +140,10 @@ export async function main() {
     'Manifests should be updated?': outputs.shouldDeploy,
   }, null, 2)}`);
 
-  const processedImages = await core.group('Checking image-specific build conditions...', async () => {
-    return processImagesInput(inputs.images, changedFiles, currentBranch);
-  });
+  const processedImages = await core.group(
+    'Checking image-specific build conditions...',
+    async () => processImagesInput(inputs.images, changedFiles, currentBranch),
+  );
   core.info(`> Images configuration: ${JSON.stringify(processedImages, null, 2)}`);
   core.setOutput('images', processedImages);
 }
