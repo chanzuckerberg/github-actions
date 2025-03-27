@@ -90,7 +90,7 @@ jobs:
     name: Build Docker Image
     needs: [prep]
     runs-on: ${{ matrix.image.platform == 'linux/amd64' && fromJSON(inputs.amd_runner_labels) || fromJSON(inputs.arm_runner_labels) }}
-    if: needs.prep.outputs.should_build == 'true' && needs.prep.outputs.images != '[]'
+    if: needs.prep.outputs.should_build == 'true'
     permissions:
       id-token: write
       contents: read

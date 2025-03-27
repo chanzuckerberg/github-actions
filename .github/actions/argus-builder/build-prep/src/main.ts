@@ -107,7 +107,12 @@ export async function main() {
   const imageTag = getBuildTag();
   core.setOutput('image_tag', imageTag);
 
-  const shouldBuild = filesMatched && branchMatched;
+  const hasImages = Object.keys(inputs.images).length > 0;
+  if (!hasImages) {
+    core.info('> No images found in the input - skipping build and deploy');
+  }
+
+  const shouldBuild = hasImages && filesMatched && branchMatched;
   core.setOutput('should_build', shouldBuild);
 
   const hasTriggerLabel = await checkPullRequestForLabel(inputs);
@@ -122,9 +127,10 @@ export async function main() {
     'Manifests should be updated?': shouldDeploy,
   }, null, 2)}`);
 
-  core.info('Checking image-specific build conditions...');
-  const processedImages = processImagesInput(inputs.images, changedFiles, currentBranch);
-  core.setOutput('images', JSON.stringify(processedImages, null, 2));
+  core.group('Checking image-specific build conditions...', async () => {
+    const processedImages = processImagesInput(inputs.images, changedFiles, currentBranch);
+    core.setOutput('images', JSON.stringify(processedImages, null, 2));
+  });
 }
 
 export function wildcardMatch(text: string, pattern: string): boolean {
