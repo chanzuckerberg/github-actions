@@ -56,8 +56,11 @@ export async function main() {
     child_process.execSync(`git add ${filePath}`);
   });
 
-  child_process.execSync(`git diff`, { stdio: 'inherit' });
+  core.info("...running status")
+  child_process.execSync(`git status`, { stdio: 'inherit' });
+  core.info("...ran git status")
   try {
+    core.info("...running git diff")
     const result = child_process.execSync(`git diff --staged --exit-code`);
     core.info(`Command succeeded with output: ${result.toString()}`);
   } catch (error: any) {
@@ -68,6 +71,7 @@ export async function main() {
   // child_process.execSync(`git push`)
 
   // const gitClient = github.getOctokit(inputs.githubToken)
+  core.info("...goodbye")
 }
 
 export function determineArgusVaulesFilesToUpdate(images: ProcessedImage[], envs: string[]): string[] {
