@@ -2,7 +2,7 @@ import mockFs from 'mock-fs';
 import { when } from 'jest-when';
 import * as core from '@actions/core';
 import {
-  determineArgusVaulesFilesToUpdate,
+  determineValuesFilesToUpdate,
   main,
 } from './main';
 
@@ -39,7 +39,7 @@ describe('argus-builder-manifest-update', () => {
 
       await main();
 
-      expect(core.info).toHaveBeenCalledWith('Skipping manifest update because should_deploy is false');
+      expect(core.info).toHaveBeenCalledWith('> Skipping manifest update because should_deploy is false');
     });
 
     it('should throw error when any build_results are not success', async () => {
@@ -73,7 +73,7 @@ describe('argus-builder-manifest-update', () => {
 
   describe('determineArgusVaulesFilesToUpdate', () => {
     it('should return empty when no images are provided', () => {
-      expect(determineArgusVaulesFilesToUpdate([], ['rdev'])).toEqual([]);
+      expect(determineValuesFilesToUpdate([], ['rdev'])).toEqual([]);
     });
 
     it('should return empty when no envs are provided', () => {
@@ -83,7 +83,7 @@ describe('argus-builder-manifest-update', () => {
         },
       });
 
-      expect(determineArgusVaulesFilesToUpdate([{
+      expect(determineValuesFilesToUpdate([{
         name: 'frontend',
         argus_root: 'frontend',
         context: 'frontend',
@@ -102,7 +102,7 @@ describe('argus-builder-manifest-update', () => {
         frontend: {},
       });
 
-      expect(() => determineArgusVaulesFilesToUpdate([{
+      expect(() => determineValuesFilesToUpdate([{
         name: 'frontend',
         argus_root: 'frontend',
         context: 'frontend',
@@ -121,7 +121,7 @@ describe('argus-builder-manifest-update', () => {
         '.infra': {},
       });
 
-      expect(determineArgusVaulesFilesToUpdate([{
+      expect(determineValuesFilesToUpdate([{
         name: 'frontend',
         argus_root: '.',
         context: 'frontend',
@@ -145,7 +145,7 @@ describe('argus-builder-manifest-update', () => {
         },
       });
 
-      const result = determineArgusVaulesFilesToUpdate(
+      const result = determineValuesFilesToUpdate(
         [
           {
             name: 'frontend',

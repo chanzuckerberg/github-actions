@@ -15,15 +15,21 @@ type Inputs = {
   envs: string[]
 };
 
-export function getInputs(): Inputs {
-  return {
-    githubToken: core.getInput('github_token', { required: true }),
-    shouldDeploy: core.getBooleanInput('should_deploy', { required: true }),
-    images: JSON.parse(core.getInput('images', { required: true })),
-    imageTag: core.getInput('image_tag', { required: true }),
-    buildResults: getCommaDelimitedArrayInput('build_results', { required: true }),
-    envs: getCommaDelimitedArrayInput('envs', { required: true }),
-  };
+export function getInputs(): Promise<Inputs> {
+  return core.group('Gather inputs', async () => {
+    const inputs = {
+      githubToken: core.getInput('github_token', { required: true }),
+      shouldDeploy: core.getBooleanInput('should_deploy', { required: true }),
+      images: JSON.parse(core.getInput('images', { required: true })),
+      imageTag: core.getInput('image_tag', { required: true }),
+      buildResults: getCommaDelimitedArrayInput('build_results', { required: true }),
+      envs: getCommaDelimitedArrayInput('envs', { required: true }),
+    };
+
+    core.info(`Received inputs: ${JSON.stringify(inputs, null, 2)}`);
+
+    return inputs;
+  });
 }
 
 if (process.env.NODE_ENV !== 'test') {
@@ -31,48 +37,31 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 export async function main() {
-  const inputs = getInputs();
-  core.info(`Received input: ${JSON.stringify(inputs, null, 2)}`);
+  const inputs = await getInputs();
 
   if (!inputs.shouldDeploy) {
-    core.info('Skipping manifest update because should_deploy is false');
+    core.info('> Skipping manifest update because should_deploy is false');
     return;
   }
 
   if (!inputs.buildResults.every((result) => result === 'success')) {
-    throw new Error('We won\'t update the manifest because one or more Docker builds did not succeed');
+    const err = new Error('We won\'t update the manifest because one or more Docker builds did not succeed');
+    core.error(err);
+    throw err;
   }
-  core.info('All builds passed, continuing with manifest update...');
+  core.info('> All builds passed, continuing with manifest update...');
 
-  const valuesFilesToUpdate = determineArgusVaulesFilesToUpdate(inputs.images, inputs.envs);
+  const valuesFilesToUpdate = await core.group(
+    'Determine values.yaml files to update',
+    async () => determineValuesFilesToUpdate(inputs.images, inputs.envs),
+  );
+  await core.group('Update values.yaml files', async () => updateValuesFiles(valuesFilesToUpdate, inputs.imageTag));
+  await core.group('Commit and push changes', async () => commitAndPushChanges(valuesFilesToUpdate, inputs));
 
-  valuesFilesToUpdate.forEach((filePath) => {
-    core.info(`Updating ${filePath} to use image tag ${inputs.imageTag}`);
-    updateTagsInFile(filePath, inputs.imageTag);
-
-    core.info(`Updated ${filePath}\n---`);
-    child_process.execSync(`cat ${filePath}`, { stdio: 'inherit' });
-    core.info('---');
-    child_process.execSync(`git add ${filePath}`);
-  });
-
-  core.info("...running status")
-  child_process.execSync(`git status`, { stdio: 'inherit' });
-  core.info("...ran git status")
-  try {
-    child_process.execSync(`git diff --staged --exit-code`);
-  } catch (error: any) {
-    // If there are changes to commit, the "git diff --staged --exit-code" command will throw an error
-    child_process.execSync('git config --global user.email "czihelperbot@chanzuckerberg.com"')
-    child_process.execSync('git config --global user.name "Argus Builder Bot"')
-    child_process.execSync(`git commit -m "chore: Updated [${inputs.envs.join(',')}}] values.yaml image tags to ${inputs.imageTag}"`);
-    child_process.execSync(`git push`);
-  }
-
-  core.info("...goodbye")
+  core.info("Values files updated successfully");
 }
 
-export function determineArgusVaulesFilesToUpdate(images: ProcessedImage[], envs: string[]): string[] {
+export function determineValuesFilesToUpdate(images: ProcessedImage[], envs: string[]): string[] {
   const argusInfraDirs = images.map((image) => {
     if (!image.should_build) {
       core.info(`Skipping manifest update for image ${image.name} because should_build is false`);
@@ -101,10 +90,36 @@ export function determineArgusVaulesFilesToUpdate(images: ProcessedImage[], envs
       files.push(path.join(infraDir, env, 'values.yaml'));
     });
   });
+  core.info(`Values files to update:\n - ${files.join('\n - ')}]`);
 
   return files;
 }
 
-export function updateTagsInFile(filePath: string, imageTag: string): void {
-  child_process.execSync(`yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${imageTag}"' ${filePath}`);
+export function updateValuesFiles(valuesFilesToUpdate: string[], imageTag: string): void {
+  valuesFilesToUpdate.forEach((filePath) => {
+    core.info(`Updating ${filePath} to use image tag ${imageTag}`);
+    child_process.execSync(`yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${imageTag}"' ${filePath}`);
+
+    core.info(`Updated ${filePath}\n---`);
+    child_process.execSync(`cat ${filePath}`, { stdio: 'inherit' });
+    core.info('---');
+  });
+}
+
+export function commitAndPushChanges(valuesFilesToUpdate: string[], inputs: Inputs): void {
+  child_process.execSync(`git add ${valuesFilesToUpdate.join(' ')}`);
+  core.info("...running status")
+  child_process.execSync(`git status`, { stdio: 'inherit' });
+  core.info("...ran git status")
+  try {
+    child_process.execSync(`git diff --staged --exit-code`);
+  } catch (error: any) {
+    // If there are changes to commit, the "git diff --staged --exit-code" command will throw an error
+    child_process.execSync('git config --global user.email "czihelperbot@chanzuckerberg.com"'); // TODO: parameterize this
+    child_process.execSync('git config --global user.name "Argus Builder Bot"'); // TODO: parameterize this
+    child_process.execSync(`git commit -m "chore: Updated [${inputs.envs.join(',')}}] values.yaml image tags to ${inputs.imageTag}"`);
+
+    core.info('Pushing changes to remote');
+    child_process.execSync(`git push`, { stdio: 'inherit' });
+  }
 }
