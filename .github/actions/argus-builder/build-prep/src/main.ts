@@ -83,52 +83,64 @@ if (process.env.NODE_ENV !== 'test') {
   main();
 }
 export async function main() {
-  const inputs = getInputs();
-  core.info(`Received input: ${JSON.stringify(inputs, null, 2)}`);
+  const inputs = await core.group('', async () => {
+    const ins = getInputs();
+    core.info(`Received input: ${JSON.stringify(ins, null, 2)}`);
 
-  core.info('Validating images input...');
-  validateJsonSchema(inputs.images, imagesInputSchema);
-  core.info('> Images input is valid');
+    core.info('Validating images input...');
+    validateJsonSchema(ins.images, imagesInputSchema);
+    return ins;
+  });
+  core.info('> Input is valid');
 
-  core.info('Finding changed files...');
-  const changedFiles = (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
-
-  core.info('Checking overall build conditions...');
-  const currentBranch = github.context.ref.replace('refs/heads/', '');
-  const branchMatched = isMatchingBranch({
-    branchesInclude: inputs.branchesInclude,
-    branchesIgnore: inputs.branchesIgnore,
-    branch: currentBranch,
+  const changedFiles = await core.group('Finding changed files...', async () => {
+    return (await findChangedFiles(inputs.githubToken)).allModifiedFiles;
   });
 
-  const matchingFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map((f: string) => [f]));
-  const filesMatched: boolean = matchingFiles.length > 0;
-
+  const currentBranch = github.context.ref.replace('refs/heads/', '');
   const imageTag = getBuildTag();
   core.setOutput('image_tag', imageTag);
 
-  const hasImages = Object.keys(inputs.images).length > 0;
-  if (!hasImages) {
-    core.info('> No images found in the input - skipping build and deploy');
-  }
+  const outputs = await core.group('Checking overall build conditions...', async () => {
+    const branchMatched = isMatchingBranch({
+      branchesInclude: inputs.branchesInclude,
+      branchesIgnore: inputs.branchesIgnore,
+      branch: currentBranch,
+    });
 
-  const shouldBuild = hasImages && filesMatched && branchMatched;
-  core.setOutput('should_build', shouldBuild);
+    const matchingFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map((f: string) => [f]));
+    const filesMatched: boolean = matchingFiles.length > 0;
 
-  const hasTriggerLabel = await checkPullRequestForLabel(inputs);
-  // only update manifests if the build should run and the trigger label is present (or forceUpdateManifests is true)
-  const shouldDeploy = shouldBuild && (hasTriggerLabel || inputs.forceUpdateManifests);
-  core.setOutput('should_deploy', shouldDeploy);
+    const hasImages = Object.keys(inputs.images).length > 0;
+    if (!hasImages) {
+      core.info('> No images found in the input - skipping build and deploy');
+    }
+
+    const shouldBuild = hasImages && filesMatched && branchMatched;
+    core.setOutput('should_build', shouldBuild);
+
+    const hasTriggerLabel = await checkPullRequestForLabel(inputs);
+    // only update manifests if the build should run and the trigger label is present (or forceUpdateManifests is true)
+    const shouldDeploy = shouldBuild && (hasTriggerLabel || inputs.forceUpdateManifests);
+    core.setOutput('should_deploy', shouldDeploy);
+
+    return {
+      branchMatched,
+      filesMatched,
+      shouldBuild,
+      shouldDeploy,
+    };
+  });
 
   core.info(`> Overall build conditions: ${JSON.stringify({
-    'Branch matched?': branchMatched,
-    'Files matched?': filesMatched,
-    'Build should run?': shouldBuild,
-    'Manifests should be updated?': shouldDeploy,
+    'Branch matched?': outputs.branchMatched,
+    'Files matched?': outputs.filesMatched,
+    'Build should run?': outputs.shouldBuild,
+    'Manifests should be updated?': outputs.shouldDeploy,
   }, null, 2)}`);
 
-  const processedImages = core.group('Checking image-specific build conditions...', async () => {
-    processImagesInput(inputs.images, changedFiles, currentBranch);
+  const processedImages = await core.group('Checking image-specific build conditions...', async () => {
+    return processImagesInput(inputs.images, changedFiles, currentBranch);
   });
   core.info(`> Images configuration: ${JSON.stringify(processedImages, null, 2)}`);
   core.setOutput('images', processedImages);
@@ -159,7 +171,9 @@ export function isMatchingBranch(
 function getBuildTag(): string {
   const imageTag = `sha-${getTriggerSha().slice(0, 7)}`;
   if (imageTag === 'sha-') {
-    core.setFailed(`The image tag [${imageTag}] is invalid.`);
+    const msg = `The image tag [${imageTag}] is invalid.`;
+    core.setFailed(msg);
+    throw new Error(msg);
   }
 
   core.info(`> Image tag: ${imageTag}`);
