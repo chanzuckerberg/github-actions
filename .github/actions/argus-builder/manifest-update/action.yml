@@ -71,8 +71,8 @@ runs:
 
     - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update/node-action@CCIE-4294-update-argus-builder-manifest-update-action-to-be-entirely-ts
       with:
-          should_deploy: ${{ needs.prep.outputs.should_deploy }}
-          images: ${{ needs.prep.outputs.images }}
-          image_tag: ${{ needs.prep.outputs.image_tag }}
-          build_results: ${{ needs.build-docker.result }},${{ needs.build-docker.result }}
+          should_deploy: ${{ inputs.should_deploy }}
+          images: ${{ inputs.images }}
+          image_tag: ${{ inputs.image_tag }}
+          build_results: ${{ inputs.build_results }}
           envs: ${{ inputs.envs }}
