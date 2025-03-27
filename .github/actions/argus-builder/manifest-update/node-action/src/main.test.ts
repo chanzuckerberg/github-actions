@@ -38,9 +38,7 @@ describe('argus-builder-manifest-update', () => {
         }]));
 
       // pass through to original core.group implementation
-      jest.spyOn(core, 'group').mockImplementation((arg, arg2) => {
-        return jest.requireActual('@actions/core').group(arg, arg2);
-      });
+      jest.spyOn(core, 'group').mockImplementation((arg, arg2) => jest.requireActual('@actions/core').group(arg, arg2));
 
       await main();
 
@@ -72,10 +70,8 @@ describe('argus-builder-manifest-update', () => {
           should_build: true,
         }]));
 
-        // pass through to original core.group implementation
-      jest.spyOn(core, 'group').mockImplementation((arg, arg2) => {
-        return jest.requireActual('@actions/core').group(arg, arg2);
-      });
+      // pass through to original core.group implementation
+      jest.spyOn(core, 'group').mockImplementation((arg, arg2) => jest.requireActual('@actions/core').group(arg, arg2));
 
       expect(() => main()).rejects.toThrow('We won\'t update the manifest because one or more Docker builds did not succeed');
     });
@@ -129,7 +125,7 @@ describe('argus-builder-manifest-update', () => {
     it('should return the correct values for a simple example', () => {
       mockFs({
         '.infra': {
-          'rdev': {
+          rdev: {
             'values.yaml': '',
           },
         },
@@ -153,20 +149,20 @@ describe('argus-builder-manifest-update', () => {
       mockFs({
         frontend: {
           '.infra': {
-            'staging': {
+            staging: {
               'values.yaml': '',
             },
-            'prod': {
+            prod: {
               'values.yaml': '',
             },
           },
         },
         backend: {
           '.infra': {
-            'staging': {
+            staging: {
               'values.yaml': '',
             },
-            'prod': {
+            prod: {
               'values.yaml': '',
             },
           },
@@ -215,17 +211,17 @@ describe('argus-builder-manifest-update', () => {
       mockFs({
         frontend: {
           '.infra': {
-            'staging': {
+            staging: {
               'values.yaml': '',
             },
           },
         },
         backend: {
           '.infra': {
-            'staging': {
+            staging: {
               'values.yaml': '',
             },
-            'prod': {
+            prod: {
               'values.yaml': '',
             },
           },
