@@ -1,12 +1,9 @@
-name: argus-builder-manifest-update
+name: argus-docker-manifest-update
 description: Updates manifests for Argus after the Docker image is built
 
 inputs:
-  github_token:
-    description: The GitHub token for authenticating with the GitHub API
-    required: true
   envs:
-    description: 'Env names, comma delimited'
+    description: Env names, comma delimited
     required: true
   image_tag:
     description: The tag of the image that should be updated
@@ -20,7 +17,62 @@ inputs:
   build_results:
     description: Outputs from build jobs indicating their status, comma delimited
     required: true
+  github_app_id:
+    description: 'GitHub App ID'
+    required: true
+  github_private_key:
+    description: 'GitHub App private key'
+    required: true
 
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: composite
+  steps:
+    - name: Generate token
+      uses: actions/create-github-app-token@v1
+      id: generate_token
+      with:
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_private_key }}
+
+    - name: Get GitHub App User ID
+      id: get-user-id
+      shell: bash
+      run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+      env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token }}
+    - shell: bash
+      run: |
+        git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+        git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+    - name: Determine checkout ref
+      id: ref
+      uses: actions/github-script@v7
+      with:
+        result-encoding: string
+        script: |
+          const eventName = context.eventName;
+          if (eventName === "pull_request") {
+            // use PR head branch name if triggered by PR
+            return context.payload.pull_request.head.ref;
+          } else if (eventName === "push") {
+            // return empty string if triggered by push, this is to ensure the checkout action uses the
+            // default behavior which will prevent race condition commits from multiple builders triggered back-to-back
+            return '';
+          } else {
+            core.setFailed(`EventName ${eventName} not supported`);
+            return;
+          }
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ steps.generate_token.outputs.token }}
+        ref: ${{ steps.ref.outputs.result }}
+
+    - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update/node-action@CCIE-4294-update-argus-builder-manifest-update-action-to-be-entirely-ts
+      with:
+          should_deploy: ${{ needs.prep.outputs.should_deploy }}
+          images: ${{ needs.prep.outputs.images }}
+          image_tag: ${{ needs.prep.outputs.image_tag }}
+          build_results: ${{ needs.build-docker.result }},${{ needs.build-docker.result }}
+          envs: ${{ inputs.envs }}

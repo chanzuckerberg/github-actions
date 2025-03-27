@@ -3,10 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import * as child_process from 'child_process';
 // eslint-disable-next-line import/no-relative-packages
-import { getCommaDelimitedArrayInput, ProcessedImage } from '../../common';
+import { getCommaDelimitedArrayInput, ProcessedImage } from '../../../common';
 
 type Inputs = {
-  githubToken: string
   shouldDeploy: boolean
   images: ProcessedImage[]
   imageTag: string
@@ -17,7 +16,6 @@ type Inputs = {
 export function getInputs(): Promise<Inputs> {
   return core.group('Gather inputs', async () => {
     const inputs = {
-      githubToken: core.getInput('github_token', { required: true }),
       shouldDeploy: core.getBooleanInput('should_deploy', { required: true }),
       images: JSON.parse(core.getInput('images', { required: true })),
       imageTag: core.getInput('image_tag', { required: true }),
@@ -89,6 +87,8 @@ export function determineValuesFilesToUpdate(images: ProcessedImage[], envs: str
       const filePath = path.join(infraDir, env, 'values.yaml');
       if (fs.existsSync(filePath)) {
         files.push(filePath);
+      } else {
+        core.info(`- Skipping ${filePath} because it does not exist`);
       }
     });
   });
@@ -120,8 +120,8 @@ export function commitAndPushChanges(valuesFilesToUpdate: string[], inputs: Inpu
     child_process.execSync('git diff --staged --exit-code');
   } catch (error: any) {
     // If there are changes to commit, the "git diff --staged --exit-code" command will throw an error
-    child_process.execSync('git config --global user.email "czihelperbot@chanzuckerberg.com"'); // TODO: parameterize this
-    child_process.execSync('git config --global user.name "Argus Builder Bot"'); // TODO: parameterize this
+    // child_process.execSync('git config --global user.email "czihelperbot@chanzuckerberg.com"'); // TODO: parameterize this
+    // child_process.execSync('git config --global user.name "Argus Builder Bot"'); // TODO: parameterize this
     child_process.execSync(`git commit -m "chore: Updated [${inputs.envs.join(',')}] values.yaml image tags to ${inputs.imageTag}"`);
 
     core.info('Pushing changes to remote');
