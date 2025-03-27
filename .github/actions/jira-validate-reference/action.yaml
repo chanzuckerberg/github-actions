@@ -72,8 +72,8 @@ runs:
         PRTITLE: ${{ steps.getPullRequest.outputs.prTitle }}
       with:
         script: |
-          const prBody = '$PRBODY';
-          const prTitle = '$PRTITLE';
+          const prBody = "$PRBODY";
+          const prTitle = "$PRTITLE";
 
           let jiraIssueRef = null;
           const issueRegex = new RegExp(`${{ inputs.projectKey }}-\\d+`);
