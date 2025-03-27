@@ -12,13 +12,13 @@ inputs:
     description: The tag of the image that should be updated
     required: true
   images:
-    description: TODO
+    description: JSON string array of processed images, output from argus-builder/build-prep
     required: true
   should_deploy:
-    description: TODO
+    description: Whether or not the image tag should be written to the manifest and committed back to the PR
     required: true
   build_results:
-    description: TODO
+    description: Outputs from build jobs indicating their status, comma delimited
     required: true
 
 runs:

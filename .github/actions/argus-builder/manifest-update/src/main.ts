@@ -60,17 +60,13 @@ export async function main() {
   child_process.execSync(`git status`, { stdio: 'inherit' });
   core.info("...ran git status")
   try {
-    core.info("...running git diff")
-    const result = child_process.execSync(`git diff --staged --exit-code`);
-    core.info(`Command succeeded with output: ${result.toString()}`);
+    child_process.execSync(`git diff --staged --exit-code`);
   } catch (error: any) {
-    core.error(`Command failed with exit code: ${JSON.stringify(error, null, 2)}`);
-    // core.error(`Error message: ${error.message}`);
+    // If there are changes to commit, the "git diff --staged --exit-code" command will throw an error
+    child_process.execSync(`git commit -m "chore: Updated [${inputs.envs.join(',')}}] values.yaml image tags to ${inputs.imageTag}"`);
+    child_process.execSync(`git push`);
   }
-  // child_process.execSync(`git commit -m "chore: Updated [${{ steps.parse_envs.outputs.envs }}] values.yaml image tags to ${{ inputs.image_tag }}"`)
-  // child_process.execSync(`git push`)
 
-  // const gitClient = github.getOctokit(inputs.githubToken)
   core.info("...goodbye")
 }
 
