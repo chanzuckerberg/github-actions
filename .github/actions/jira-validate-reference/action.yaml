@@ -35,8 +35,9 @@ runs:
         HEADREF: ${{ github.head_ref }}
       with:
         script: |
+          const { HEADREF } = process.env
           const skipBranchesRegex = new RegExp('${{ inputs.skipBranches }}');
-          const shouldRun = '$HEADREF'.match(skipBranchesRegex) == null;
+          const shouldRun = HEADREF.match(skipBranchesRegex) == null;
           if (shouldRun) {
             console.log('Job will run');
           } else {
@@ -73,21 +74,12 @@ runs:
       with:
         script: |
           const { HEADREF, PRBODY, PRTITLE } = process.env
-
-          console.log(`Hello ${HEADREF} ${PRTITLE}`)
-          const prBody = PRBODY;
-          const prTitle = PRTITLE;
-          console.log("Show PRBODY");
-          console.log(prBody);
-          console.log("Show PRTITLE");
-          console.log(prTitle);
-
           let jiraIssueRef = null;
           const issueRegex = new RegExp(`${{ inputs.projectKey }}-\\d+`);
           [
-            { label: 'branch', value: "$HEADREF" },
-            { label: 'title', value: prTitle },
-            { label: 'body', value: prBody },
+            { label: 'branch', value: HEADREF },
+            { label: 'title', value: PRTITLE },
+            { label: 'body', value: PRBODY },
           ].find(({label, value}) => {
             const match = value.match(issueRegex);
             if (match) {
