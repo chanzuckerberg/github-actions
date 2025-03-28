@@ -286,8 +286,7 @@ describe('argus-builder-manifest-update', () => {
     });
 
     it('should update all relevant tags in a file', () => {
-      const initialValuesFileContents = `
-tag: sha-XYZ
+      const initialValuesFileContents = `tag: sha-XYZ
 anchor:
   tag: &image-tag sha-XYZ
 thing: *image-tag
@@ -314,8 +313,7 @@ raw-arr:
   - "sha-1234"
 `;
 
-      const expectedUpdatedValuesFileContents = `
-tag: sha-ABC
+      const expectedUpdatedValuesFileContents = `tag: sha-ABC
 anchor:
   tag: &image-tag sha-ABC
 thing: *image-tag
@@ -347,7 +345,7 @@ raw-arr:
 
       updateValuesFiles([tempFilePath], 'sha-ABC');
 
-      expect(fs.readFileSync(tempFilePath).toString()).toBe(expectedUpdatedValuesFileContents);
+      expect(fs.readFileSync(tempFilePath).toString()).toEqual(expectedUpdatedValuesFileContents);
     });
   });
 });
