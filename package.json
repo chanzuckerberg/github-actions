@@ -26,6 +26,6 @@
     "@actions/github": "^6.0.0"
   },
   "workspaces": [
-    ".github/actions/*"
+    ".github/actions/**/*"
   ]
 }
