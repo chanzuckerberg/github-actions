@@ -1,5 +1,22 @@
 # Changelog
 
+## [5.7.0](https://github.com/chanzuckerberg/github-actions/compare/v5.6.2...v5.7.0) (2025-03-28)
+
+
+### Features
+
+* bump to use privileged runners in argus builder ([#381](https://github.com/chanzuckerberg/github-actions/issues/381)) ([2d3285c](https://github.com/chanzuckerberg/github-actions/commit/2d3285ca220be4d6f7e46aeb167232e97918e6f0))
+
+
+### BugFixes
+
+* expression injections in jira-validate-reference ([#387](https://github.com/chanzuckerberg/github-actions/issues/387)) ([ed1e62a](https://github.com/chanzuckerberg/github-actions/commit/ed1e62a5e17a53ef3dd8c3eb353c12c3ab44f836))
+
+
+### Misc
+
+* add tests and workflow to run tests in CI ([#384](https://github.com/chanzuckerberg/github-actions/issues/384)) ([85706b3](https://github.com/chanzuckerberg/github-actions/commit/85706b317c52de7c9b4b7249d15d81f41bc5ac2e))
+
 ## [5.6.2](https://github.com/chanzuckerberg/github-actions/compare/v5.6.1...v5.6.2) (2025-03-18)
 
 
