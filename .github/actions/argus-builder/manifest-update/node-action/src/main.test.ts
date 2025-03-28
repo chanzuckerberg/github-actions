@@ -1,9 +1,13 @@
 import mockFs from 'mock-fs';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import { when } from 'jest-when';
 import * as core from '@actions/core';
 import {
   determineValuesFilesToUpdate,
   main,
+  updateValuesFiles,
 } from './main';
 
 // mock core to suppress logs
@@ -11,6 +15,10 @@ jest.mock('@actions/core');
 const mockedCore = core as jest.Mocked<typeof core>;
 
 describe('argus-builder-manifest-update', () => {
+  afterEach(() => {
+    mockFs.restore();
+  });
+
   describe('main', () => {
     it('should not run when should_deploy is false', async () => {
       when(mockedCore.getBooleanInput)
@@ -267,8 +275,79 @@ describe('argus-builder-manifest-update', () => {
   });
 
   describe('updateTagsInFile', () => {
+    let tempFilePath: string;
+
+    beforeEach(() => {
+      tempFilePath = path.join(os.tmpdir(), 'values.yaml');
+    });
+
+    afterEach(() => {
+      fs.unlinkSync(tempFilePath);
+    });
+
     it('should update all relevant tags in a file', () => {
-      // TODO
+      const initialValuesFileContents = `
+tag: sha-XYZ
+anchor:
+  tag: &image-tag sha-XYZ
+thing: *image-tag
+nested:
+  tag: sha-XYZ
+another:
+  tag: blah
+quoted:
+  tag: "sha-XYZ"
+img-arr:
+  - image:
+      tag: sha-XYZ
+  - image:
+      tag: blah
+  - image:
+      tag: "sha-XYZ"
+tag-arr:
+  - tag: sha-XYZ
+  - tag: blah
+  - tag: "sha-1234"
+raw-arr:
+  - sha-1234
+  - blah
+  - "sha-1234"
+`;
+
+      const expectedUpdatedValuesFileContents = `
+tag: sha-ABC
+anchor:
+  tag: &image-tag sha-ABC
+thing: *image-tag
+nested:
+  tag: sha-ABC
+another:
+  tag: blah
+quoted:
+  tag: "sha-ABC"
+img-arr:
+  - image:
+      tag: sha-ABC
+  - image:
+      tag: blah
+  - image:
+      tag: "sha-ABC"
+tag-arr:
+  - tag: sha-ABC
+  - tag: blah
+  - tag: "sha-ABC"
+raw-arr:
+  - sha-1234
+  - blah
+  - "sha-1234"
+`;
+
+      fs.writeFileSync(tempFilePath, initialValuesFileContents);
+      expect(fs.existsSync(tempFilePath)).toBe(true);
+
+      updateValuesFiles([tempFilePath], 'sha-ABC');
+
+      expect(fs.readFileSync(tempFilePath).toString()).toBe(expectedUpdatedValuesFileContents);
     });
   });
 });

@@ -108,7 +108,7 @@ export function updateValuesFiles(valuesFilesToUpdate: string[], imageTag: strin
     child_process.execSync(`yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${imageTag}"' ${filePath}`);
 
     core.info(`Updated ${filePath}\n---`);
-    child_process.execSync(`cat ${filePath}`, { stdio: 'inherit' });
+    core.info(fs.readFileSync(filePath).toString());
     core.info('---');
   });
 }
@@ -120,8 +120,6 @@ export function commitAndPushChanges(valuesFilesToUpdate: string[], inputs: Inpu
     child_process.execSync('git diff --staged --exit-code');
   } catch (error: any) {
     // If there are changes to commit, the "git diff --staged --exit-code" command will throw an error
-    // child_process.execSync('git config --global user.email "czihelperbot@chanzuckerberg.com"'); // TODO: parameterize this
-    // child_process.execSync('git config --global user.name "Argus Builder Bot"'); // TODO: parameterize this
     child_process.execSync(`git commit -m "chore: Updated [${inputs.envs.join(',')}] values.yaml image tags to ${inputs.imageTag}"`);
 
     core.info('Pushing changes to remote');

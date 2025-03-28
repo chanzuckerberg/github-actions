@@ -1,0 +1,25 @@
+tag: sha-XYZ
+anchor:
+  tag: &image-tag sha-XYZ
+thing: *image-tag
+nested:
+  tag: sha-XYZ
+another:
+  tag: blah
+quoted:
+  tag: "sha-XYZ"
+img-arr:
+  - image:
+      tag: sha-XYZ
+  - image:
+      tag: blah
+  - image:
+      tag: "sha-XYZ"
+tag-arr:
+  - tag: sha-XYZ
+  - tag: blah
+  - tag: "sha-XYZ"
+raw-arr:
+  - sha-1234
+  - blah
+  - "sha-1234"
