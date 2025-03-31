@@ -105,7 +105,10 @@ export function determineValuesFilesToUpdate(images: ProcessedImage[], envs: str
 export function updateValuesFiles(valuesFilesToUpdate: string[], imageTag: string): void {
   valuesFilesToUpdate.forEach((filePath) => {
     core.info(`Updating ${filePath} to use image tag ${imageTag}`);
-    child_process.execSync(`yq eval -i '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${imageTag}"' ${filePath}`);
+    child_process.execFileSync(
+      'yq',
+      ['eval', '-i', `(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${imageTag}"`, filePath],
+    );
 
     core.info(`Updated ${filePath}\n---`);
     core.info(fs.readFileSync(filePath).toString());
