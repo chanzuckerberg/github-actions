@@ -114,13 +114,16 @@ export function updateValuesFiles(valuesFilesToUpdate: string[], imageTag: strin
 }
 
 export function commitAndPushChanges(valuesFilesToUpdate: string[], inputs: Inputs): void {
-  child_process.execSync(`git add ${valuesFilesToUpdate.join(' ')}`);
+  child_process.execFileSync('git', ['add', ...valuesFilesToUpdate]);
   child_process.execSync('git status', { stdio: 'inherit' });
   try {
     child_process.execSync('git diff --staged --exit-code');
   } catch (error: any) {
     // If there are changes to commit, the "git diff --staged --exit-code" command will throw an error
-    child_process.execSync(`git commit -m "chore: Updated [${inputs.envs.join(',')}] values.yaml image tags to ${inputs.imageTag}"`);
+    child_process.execFileSync(
+      'git',
+      ['commit', '-m', `"chore: Updated [${inputs.envs.join(',')}] values.yaml image tags to ${inputs.imageTag}"`],
+    );
 
     core.info('Pushing changes to remote');
     child_process.execSync('git push', { stdio: 'inherit' });
