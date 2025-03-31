@@ -130,34 +130,14 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: always() && needs.prep.outputs.should_deploy == 'true' && needs.prep.outputs.images != '[]'
+    if: always()
     steps:
-      - name: Check build status
-        uses: actions/github-script@v7
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@010442039d0e16ff7acb478c37ecc2b02291c738
         with:
-          script: |
-            if (${{ !contains(needs.build-docker.result, 'success') }}) {
-              core.setFailed("We won't update the manifest because one or more Docker builds did not succeed");
-            } else {
-              core.info('All builds passed, continuing with manifest update...');
-            }
-
-      - name: Determine manifests to update
-        uses: actions/github-script@v7
-        id: determine_manifests
-        with:
-          result-encoding: string
-          script: |
-            const images = ${{ needs.prep.outputs.images }};
-            const argusRootDirs = images.filter(image => image.should_build && !image.skip_manifest_update).map(image => image.argus_root);
-            console.log('Argus root dirs:', argusRootDirs);
-            return argusRootDirs.join(',');
-
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@003aae7f4a9e240dec80b6c1787a480cabda5fca
-        if: steps.determine_manifests.outputs.result != ''
-        with:
-          envs: ${{ inputs.envs }}
+          should_deploy: ${{ needs.prep.outputs.should_deploy }}
+          images: ${{ needs.prep.outputs.images }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
-          argus_project_dirs: ${{ steps.determine_manifests.outputs.result }}
+          build_results: ${{ needs.build-docker.result }}
+          envs: ${{ inputs.envs }}
           github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}

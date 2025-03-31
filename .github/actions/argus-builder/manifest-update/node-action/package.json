@@ -1,0 +1,17 @@
+{
+  "name": "@chanzuckerberg/argus-builder-manifest-update-action",
+  "version": "0.0.1",
+  "private": true,
+  "main": "lib/main.js",
+  "scripts": {
+    "test": "jest --config=../../../../../jest.config.js --rootDir=./",
+    "build": "ncc build src/main.ts --source-map --minify",
+    "lint": "eslint --max-warnings=0 src/",
+    "lint:fix": "eslint --fix src/",
+    "eslint": "eslint"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+  }
+}
