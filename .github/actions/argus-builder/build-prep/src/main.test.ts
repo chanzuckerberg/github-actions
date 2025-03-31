@@ -26,6 +26,13 @@ describe('validate-json-schema', () => {
     it('should match multiple wildcards', () => {
       expect(wildcardMatch('testing', 't*t*g')).toBe(true);
     });
+
+    it('should match regex characters as literaly', () => {
+      expect(wildcardMatch('amd[64]', 'amd[64]')).toBe(true);
+      expect(wildcardMatch('amd[64]', 'amd[6*')).toBe(true);
+      expect(wildcardMatch('$mylabel', '$mylabel')).toBe(true);
+      expect(wildcardMatch('$mylabel', '$mylab*')).toBe(true);
+    });
   });
 
   describe('isMatchingBranch', () => {
