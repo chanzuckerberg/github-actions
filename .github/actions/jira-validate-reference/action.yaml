@@ -31,10 +31,13 @@ runs:
     - name: Check If Job Should Run
       id: checkIfJobShouldRun
       uses: actions/github-script@v7
+      env:
+        HEADREF: ${{ github.head_ref }}
       with:
         script: |
+          const { HEADREF } = process.env
           const skipBranchesRegex = new RegExp('${{ inputs.skipBranches }}');
-          const shouldRun = '${{ github.head_ref }}'.match(skipBranchesRegex) == null;
+          const shouldRun = HEADREF.match(skipBranchesRegex) == null;
           if (shouldRun) {
             console.log('Job will run');
           } else {
@@ -64,17 +67,19 @@ runs:
       id: parseIssueRef
       if: steps.checkIfJobShouldRun.outputs.result == 'true'
       uses: actions/github-script@v7
+      env:
+        HEADREF: ${{ github.head_ref }}
+        PRBODY: ${{ steps.getPullRequest.outputs.prBody }}
+        PRTITLE: ${{ steps.getPullRequest.outputs.prTitle }}
       with:
         script: |
-          const prBody = ${{ steps.getPullRequest.outputs.prBody }};
-          const prTitle = ${{ steps.getPullRequest.outputs.prTitle }};
-
+          const { HEADREF, PRBODY, PRTITLE } = process.env
           let jiraIssueRef = null;
           const issueRegex = new RegExp(`${{ inputs.projectKey }}-\\d+`);
           [
-            { label: 'branch', value: '${{ github.head_ref }}' },
-            { label: 'title', value: prTitle },
-            { label: 'body', value: prBody },
+            { label: 'branch', value: HEADREF },
+            { label: 'title', value: PRTITLE },
+            { label: 'body', value: PRBODY },
           ].find(({label, value}) => {
             const match = value.match(issueRegex);
             if (match) {
