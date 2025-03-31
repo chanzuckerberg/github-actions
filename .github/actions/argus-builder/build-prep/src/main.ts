@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { minimatch } from 'minimatch';
+import { escapeRegExp } from 'lodash';
 // eslint-disable-next-line import/no-relative-packages
 import { findChangedFiles } from '../../../find-changed-files/src/findChangedFiles';
 // eslint-disable-next-line import/no-relative-packages
@@ -149,7 +150,8 @@ export async function main() {
 }
 
 export function wildcardMatch(text: string, pattern: string): boolean {
-  const regexPattern = new RegExp(`^${pattern.replace(/\?/g, '.').replace(/\*/g, '.*')}$`);
+  const safePattern = escapeRegExp(pattern).replace(/\\\?/g, '.').replace(/\\\*/g, '.*');
+  const regexPattern = new RegExp(`^${safePattern}$`);
   return regexPattern.test(text);
 }
 
