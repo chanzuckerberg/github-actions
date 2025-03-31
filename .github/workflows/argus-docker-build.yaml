@@ -132,12 +132,12 @@ jobs:
       contents: read
     if: always()
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@d50ce4c99fafabedb8f80b47cece2c9bdc0b51da
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@010442039d0e16ff7acb478c37ecc2b02291c738
         with:
           should_deploy: ${{ needs.prep.outputs.should_deploy }}
           images: ${{ needs.prep.outputs.images }}
           image_tag: ${{ needs.prep.outputs.image_tag }}
-          build_results: ${{ needs.build-docker.result }},${{ needs.build-docker.result }}
+          build_results: ${{ needs.build-docker.result }}
           envs: ${{ inputs.envs }}
           github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
