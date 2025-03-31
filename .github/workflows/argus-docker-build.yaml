@@ -132,7 +132,7 @@ jobs:
       contents: read
     if: always()
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@CCIE-4294-update-argus-builder-manifest-update-action-to-be-entirely-ts
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@d50ce4c99fafabedb8f80b47cece2c9bdc0b51da
         with:
           should_deploy: ${{ needs.prep.outputs.should_deploy }}
           images: ${{ needs.prep.outputs.images }}

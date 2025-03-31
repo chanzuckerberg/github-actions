@@ -69,7 +69,7 @@ runs:
         token: ${{ steps.generate_token.outputs.token }}
         ref: ${{ steps.ref.outputs.result }}
 
-    - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update/node-action@CCIE-4294-update-argus-builder-manifest-update-action-to-be-entirely-ts
+    - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update/node-action@d50ce4c99fafabedb8f80b47cece2c9bdc0b51da
       with:
           should_deploy: ${{ inputs.should_deploy }}
           images: ${{ inputs.images }}
