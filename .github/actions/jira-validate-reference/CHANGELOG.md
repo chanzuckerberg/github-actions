@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.2.0...jira-validate-reference-v1.2.1) (2025-03-31)
+
+
+### BugFixes
+
+* expression injections in jira-validate-reference ([#387](https://github.com/chanzuckerberg/github-actions/issues/387)) ([ed1e62a](https://github.com/chanzuckerberg/github-actions/commit/ed1e62a5e17a53ef3dd8c3eb353c12c3ab44f836))
+
 ## [1.2.0](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.1.2...jira-validate-reference-v1.2.0) (2024-10-02)
 
 

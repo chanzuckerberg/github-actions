@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "target": "es6",
+    "module": "commonjs",
+    "strict": true,
+    "outDir": "./lib",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "useUnknownInCatchVariables": false,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  },
+  "exclude": [
+    "node_modules",
+    "jest.config.ts"
+  ],
+  "include": [
+    ".github/actions/**/src/*"
+  ]
+}

@@ -1,5 +1,50 @@
 # Changelog
 
+## [6.0.0](https://github.com/chanzuckerberg/github-actions/compare/v5.6.2...v6.0.0) (2025-03-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* convert argus-builder manifest-update to TS ([#388](https://github.com/chanzuckerberg/github-actions/issues/388))
+* convert argus-builder build-prep action to TS ([#386](https://github.com/chanzuckerberg/github-actions/issues/386))
+
+### Features
+
+* bump to use privileged runners in argus builder ([#381](https://github.com/chanzuckerberg/github-actions/issues/381)) ([2d3285c](https://github.com/chanzuckerberg/github-actions/commit/2d3285ca220be4d6f7e46aeb167232e97918e6f0))
+* convert argus-builder build-prep action to TS ([#386](https://github.com/chanzuckerberg/github-actions/issues/386)) ([367e223](https://github.com/chanzuckerberg/github-actions/commit/367e22313ff3f180fc4f42f6182ae3fbef4f47cd))
+* convert argus-builder manifest-update to TS ([#388](https://github.com/chanzuckerberg/github-actions/issues/388)) ([b5a034e](https://github.com/chanzuckerberg/github-actions/commit/b5a034ef7e1eeaddf8fe6c3f8e2ee04da1cd3c37))
+
+
+### BugFixes
+
+* expression injections in jira-validate-reference ([#387](https://github.com/chanzuckerberg/github-actions/issues/387)) ([ed1e62a](https://github.com/chanzuckerberg/github-actions/commit/ed1e62a5e17a53ef3dd8c3eb353c12c3ab44f836))
+
+
+### Misc
+
+* add tests and workflow to run tests in CI ([#384](https://github.com/chanzuckerberg/github-actions/issues/384)) ([85706b3](https://github.com/chanzuckerberg/github-actions/commit/85706b317c52de7c9b4b7249d15d81f41bc5ac2e))
+
+## [5.6.2](https://github.com/chanzuckerberg/github-actions/compare/v5.6.1...v5.6.2) (2025-03-18)
+
+
+### BugFixes
+
+* don't use docker image for yq ([#382](https://github.com/chanzuckerberg/github-actions/issues/382)) ([7d4cf33](https://github.com/chanzuckerberg/github-actions/commit/7d4cf33879e7ae128c4ded659619e7792e20e76b))
+
+## [5.6.1](https://github.com/chanzuckerberg/github-actions/compare/v5.6.0...v5.6.1) (2025-03-15)
+
+
+### BugFixes
+
+* only run container scanning optin ([#379](https://github.com/chanzuckerberg/github-actions/issues/379)) ([e00ae88](https://github.com/chanzuckerberg/github-actions/commit/e00ae88355caeff8cf4910344913362fe74a4f2c))
+
+## [5.6.0](https://github.com/chanzuckerberg/github-actions/compare/v5.5.1...v5.6.0) (2025-03-15)
+
+
+### Features
+
+* add find-changed-files and convert validate-json-schema to TS ([#377](https://github.com/chanzuckerberg/github-actions/issues/377)) ([ef32935](https://github.com/chanzuckerberg/github-actions/commit/ef32935a4340835f203ea23c84c5933d051c511d))
+
 ## [5.5.1](https://github.com/chanzuckerberg/github-actions/compare/v5.5.0...v5.5.1) (2025-03-07)
 
 

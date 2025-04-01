@@ -1,0 +1,23 @@
+name: argus-builder-manifest-update
+description: Updates manifests for Argus after the Docker image is built
+
+inputs:
+  envs:
+    description: Env names, comma delimited
+    required: true
+  image_tag:
+    description: The tag of the image that should be updated
+    required: true
+  images:
+    description: JSON string array of processed images, output from argus-builder/build-prep
+    required: true
+  should_deploy:
+    description: Whether or not the image tag should be written to the manifest and committed back to the PR
+    required: true
+  build_results:
+    description: Outputs from build jobs indicating their status, comma delimited
+    required: true
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

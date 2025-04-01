@@ -1,0 +1,32 @@
+{
+  "name": "github-actions",
+  "version": "0.0.1",
+  "description": "Github Actions",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "precommit": "npm run lint:fix --workspaces && npm run build --workspaces && npm run test"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.17.24",
+    "@vercel/ncc": "^0.38.3",
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "jest": "^29.7.0",
+    "jest-when": "^3.7.0",
+    "mock-fs": "^5.5.0",
+    "ts-jest": "^29.2.6",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0"
+  },
+  "workspaces": [
+    ".github/actions/**/*"
+  ]
+}
