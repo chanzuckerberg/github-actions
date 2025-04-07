@@ -35,7 +35,7 @@ inputs:
   clean_checkout:
     description: "Whether to clean the repository before checking out"
     required: false
-    default: false
+    default: "false"
   fail_on_vulnerabilities:
     description: "whether to fail the action if vulnerabilities are found"
     required: false

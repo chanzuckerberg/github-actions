@@ -60,9 +60,10 @@ on:
         default: false
 
     outputs:
-      image_uri:
-        description: 'URI of the image that was built'
-        value: ${{ jobs.build-docker.outputs.image_uri }}
+      image_tag:
+        description: "Image tag"
+        value: ${{ jobs.prep.outputs.image_tag }}
+
 jobs:
   prep:
     name: Prep for Build
@@ -112,8 +113,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@v5
-        id: build_image
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@v6
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
@@ -127,8 +127,6 @@ jobs:
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
           fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
           enable_vuln_container_scan: ${{ inputs.enable_vuln_container_scan }}
-    outputs:
-      image_uri: ${{ steps.build_image.outputs.image_uri }}
 
   update-manifests:
     name: Update ArgoCD manifests
