@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.0](https://github.com/chanzuckerberg/github-actions/compare/v6.0.0...v6.1.0) (2025-04-07)
+
+
+### Features
+
+* add a helm linter action that will validate json schemas ([#375](https://github.com/chanzuckerberg/github-actions/issues/375)) ([c5c5800](https://github.com/chanzuckerberg/github-actions/commit/c5c58005ec3dc7d7745200a696f72de8483d2489))
+
 ## [6.0.0](https://github.com/chanzuckerberg/github-actions/compare/v5.6.2...v6.0.0) (2025-03-31)
 
 
