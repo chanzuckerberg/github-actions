@@ -36,15 +36,15 @@ if (process.env.NODE_ENV !== 'test') {
 export async function main() {
   const inputs = await getInputs();
 
-  if (!inputs.shouldDeploy) {
-    core.info('> Skipping manifest update because should_deploy is false');
-    return;
-  }
-
   if (!inputs.buildResults.every((result) => result === 'success')) {
     const err = new Error('We won\'t update the manifest because one or more Docker builds did not succeed');
     core.error(err);
     throw err;
+  }
+
+  if (!inputs.shouldDeploy) {
+    core.info('> Skipping manifest update because should_deploy is false');
+    return;
   }
   core.info('> All builds passed, continuing with manifest update...');
 
