@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.1](https://github.com/chanzuckerberg/github-actions/compare/v6.1.0...v6.1.1) (2025-04-08)
+
+
+### BugFixes
+
+* ensure manifest-update failure when build does not succeed ([#391](https://github.com/chanzuckerberg/github-actions/issues/391)) ([d638d06](https://github.com/chanzuckerberg/github-actions/commit/d638d06593749f97f62404bf9cfc00b671df8d56))
+
 ## [6.1.0](https://github.com/chanzuckerberg/github-actions/compare/v6.0.0...v6.1.0) (2025-04-07)
 
 
