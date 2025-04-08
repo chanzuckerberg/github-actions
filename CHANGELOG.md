@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.2](https://github.com/chanzuckerberg/github-actions/compare/v6.1.1...v6.1.2) (2025-04-08)
+
+
+### Misc
+
+* update docker builder pins ([#393](https://github.com/chanzuckerberg/github-actions/issues/393)) ([663f565](https://github.com/chanzuckerberg/github-actions/commit/663f5655be4dcbcb241808a5b7d547a4dd85cc8e))
+
 ## [6.1.1](https://github.com/chanzuckerberg/github-actions/compare/v6.1.0...v6.1.1) (2025-04-08)
 
 
