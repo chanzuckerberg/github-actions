@@ -125,7 +125,7 @@ export function commitAndPushChanges(valuesFilesToUpdate: string[], inputs: Inpu
     // If there are changes to commit, the "git diff --staged --exit-code" command will throw an error
     child_process.execFileSync(
       'git',
-      ['commit', '-m', `"chore: Updated [${inputs.envs.join(',')}] values.yaml image tags to ${inputs.imageTag}"`],
+      ['commit', '-m', `chore: Updated [${inputs.envs.join(',')}] values.yaml image tags to ${inputs.imageTag}`],
     );
 
     core.info('Pushing changes to remote');
