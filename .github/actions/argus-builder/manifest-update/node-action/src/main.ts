@@ -46,7 +46,7 @@ export async function main() {
     core.info('> Skipping manifest update because should_deploy is false');
     return;
   }
-  core.info('> All builds passed, continuing with manifest update...');
+  core.info('> All builds passed and should_deploy is true, continuing with manifest update...');
 
   const valuesFilesToUpdate = await core.group(
     'Determine values.yaml files to update',
