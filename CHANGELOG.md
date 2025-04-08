@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.4](https://github.com/chanzuckerberg/github-actions/compare/v6.1.3...v6.1.4) (2025-04-08)
+
+
+### BugFixes
+
+* don't fail on skipped build job ([#397](https://github.com/chanzuckerberg/github-actions/issues/397)) ([c54e047](https://github.com/chanzuckerberg/github-actions/commit/c54e04715f7e0ecca9c1ab8c93db02f41fea9cb2))
+
 ## [6.1.3](https://github.com/chanzuckerberg/github-actions/compare/v6.1.2...v6.1.3) (2025-04-08)
 
 
