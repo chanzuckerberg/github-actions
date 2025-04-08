@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.0](https://github.com/chanzuckerberg/github-actions/compare/v6.1.4...v6.2.0) (2025-04-08)
+
+
+### Features
+
+* Expose argus builder image info ([#390](https://github.com/chanzuckerberg/github-actions/issues/390)) ([73de81e](https://github.com/chanzuckerberg/github-actions/commit/73de81e74c2723c36fdd6cdc713b9263aed18500))
+
 ## [6.1.4](https://github.com/chanzuckerberg/github-actions/compare/v6.1.3...v6.1.4) (2025-04-08)
 
 

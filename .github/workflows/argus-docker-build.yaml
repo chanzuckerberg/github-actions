@@ -59,6 +59,11 @@ on:
         type: boolean
         default: false
 
+    outputs:
+      image_tag:
+        description: "Image tag"
+        value: ${{ jobs.prep.outputs.image_tag }}
+
 jobs:
   prep:
     name: Prep for Build
