@@ -20,6 +20,37 @@ describe('argus-builder-manifest-update', () => {
   });
 
   describe('main', () => {
+    it('should throw error when any build_results are not success', async () => {
+      when(mockedCore.getBooleanInput)
+        .calledWith('should_deploy', { required: true })
+        .mockReturnValue(true);
+      when(mockedCore.getInput)
+        .calledWith('build_results', { required: true })
+        .mockReturnValue('success,failure');
+      when(mockedCore.getInput)
+        .calledWith('envs', { required: true })
+        .mockReturnValue('rdev');
+      when(mockedCore.getInput)
+        .calledWith('images', { required: true })
+        .mockReturnValue(JSON.stringify([{
+          name: 'frontend',
+          argus_root: 'frontend',
+          context: 'frontend',
+          dockerfile: 'frontend/Dockerfile',
+          platform: 'linux/arm64',
+          build_args: '',
+          secret_files: '',
+          files_matched: true,
+          branch_matched: true,
+          should_build: true,
+        }]));
+
+      // pass through to original core.group implementation
+      jest.spyOn(core, 'group').mockImplementation((arg, arg2) => jest.requireActual('@actions/core').group(arg, arg2));
+
+      expect(() => main()).rejects.toThrow('We won\'t update the manifest because one or more Docker builds did not succeed');
+    });
+
     it('should not run when should_deploy is false', async () => {
       when(mockedCore.getBooleanInput)
         .calledWith('should_deploy', { required: true })
@@ -53,35 +84,38 @@ describe('argus-builder-manifest-update', () => {
       expect(core.info).toHaveBeenCalledWith('> Skipping manifest update because should_deploy is false');
     });
 
-    it('should throw error when any build_results are not success', async () => {
-      when(mockedCore.getBooleanInput)
-        .calledWith('should_deploy', { required: true })
-        .mockReturnValue(true);
-      when(mockedCore.getInput)
-        .calledWith('build_results', { required: true })
-        .mockReturnValue('success,failure');
-      when(mockedCore.getInput)
-        .calledWith('envs', { required: true })
-        .mockReturnValue('rdev');
-      when(mockedCore.getInput)
-        .calledWith('images', { required: true })
-        .mockReturnValue(JSON.stringify([{
-          name: 'frontend',
-          argus_root: 'frontend',
-          context: 'frontend',
-          dockerfile: 'frontend/Dockerfile',
-          platform: 'linux/arm64',
-          build_args: '',
-          secret_files: '',
-          files_matched: true,
-          branch_matched: true,
-          should_build: true,
-        }]));
+    describe('when a build did not succeed and should_deploy is false', () => {
+      // this ensures that a failing build error takes precedence over should_deploy
+      it('should throw error ', async () => {
+        when(mockedCore.getBooleanInput)
+          .calledWith('should_deploy', { required: true })
+          .mockReturnValue(false);
+        when(mockedCore.getInput)
+          .calledWith('build_results', { required: true })
+          .mockReturnValue('success,failure');
+        when(mockedCore.getInput)
+          .calledWith('envs', { required: true })
+          .mockReturnValue('rdev');
+        when(mockedCore.getInput)
+          .calledWith('images', { required: true })
+          .mockReturnValue(JSON.stringify([{
+            name: 'frontend',
+            argus_root: 'frontend',
+            context: 'frontend',
+            dockerfile: 'frontend/Dockerfile',
+            platform: 'linux/arm64',
+            build_args: '',
+            secret_files: '',
+            files_matched: true,
+            branch_matched: true,
+            should_build: true,
+          }]));
 
-      // pass through to original core.group implementation
-      jest.spyOn(core, 'group').mockImplementation((arg, arg2) => jest.requireActual('@actions/core').group(arg, arg2));
+        // pass through to original core.group implementation
+        jest.spyOn(core, 'group').mockImplementation((arg, arg2) => jest.requireActual('@actions/core').group(arg, arg2));
 
-      expect(() => main()).rejects.toThrow('We won\'t update the manifest because one or more Docker builds did not succeed');
+        expect(() => main()).rejects.toThrow('We won\'t update the manifest because one or more Docker builds did not succeed');
+      });
     });
   });
 

@@ -36,7 +36,7 @@ if (process.env.NODE_ENV !== 'test') {
 export async function main() {
   const inputs = await getInputs();
 
-  if (!inputs.buildResults.every((result) => result === 'success')) {
+  if (!inputs.buildResults.every((result) => result === 'success' || result === 'skipped')) {
     const err = new Error('We won\'t update the manifest because one or more Docker builds did not succeed');
     core.error(err);
     throw err;
