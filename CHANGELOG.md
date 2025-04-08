@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.1](https://github.com/chanzuckerberg/github-actions/compare/v6.2.0...v6.2.1) (2025-04-08)
+
+
+### BugFixes
+
+* remove extra quotes ([#399](https://github.com/chanzuckerberg/github-actions/issues/399)) ([fdc70f2](https://github.com/chanzuckerberg/github-actions/commit/fdc70f2a58c66a77da802fbe85ba6ea1f1796ed9))
+
 ## [6.2.0](https://github.com/chanzuckerberg/github-actions/compare/v6.1.4...v6.2.0) (2025-04-08)
 
 
