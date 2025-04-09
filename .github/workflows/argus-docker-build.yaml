@@ -63,6 +63,9 @@ on:
       image_tag:
         description: "Image tag"
         value: ${{ jobs.prep.outputs.image_tag }}
+      should_build:
+        description: "Should build image"
+        value: ${{ jobs.prep.outputs.should_build }}
 
 jobs:
   prep:
