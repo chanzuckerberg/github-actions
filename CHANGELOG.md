@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.3.0](https://github.com/chanzuckerberg/github-actions/compare/v6.2.1...v6.3.0) (2025-04-09)
+
+
+### Features
+
+* Expose argus builder shoudl build output ([#402](https://github.com/chanzuckerberg/github-actions/issues/402)) ([0a8e06d](https://github.com/chanzuckerberg/github-actions/commit/0a8e06dfb0963c1fb9c9eb972bad668e01b538d5))
+
+
+### BugFixes
+
+* Remove flag from helm lint ([#404](https://github.com/chanzuckerberg/github-actions/issues/404)) ([f9a4221](https://github.com/chanzuckerberg/github-actions/commit/f9a42219943a30cadc52c29000f6c6331da76083))
+
 ## [6.2.1](https://github.com/chanzuckerberg/github-actions/compare/v6.2.0...v6.2.1) (2025-04-08)
 
 
