@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.1](https://github.com/chanzuckerberg/github-actions/compare/v6.3.0...v6.3.1) (2025-04-21)
+
+
+### BugFixes
+
+* remove yamllint from helm-lint action ([#405](https://github.com/chanzuckerberg/github-actions/issues/405)) ([e27f159](https://github.com/chanzuckerberg/github-actions/commit/e27f1596018f5d045f385bdf95ce82d002d0cf2f))
+
 ## [6.3.0](https://github.com/chanzuckerberg/github-actions/compare/v6.2.1...v6.3.0) (2025-04-09)
 
 
