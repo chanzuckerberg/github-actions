@@ -7,6 +7,9 @@ inputs:
   image_uri:
     description: 'which image to scan'
     required: true
+  comparison_image_uri:
+    description: 'which image to compare against'
+    required: false
   critical_threshold:
     description: 'number of critical vulnerabilities that will cause the action to fail'
     required: false
@@ -59,9 +62,31 @@ runs:
         low_threshold:  ${{ inputs.low_threshold }}
         other_threshold: ${{ inputs.other_threshold }}
         display_vulnerability_findings: "enabled"
+    - name: Run Comparison Scan if Needed
+      if: inputs.comparison_image_uri != ''
+      uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1.1.2
+      id: comparison_inspector
+      with:
+        artifact_type: 'container'
+        artifact_path: ${{ inputs.comparison_image_uri }}
+        critical_threshold: ${{ inputs.critical_threshold }}
+        high_threshold:   ${{ inputs.high_threshold }}
+        medium_threshold:   ${{ inputs.medium_threshold }}
+        low_threshold:  ${{ inputs.low_threshold }}
+        other_threshold: ${{ inputs.other_threshold }}
+        display_vulnerability_findings: "enabled"
+    - name: Filter Inspector Scan Results if Comparison Scan was run
+      if: inputs.comparison_image_uri != ''
+      id: filter
+      uses: ./.github/actions/csv-vulnerability-filter
+      with:
+        primary-csv-path: ${{ steps.inspector.outputs.inspector_scan_results_csv }}
+        comparison-csv-path: ${{ steps.comparison_inspector.outputs.inspector_scan_results_csv }}
+        cve-column-name: 'CVE ID'
+        package-column-name: 'Package Name'
     - name: Display Inspector vulnerability scan results (markdown)
       shell: bash
-      run: cat ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
+      run: cat ${{ steps.filter.outputs.filtered_results_markdown }}
     - name: Fail job if vulnerability threshold is exceeded
       if: contains(inputs.fail_on_vulnerabilities, 'true')
       shell: bash
