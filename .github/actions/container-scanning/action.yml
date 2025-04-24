@@ -38,6 +38,10 @@ inputs:
     description: 'whether to filter out vulnerabilities that have no fixed version specified'
     required: false
     default: "false"
+  leave_pr_comments:
+    description: 'whether to leave comments on the PR with the results of the scan'
+    required: false
+    default: "true"
 outputs:
   vulnerability_threshold_exceeded:
     description: '1 if the vulnerability threshold was exceeded, 0 otherwise'
@@ -97,7 +101,7 @@ runs:
       run: exit ${{ steps.inspector.outputs.vulnerability_threshold_exceeded }}
     - name: Notify on vulnerabilities
       uses: actions/github-script@v7
-      if: always() && steps.inspector.outputs.vulnerability_threshold_exceeded == 1
+      if: contains(inputs.leave_pr_comments, 'true') && steps.inspector.outputs.vulnerability_threshold_exceeded == 1
       with:
         script: |
           let issueNumber;
