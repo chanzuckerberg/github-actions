@@ -83,8 +83,7 @@ runs:
         low_threshold:  ${{ inputs.low_threshold }}
         other_threshold: ${{ inputs.other_threshold }}
         display_vulnerability_findings: "enabled"
-    - name: Filter Inspector Scan Results if Comparison Scan was run
-      if: inputs.comparison_image_uri != ''
+    - name: Filter Inspector Scan Results
       id: filter
       uses: ./.github/actions/csv-vulnerability-filter
       with:
