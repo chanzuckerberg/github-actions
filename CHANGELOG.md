@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.2](https://github.com/chanzuckerberg/github-actions/compare/v6.3.1...v6.3.2) (2025-04-25)
+
+
+### Misc
+
+* use floating v0 tag ([#408](https://github.com/chanzuckerberg/github-actions/issues/408)) ([f6eab0a](https://github.com/chanzuckerberg/github-actions/commit/f6eab0a3c68654ea424c122abd5fdcfd117acc61))
+
 ## [6.3.1](https://github.com/chanzuckerberg/github-actions/compare/v6.3.0...v6.3.1) (2025-04-21)
 
 
