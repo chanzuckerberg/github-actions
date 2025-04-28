@@ -19,8 +19,8 @@ jobs:
           happy_version: "0.81.0"
       - run: happy version
       - run: gh auth status
-  test-install-happy-x64:
-    runs-on: [X64]
+  test-install-happy-amd64:
+    runs-on: [amd64]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/install-happy
