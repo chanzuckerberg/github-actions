@@ -116,7 +116,7 @@ runs:
         load: true
     - name: Scan for vulnerabilities
       if: ${{ inputs.enable_vuln_container_scan == 'true' }}
-      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@a8769e107f2f0d6377933835baaa370a60295724
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@v6
       id: scan
       with:
         image_name: ${{ inputs.image_name }}
