@@ -48,7 +48,7 @@ runs:
         role-duration-seconds: 1800
         role-session-name: github-actions-inspector
     - name: Scan built image with Inspector
-      uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1.1.2
+      uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1
       id: inspector
       with:
         artifact_type: 'container'
