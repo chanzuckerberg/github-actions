@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v2.2.0...deploy-happy-stack-v2.2.1) (2025-04-30)
+
+
+### Misc
+
+* CCIE-3986 use persist-credentials: false in checkout ([#343](https://github.com/chanzuckerberg/github-actions/issues/343)) ([48b680f](https://github.com/chanzuckerberg/github-actions/commit/48b680fc469d837c851ea74d70c1842c42f6a3d1))
+
 ## [2.2.0](https://github.com/chanzuckerberg/github-actions/compare/deploy-happy-stack-v2.1.0...deploy-happy-stack-v2.2.0) (2024-11-26)
 
 
