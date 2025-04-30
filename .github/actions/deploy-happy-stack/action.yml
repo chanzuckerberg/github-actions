@@ -81,6 +81,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
+        persist-credentials: false
         repository: ${{ inputs.repository || github.repository }}
         ref: ${{ inputs.github-repo-branch || github.event.pull_request && github.head_ref || github.sha }}
         token: ${{ inputs.github-token || github.token }}
