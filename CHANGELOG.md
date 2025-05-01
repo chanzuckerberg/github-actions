@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.4](https://github.com/chanzuckerberg/github-actions/compare/v6.3.3...v6.3.4) (2025-05-01)
+
+
+### BugFixes
+
+* fix persist-credentials arg ([#413](https://github.com/chanzuckerberg/github-actions/issues/413)) ([e951e14](https://github.com/chanzuckerberg/github-actions/commit/e951e1472705e5255f36cc4a73f9bf3e64a8e1fd))
+
 ## [6.3.3](https://github.com/chanzuckerberg/github-actions/compare/v6.3.2...v6.3.3) (2025-04-30)
 
 
