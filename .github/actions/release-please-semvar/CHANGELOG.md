@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.1.1...release-please-semvar-v0.1.2) (2025-04-30)
+
+
+### Misc
+
+* CCIE-3986 use persist-credentials: false in checkout ([#343](https://github.com/chanzuckerberg/github-actions/issues/343)) ([48b680f](https://github.com/chanzuckerberg/github-actions/commit/48b680fc469d837c851ea74d70c1842c42f6a3d1))
+
 ## [0.1.1](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.1.0...release-please-semvar-v0.1.1) (2025-03-07)
 
 
