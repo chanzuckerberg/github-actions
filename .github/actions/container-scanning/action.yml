@@ -87,14 +87,14 @@ runs:
       id: filter
       uses: chanzuckerberg/github-actions/.github/actions/csv-vulnerability-filter@jlerner/comparative-scan
       with:
-        primary-csv-path: ${{ steps.inspector.outputs.inspector_scan_results_csv }}
-        comparison-csv-path: ${{ steps.comparison_inspector.outputs.inspector_scan_results_csv }}
+        primary_csv_path: ${{ steps.inspector.outputs.inspector_scan_results_csv }}
+        comparison_csv_path: ${{ steps.comparison_inspector.outputs.inspector_scan_results_csv }}
         critical_threshold: ${{ inputs.critical_threshold }}
         high_threshold:   ${{ inputs.high_threshold }}
         medium_threshold:   ${{ inputs.medium_threshold }}
         low_threshold:  ${{ inputs.low_threshold }}
         other_threshold: ${{ inputs.other_threshold }}
-        ignore-unpatched: ${{ inputs.filter_unfixed_vulnerabilities }}
+        ignore_unpatched: ${{ inputs.filter_unfixed_vulnerabilities }}
     - name: Display Inspector vulnerability scan results (markdown)
       shell: bash
       run: cat ${{ steps.filter.outputs.filtered_results_markdown }}
