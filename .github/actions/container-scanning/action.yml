@@ -85,7 +85,7 @@ runs:
         display_vulnerability_findings: "enabled"
     - name: Filter Inspector Scan Results
       id: filter
-      uses: ./.github/actions/csv-vulnerability-filter
+      uses: chanzuckerberg/github-actions/.github/actions/csv-vulnerability-filter@jlerner/comparative-scan
       with:
         primary-csv-path: ${{ steps.inspector.outputs.inspector_scan_results_csv }}
         comparison-csv-path: ${{ steps.comparison_inspector.outputs.inspector_scan_results_csv }}
