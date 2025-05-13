@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.5](https://github.com/chanzuckerberg/github-actions/compare/v6.3.4...v6.3.5) (2025-05-13)
+
+
+### BugFixes
+
+* change timeout to 1800 seconds ([#415](https://github.com/chanzuckerberg/github-actions/issues/415)) ([1943b9d](https://github.com/chanzuckerberg/github-actions/commit/1943b9d9d234cb023e735814e167e8d8ca38b7de))
+
 ## [6.3.4](https://github.com/chanzuckerberg/github-actions/compare/v6.3.3...v6.3.4) (2025-05-01)
 
 
