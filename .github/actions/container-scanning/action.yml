@@ -59,6 +59,7 @@ runs:
         low_threshold:  ${{ inputs.low_threshold }}
         other_threshold: ${{ inputs.other_threshold }}
         display_vulnerability_findings: "enabled"
+        timeout: 1800
     - name: Display Inspector vulnerability scan results (markdown)
       shell: bash
       run: cat ${{ steps.inspector.outputs.inspector_scan_results_markdown }}
