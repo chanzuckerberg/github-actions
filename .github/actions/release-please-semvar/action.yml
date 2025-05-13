@@ -19,6 +19,8 @@ runs:
         token: ${{ inputs.app_token }}
         include-component-in-tag: ${{ inputs.include_component_in_tag }}
     - uses: actions/checkout@v4
+      with:
+          persist-credentials: true # used in subsequent action to git push
     - name: tag root major and minor versions
       shell: bash
       run: |
@@ -43,7 +45,7 @@ runs:
         script: |
           await exec.exec('git config user.name czi-github-helper[bot]')
           await exec.exec('git config user.email 95879977+czi-github-helper[bot]@users.noreply.github.com')
-          
+
           const outputs = JSON.parse(process.env.release_output);
           // for some reason pathsReleased is a string and not an array within the JSON
           const pathsReleased = JSON.parse(outputs.paths_released);
@@ -57,7 +59,7 @@ runs:
             const major = outputs[`${releasePath}--major`];
             const minor = outputs[`${releasePath}--minor`];
             const package_name = outputs[`${releasePath}--name`].split(":")[0];
-            
+
             console.log(`Creating ${major}.${minor} releases for ${package_name}`);
 
             const cmdOpts = {

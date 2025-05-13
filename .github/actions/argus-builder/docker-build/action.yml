@@ -55,6 +55,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
+        persist-credentials: false
         clean: ${{ inputs.clean_checkout }}
         fetch-depth: 0
         path: ${{ github.event.repository.name }}
@@ -72,6 +73,7 @@ runs:
         private-key: ${{ inputs.github_private_key }}
     - uses: actions/checkout@v4
       with:
+        persist-credentials: false
         repository: chanzuckerberg/argus-artifacts
         path: argus-artifacts
         token: ${{ steps.generate_token.outputs.token }}
@@ -116,7 +118,7 @@ runs:
         load: true
     - name: Scan for vulnerabilities
       if: ${{ inputs.enable_vuln_container_scan == 'true' }}
-      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@a8769e107f2f0d6377933835baaa370a60295724
+      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@v6
       id: scan
       with:
         image_name: ${{ inputs.image_name }}
