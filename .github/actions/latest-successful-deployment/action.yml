@@ -24,6 +24,8 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
     - name: Install happy
       uses: chanzuckerberg/github-actions/.github/actions/install-happy@main
       with:

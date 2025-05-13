@@ -1,5 +1,39 @@
 # Changelog
 
+## [6.3.4](https://github.com/chanzuckerberg/github-actions/compare/v6.3.3...v6.3.4) (2025-05-01)
+
+
+### BugFixes
+
+* fix persist-credentials arg ([#413](https://github.com/chanzuckerberg/github-actions/issues/413)) ([e951e14](https://github.com/chanzuckerberg/github-actions/commit/e951e1472705e5255f36cc4a73f9bf3e64a8e1fd))
+
+## [6.3.3](https://github.com/chanzuckerberg/github-actions/compare/v6.3.2...v6.3.3) (2025-04-30)
+
+
+### BugFixes
+
+* upgrade inspector action ([#412](https://github.com/chanzuckerberg/github-actions/issues/412)) ([9ab38f2](https://github.com/chanzuckerberg/github-actions/commit/9ab38f24114befe6a5b9c403caccb2780b12f099))
+
+
+### Misc
+
+* CCIE-3986 use persist-credentials: false in checkout ([#343](https://github.com/chanzuckerberg/github-actions/issues/343)) ([48b680f](https://github.com/chanzuckerberg/github-actions/commit/48b680fc469d837c851ea74d70c1842c42f6a3d1))
+* change x64 to amd64 ([#410](https://github.com/chanzuckerberg/github-actions/issues/410)) ([2e1c1de](https://github.com/chanzuckerberg/github-actions/commit/2e1c1de21ff7038e1b5dcc2a6f7f6e25b7015426))
+
+## [6.3.2](https://github.com/chanzuckerberg/github-actions/compare/v6.3.1...v6.3.2) (2025-04-25)
+
+
+### Misc
+
+* use floating v0 tag ([#408](https://github.com/chanzuckerberg/github-actions/issues/408)) ([f6eab0a](https://github.com/chanzuckerberg/github-actions/commit/f6eab0a3c68654ea424c122abd5fdcfd117acc61))
+
+## [6.3.1](https://github.com/chanzuckerberg/github-actions/compare/v6.3.0...v6.3.1) (2025-04-21)
+
+
+### BugFixes
+
+* remove yamllint from helm-lint action ([#405](https://github.com/chanzuckerberg/github-actions/issues/405)) ([e27f159](https://github.com/chanzuckerberg/github-actions/commit/e27f1596018f5d045f385bdf95ce82d002d0cf2f))
+
 ## [6.3.0](https://github.com/chanzuckerberg/github-actions/compare/v6.2.1...v6.3.0) (2025-04-09)
 
 

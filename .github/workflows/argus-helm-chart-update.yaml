@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Get app info
         id: get_app_info
-        uses: chanzuckerberg/argus-artifacts/ci/packages/get-app-info@v0.51.0
+        uses: chanzuckerberg/argus-artifacts/ci/packages/get-app-info@v0
         with:
           app_name: ${{ inputs.app_name }}
       - name: Log outputs

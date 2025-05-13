@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/latest-successful-deployment-v1.3.0...latest-successful-deployment-v1.3.1) (2025-04-30)
+
+
+### Misc
+
+* CCIE-3986 use persist-credentials: false in checkout ([#343](https://github.com/chanzuckerberg/github-actions/issues/343)) ([48b680f](https://github.com/chanzuckerberg/github-actions/commit/48b680fc469d837c851ea74d70c1842c42f6a3d1))
+
 ## [1.3.0](https://github.com/chanzuckerberg/github-actions/compare/latest-successful-deployment-v1.2.0...latest-successful-deployment-v1.3.0) (2023-07-24)
 
 

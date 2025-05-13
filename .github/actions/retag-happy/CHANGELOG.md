@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/chanzuckerberg/github-actions/compare/retag-happy-v1.4.1...retag-happy-v1.4.2) (2025-04-30)
+
+
+### Misc
+
+* CCIE-3986 use persist-credentials: false in checkout ([#343](https://github.com/chanzuckerberg/github-actions/issues/343)) ([48b680f](https://github.com/chanzuckerberg/github-actions/commit/48b680fc469d837c851ea74d70c1842c42f6a3d1))
+
 ### [1.4.1](https://github.com/chanzuckerberg/github-actions/compare/retag-happy-v1.4.0...retag-happy-v1.4.1) (2024-01-04)
 
 
