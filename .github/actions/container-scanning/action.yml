@@ -68,11 +68,7 @@ runs:
       with:
         artifact_type: 'container'
         artifact_path: ${{ inputs.image_uri }} # make sure this matches the image you built
-        critical_threshold: ${{ inputs.critical_threshold }}
-        high_threshold:   ${{ inputs.high_threshold }}
-        medium_threshold:   ${{ inputs.medium_threshold }}
-        low_threshold:  ${{ inputs.low_threshold }}
-        other_threshold: ${{ inputs.other_threshold }}
+        output_inspector_scan_path_csv: inspector_scan_${{ github.run_id }}.csv
         display_vulnerability_findings: "disabled"
     - name: Run Comparison Scan if Needed
       if: inputs.comparison_image_uri != ''
@@ -81,18 +77,14 @@ runs:
       with:
         artifact_type: 'container'
         artifact_path: ${{ inputs.comparison_image_uri }}
-        critical_threshold: ${{ inputs.critical_threshold }}
-        high_threshold:   ${{ inputs.high_threshold }}
-        medium_threshold:   ${{ inputs.medium_threshold }}
-        low_threshold:  ${{ inputs.low_threshold }}
-        other_threshold: ${{ inputs.other_threshold }}
+        output_inspector_scan_path_csv: inspector_comparison_scan_${{ github.run_id }}.csv
         display_vulnerability_findings: "disabled"
     - name: Filter Inspector Scan Results
       id: filter
       uses: chanzuckerberg/github-actions/.github/actions/csv-vulnerability-filter@jlerner/comparative-scan
       with:
-        primary_csv_path: ${{ steps.inspector.outputs.inspector_scan_results_csv }}
-        comparison_csv_path: ${{ steps.comparison_inspector.outputs.inspector_scan_results_csv }}
+        primary_csv_path: inspector_scan_${{ github.run_id }}.csv
+        comparison_csv_path: inspector_comparison_scan_${{ github.run_id }}.csv
         critical_threshold: ${{ inputs.critical_threshold }}
         high_threshold:   ${{ inputs.high_threshold }}
         medium_threshold:   ${{ inputs.medium_threshold }}
