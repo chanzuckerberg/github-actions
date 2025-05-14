@@ -10,6 +10,10 @@ inputs:
   comparison_image_uri:
     description: 'which image to compare against'
     required: false
+  filter_min_severity:
+    description: 'the minimum severity level to include in the filtered results. Options: "CRITICAL", "HIGH", "MEDIUM", "LOW".'
+    required: false
+    default: "MEDIUM"
   critical_threshold:
     description: 'number of critical vulnerabilities that will cause the action to fail'
     required: false
@@ -69,7 +73,7 @@ runs:
         medium_threshold:   ${{ inputs.medium_threshold }}
         low_threshold:  ${{ inputs.low_threshold }}
         other_threshold: ${{ inputs.other_threshold }}
-        display_vulnerability_findings: "enabled"
+        display_vulnerability_findings: "disabled"
     - name: Run Comparison Scan if Needed
       if: inputs.comparison_image_uri != ''
       uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1.1.2
@@ -82,7 +86,7 @@ runs:
         medium_threshold:   ${{ inputs.medium_threshold }}
         low_threshold:  ${{ inputs.low_threshold }}
         other_threshold: ${{ inputs.other_threshold }}
-        display_vulnerability_findings: "enabled"
+        display_vulnerability_findings: "disabled"
     - name: Filter Inspector Scan Results
       id: filter
       uses: chanzuckerberg/github-actions/.github/actions/csv-vulnerability-filter@jlerner/comparative-scan
@@ -95,6 +99,7 @@ runs:
         low_threshold:  ${{ inputs.low_threshold }}
         other_threshold: ${{ inputs.other_threshold }}
         ignore_unpatched: ${{ inputs.filter_unfixed_vulnerabilities }}
+        filter_min_severity: ${{ inputs.filter_min_severity }}
     - name: Display Inspector vulnerability scan results (markdown)
       shell: bash
       run: cat ${{ steps.filter.outputs.filtered_results_markdown }}
