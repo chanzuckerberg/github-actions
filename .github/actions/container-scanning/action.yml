@@ -70,6 +70,7 @@ runs:
         artifact_path: ${{ inputs.image_uri }} # make sure this matches the image you built
         output_inspector_scan_path_csv: inspector_scan_${{ github.run_id }}.csv
         display_vulnerability_findings: "disabled"
+        timeout: 1800
     - name: Run Comparison Scan if Needed
       if: inputs.comparison_image_uri != ''
       uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1.1.2
@@ -79,6 +80,7 @@ runs:
         artifact_path: ${{ inputs.comparison_image_uri }}
         output_inspector_scan_path_csv: inspector_comparison_scan_${{ github.run_id }}.csv
         display_vulnerability_findings: "disabled"
+        timeout: 1800
     - name: Filter Inspector Scan Results
       id: filter
       uses: chanzuckerberg/github-actions/.github/actions/csv-vulnerability-filter@jlerner/comparative-scan
