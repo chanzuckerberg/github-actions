@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.3.5](https://github.com/chanzuckerberg/github-actions/compare/v6.3.4...v6.3.5) (2025-06-06)
+
+
+### BugFixes
+
+* change timeout to 1800 seconds ([#415](https://github.com/chanzuckerberg/github-actions/issues/415)) ([1943b9d](https://github.com/chanzuckerberg/github-actions/commit/1943b9d9d234cb023e735814e167e8d8ca38b7de))
+* do not run secrets scanner on PRs from forks ([#423](https://github.com/chanzuckerberg/github-actions/issues/423)) ([492a515](https://github.com/chanzuckerberg/github-actions/commit/492a51576981262e806d516416770352be8bcad1))
+
+
+### Misc
+
+* CCIE_4562 upgrade create-github-app-token ([#422](https://github.com/chanzuckerberg/github-actions/issues/422)) ([50219d9](https://github.com/chanzuckerberg/github-actions/commit/50219d99432303782bee939b273cafbb84be70bd))
+* CCIE-4562 add secrets scanning ([#420](https://github.com/chanzuckerberg/github-actions/issues/420)) ([53ed467](https://github.com/chanzuckerberg/github-actions/commit/53ed4672b0c7bd6e587933d70f86c89a255d497d))
+
 ## [6.3.4](https://github.com/chanzuckerberg/github-actions/compare/v6.3.3...v6.3.4) (2025-05-01)
 
 
