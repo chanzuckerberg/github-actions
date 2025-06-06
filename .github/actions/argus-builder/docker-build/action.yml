@@ -66,7 +66,7 @@ runs:
         role-to-assume: arn:aws:iam::533267185808:role/gh_actions_core_platform_infra_prod_eks
         role-session-name: ArgusContainerBuilder
     - name: Generate token
-      uses: actions/create-github-app-token@v1
+      uses: actions/create-github-app-token@v2
       id: generate_token
       with:
         app-id: ${{ inputs.github_app_id }}

@@ -28,7 +28,7 @@ runs:
   using: composite
   steps:
     - name: Generate token
-      uses: actions/create-github-app-token@v1
+      uses: actions/create-github-app-token@v2
       id: generate_token
       with:
         app-id: ${{ inputs.github_app_id }}
