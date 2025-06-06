@@ -29,7 +29,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4
       with:
         node-version: '14'
     - name: Github SSH known hosts
@@ -49,7 +49,7 @@ runs:
         cli_config_credentials_token: ${{ inputs.tfe-token }}
     - name: Config Terraform plugin cache
       shell: bash
-      run: |      
+      run: |
         echo 'plugin_cache_dir="${{inputs.terraform_plugin_cache_path}}"' >> ~/.terraformrc
         mkdir --parents ${{inputs.terraform_plugin_cache_path}}
     ## TODO: Ideally, there would be a parent workflow that would populate
@@ -61,12 +61,12 @@ runs:
         path: ${{inputs.terraform_plugin_cache_path}}
         key: ${{runner.os}}-terraform-main-cache
     - name: Terraform init
-      id: init 
+      id: init
       shell: bash
       working-directory: ${{ inputs.working-dir }}
       run: terraform init
     - name: Terraform validate
-      id: validate 
+      id: validate
       shell: bash
       working-directory: ${{ inputs.working-dir }}
       run: terraform validate -no-color
@@ -97,7 +97,7 @@ runs:
           // 2. Prepare format of the comment
           const output = `
           ## Terraform Testing: \`${{ inputs.working-dir }}\`
-          
+
           #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
           <details><summary>Validation Output</summary>
@@ -143,4 +143,3 @@ runs:
               body: output
             })
           }
-    
