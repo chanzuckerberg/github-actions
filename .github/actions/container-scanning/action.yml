@@ -73,7 +73,7 @@ runs:
         timeout: 1800
     - name: Run Comparison Scan if Needed
       if: inputs.comparison_image_uri != ''
-      uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1.1.2
+      uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1
       id: comparison_inspector
       with:
         artifact_type: 'container'
