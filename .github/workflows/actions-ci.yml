@@ -15,7 +15,7 @@ jobs:
       committed: ${{ steps.commit.outputs.committed }}
     steps:
       - name: Generate token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         id: generate_token
         with:
           app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
