@@ -70,11 +70,16 @@ describe('validate-json-schema', () => {
       expect(
         findMatchingChangedFiles(['lib/main.ts', 'src/test.ts'], [['lib/*.ts'], ['src/test.ts']]),
       ).toEqual(['lib/main.ts', 'src/test.ts']);
+      expect(findMatchingChangedFiles(['src/main.ts'], [['./src/main.ts']])).toEqual(['src/main.ts']);
     });
 
     it('should not match', () => {
       expect(findMatchingChangedFiles(['src/main.ts', 'src/test.ts'], [['lib/*.ts']])).toEqual([]);
       expect(findMatchingChangedFiles(['src/main.ts', 'src/test.ts'], [['src/*.ts', '!src/test.ts']])).toEqual(['src/main.ts']);
+      expect(findMatchingChangedFiles(['src/test.ts'], [['!src/**']])).toEqual([]);
+      expect(findMatchingChangedFiles(['src/test.ts'], [['!src/*.ts']])).toEqual([]);
+      expect(findMatchingChangedFiles(['src/test.ts'], [['!src/test.ts']])).toEqual([]);
+      expect(findMatchingChangedFiles(['src/test.ts'], [['!./src/test.ts']])).toEqual([]);
     });
   });
 

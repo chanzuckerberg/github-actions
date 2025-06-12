@@ -8,6 +8,7 @@ import { findChangedFiles } from '../../../find-changed-files/src/findChangedFil
 import { validateJsonSchema } from '../../../validate-json-schema/src/validateJsonSchema';
 // eslint-disable-next-line import/no-relative-packages
 import { getCommaDelimitedArrayInput, ProcessedImage } from '../../common';
+import path from 'path';
 
 // eslint-disable-next-line import/no-relative-packages
 export { ProcessedImage } from '../../common';
@@ -278,11 +279,25 @@ export function isLabelOnPullRequest(labels: string[], triggerLabels: string[]):
 export function findMatchingChangedFiles(changedFiles: string[], pathFilters: string[][]): string[] {
   return changedFiles.filter((file) => {
     core.info(`Checking file: ${file}`);
+    const sanitizedFile = path.join(file); // path sanitization to ensure consistent path format
     return pathFilters.some((filters) => {
       core.info(`- checking filters: ${filters}`);
-      const matchedFile = filters.every((filter) => minimatch(file, filter, { dot: true }));
+      const matchedFile = filters.every((filter) => minimatch(sanitizedFile, sanitizePathFilter(filter), { dot: true }));
       core.info(`- matched file ${file} with filters ${filters}? ${matchedFile}`);
       return matchedFile;
     });
   });
+}
+
+function sanitizePathFilter(p: string): string {
+  const match = p.match(/^!+/);
+  const exclamations = match ? match[0] : '';
+  const remainder = match ? p.slice(exclamations.length) : p;
+  const joined = path.join(remainder);
+  if (exclamations.length % 2 === 1) {
+    // If the number of exclamations is odd, all but one negate each other, so we return the negated path
+    return `!${joined}`;
+  }
+  // If there are an even number of exclamations, we can return the joined path as is - they negate each other
+  return joined;
 }
