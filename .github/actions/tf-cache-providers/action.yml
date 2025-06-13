@@ -34,7 +34,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4
       with:
         node-version: '14'
     - name: Github SSH known hosts
@@ -54,7 +54,7 @@ runs:
         cli_config_credentials_token: ${{ inputs.tfe-token }}
     - name: Config Terraform plugin cache
       shell: bash
-      run: |      
+      run: |
         echo 'plugin_cache_dir="${{inputs.terraform_plugin_cache_path}}"' >> ~/.terraformrc
         mkdir --parents ${{inputs.terraform_plugin_cache_path}}
     - name: Setup terragrunt
@@ -70,7 +70,7 @@ runs:
         ls /tmp/terragrunt
         cat "${GITHUB_PATH}"
     - name: Terraform init
-      id: init 
+      id: init
       shell: bash
       run: |
         #  terraform init for all accounts
@@ -82,4 +82,3 @@ runs:
       with:
         path: ${{inputs.terraform_plugin_cache_path}}
         key: ${{runner.os}}-terraform-main-cache
-    
