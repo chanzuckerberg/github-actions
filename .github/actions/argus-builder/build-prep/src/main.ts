@@ -279,7 +279,7 @@ export function isLabelOnPullRequest(labels: string[], triggerLabels: string[]):
 export function findMatchingChangedFiles(changedFiles: string[], pathFilters: string[][]): string[] {
   return changedFiles.filter((file) => {
     core.info(`Checking file: ${file}`);
-    const sanitizedFile = path.join(file); // path sanitization to ensure consistent path format
+    const sanitizedFile = path.normalize(file); // path sanitization to ensure consistent path format
     return pathFilters.some((filters) => {
       core.info(`- checking filters: ${filters}`);
       const matchedFile = filters.every((filter) => minimatch(sanitizedFile, sanitizePathFilter(filter), { dot: true }));
@@ -293,7 +293,7 @@ function sanitizePathFilter(p: string): string {
   const match = p.match(/^!+/);
   const exclamations = match ? match[0] : '';
   const remainder = match ? p.slice(exclamations.length) : p;
-  const joined = path.join(remainder);
+  const joined = path.normalize(remainder);
   if (exclamations.length % 2 === 1) {
     // If the number of exclamations is odd, all but one negate each other, so we return the negated path
     return `!${joined}`;
