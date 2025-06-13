@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.0](https://github.com/chanzuckerberg/github-actions/compare/v6.3.5...v6.4.0) (2025-06-13)
+
+
+### Features
+
+* container scan filtering ([#407](https://github.com/chanzuckerberg/github-actions/issues/407)) ([7a1c0aa](https://github.com/chanzuckerberg/github-actions/commit/7a1c0aa9c8ef0c78766039128cbe09bdc7131580))
+
 ## [6.3.5](https://github.com/chanzuckerberg/github-actions/compare/v6.3.4...v6.3.5) (2025-06-13)
 
 
