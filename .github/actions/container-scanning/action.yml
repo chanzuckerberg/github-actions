@@ -83,7 +83,7 @@ runs:
         timeout: 1800
     - name: Filter Inspector Scan Results
       id: filter
-      uses: chanzuckerberg/github-actions/.github/actions/csv-vulnerability-filter@jlerner/comparative-scan
+      uses: chanzuckerberg/github-actions/.github/actions/csv-vulnerability-filter@v6
       with:
         primary_csv_path: inspector_scan_${{ github.run_id }}.csv
         comparison_csv_path: inspector_comparison_scan_${{ github.run_id }}.csv
