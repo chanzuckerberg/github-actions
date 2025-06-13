@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import path from 'path';
 import { minimatch } from 'minimatch';
 import { escapeRegExp } from 'lodash';
 // eslint-disable-next-line import/no-relative-packages
@@ -8,7 +9,6 @@ import { findChangedFiles } from '../../../find-changed-files/src/findChangedFil
 import { validateJsonSchema } from '../../../validate-json-schema/src/validateJsonSchema';
 // eslint-disable-next-line import/no-relative-packages
 import { getCommaDelimitedArrayInput, ProcessedImage } from '../../common';
-import path from 'path';
 
 // eslint-disable-next-line import/no-relative-packages
 export { ProcessedImage } from '../../common';
