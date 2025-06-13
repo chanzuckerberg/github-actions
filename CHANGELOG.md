@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.3.5](https://github.com/chanzuckerberg/github-actions/compare/v6.3.4...v6.3.5) (2025-06-13)
+
+
+### BugFixes
+
+* change timeout to 1800 seconds ([#415](https://github.com/chanzuckerberg/github-actions/issues/415)) ([1943b9d](https://github.com/chanzuckerberg/github-actions/commit/1943b9d9d234cb023e735814e167e8d8ca38b7de))
+* correctly handle leading dot-slash in path filters ([#425](https://github.com/chanzuckerberg/github-actions/issues/425)) ([e1a8937](https://github.com/chanzuckerberg/github-actions/commit/e1a8937d0435a2e8e683e456a62a7e1df5052113))
+* do not run secrets scanner on PRs from forks ([#423](https://github.com/chanzuckerberg/github-actions/issues/423)) ([492a515](https://github.com/chanzuckerberg/github-actions/commit/492a51576981262e806d516416770352be8bcad1))
+
+
+### Misc
+
+* bump setup-node ([#421](https://github.com/chanzuckerberg/github-actions/issues/421)) ([196288a](https://github.com/chanzuckerberg/github-actions/commit/196288a1a494b3445e81e58f0fefdd7a6afdd075))
+* CCIE_4562 upgrade create-github-app-token ([#422](https://github.com/chanzuckerberg/github-actions/issues/422)) ([50219d9](https://github.com/chanzuckerberg/github-actions/commit/50219d99432303782bee939b273cafbb84be70bd))
+* CCIE-4562 add secrets scanning ([#420](https://github.com/chanzuckerberg/github-actions/issues/420)) ([53ed467](https://github.com/chanzuckerberg/github-actions/commit/53ed4672b0c7bd6e587933d70f86c89a255d497d))
+* **deps-dev:** bump brace-expansion from 1.1.11 to 1.1.12 ([#424](https://github.com/chanzuckerberg/github-actions/issues/424)) ([aaec5ac](https://github.com/chanzuckerberg/github-actions/commit/aaec5ac0aae3dcfcfad7162215f3e50f071aa720))
+
 ## [6.3.4](https://github.com/chanzuckerberg/github-actions/compare/v6.3.3...v6.3.4) (2025-05-01)
 
 
