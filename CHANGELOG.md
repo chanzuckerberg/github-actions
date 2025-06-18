@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.1](https://github.com/chanzuckerberg/github-actions/compare/v6.4.0...v6.4.1) (2025-06-18)
+
+
+### BugFixes
+
+* container scanning - default to no threshold for low/info vulns ([#427](https://github.com/chanzuckerberg/github-actions/issues/427)) ([743d99f](https://github.com/chanzuckerberg/github-actions/commit/743d99fa12a1e9ad6d4d21e11ba2e5bc6db84f49))
+
 ## [6.4.0](https://github.com/chanzuckerberg/github-actions/compare/v6.3.5...v6.4.0) (2025-06-13)
 
 
