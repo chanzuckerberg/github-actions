@@ -29,11 +29,11 @@ inputs:
   low_threshold:
     description: 'number of low vulnerabilities that will cause the action to fail'
     required: false
-    default: "10"
+    default: "0"
   other_threshold:
     description: 'number of other vulnerabilities that will cause the action to fail'
     required: false
-    default: "10"
+    default: "0"
   fail_on_vulnerabilities:
     description: 'whether to fail the action if vulnerabilities are found'
     required: false
