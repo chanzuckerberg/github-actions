@@ -19,6 +19,10 @@ inputs:
     description: "Args for docker build"
     required: false
     default: ""
+  build_secrets:
+    description: "Secrets for docker build"
+    required: false
+    default: ""
   secret_files:
     description: "Files to copy into the build context"
     required: false
@@ -114,6 +118,7 @@ runs:
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
+        build_secrets: ${{ inputs.build_secrets }}
         secret-files: ${{ inputs.secret_files }}
         load: true
     - name: Scan for vulnerabilities
