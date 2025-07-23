@@ -7,6 +7,11 @@ on:
         description: The app name to update the Helm dependencies for
         required: true
         type: string
+      argus_base_url:
+        description: The base URL of the Argus API to fetch app info
+        required: false
+        default: ""
+        type: string
 
 jobs:
   fetch-app-info:
@@ -23,6 +28,8 @@ jobs:
         uses: chanzuckerberg/argus-artifacts/ci/packages/get-app-info@v0
         with:
           app_name: ${{ inputs.app_name }}
+        env:
+          PLATFORM_BASE_URL: ${{ inputs.argus_base_url }}
       - name: Log outputs
         run: |
           echo "The environments are: ${{ steps.get_app_info.outputs.app_info }}"
