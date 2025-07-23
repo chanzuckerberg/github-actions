@@ -103,9 +103,9 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           commit-message: update stack helm chart version
-          title: 'chore: update stack helm chart version for ${{ matrix.env.name }}'
+          title: 'chore: update stack helm chart version for ${{ inputs.app_name }} ${{ matrix.env.name }}'
           body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
           base: main
-          branch: updatecli-bump-stack-chart-${{ matrix.env.name }}
+          branch: updatecli-bump-stack-chart-${{ inputs.app_name }}-${{ matrix.env.name }}
           delete-branch: true
           token: ${{ steps.generate_token.outputs.token }}
