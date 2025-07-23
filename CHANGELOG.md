@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.4.1](https://github.com/chanzuckerberg/github-actions/compare/v6.4.0...v6.4.1) (2025-07-23)
+
+
+### BugFixes
+
+* container scanning - default to no threshold for low/info vulns ([#427](https://github.com/chanzuckerberg/github-actions/issues/427)) ([743d99f](https://github.com/chanzuckerberg/github-actions/commit/743d99fa12a1e9ad6d4d21e11ba2e5bc6db84f49))
+* include app name in PR title and branch name to support monorepos ([#429](https://github.com/chanzuckerberg/github-actions/issues/429)) ([6b967c2](https://github.com/chanzuckerberg/github-actions/commit/6b967c2fb8d9e1b85d071efb9ac66c1e58ace834))
+
 ## [6.4.0](https://github.com/chanzuckerberg/github-actions/compare/v6.3.5...v6.4.0) (2025-06-13)
 
 
