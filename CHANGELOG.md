@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.0](https://github.com/chanzuckerberg/github-actions/compare/v6.4.1...v6.5.0) (2025-07-23)
+
+
+### Features
+
+* allow specifying a different argus base url for the helmdep-update workflow ([#430](https://github.com/chanzuckerberg/github-actions/issues/430)) ([2b62a19](https://github.com/chanzuckerberg/github-actions/commit/2b62a193599d1e8ed35c7d495eb3f91049ebcb53))
+
 ## [6.4.1](https://github.com/chanzuckerberg/github-actions/compare/v6.4.0...v6.4.1) (2025-07-23)
 
 
