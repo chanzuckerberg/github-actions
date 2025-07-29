@@ -4,6 +4,11 @@ import * as path from 'path';
 import { ArchiveScanner } from './scanner';
 
 async function run(): Promise<void> {
+  // Initialize outputs early to ensure they're always set
+  core.setOutput('total_github_links', '0');
+  core.setOutput('archived_repos_found', '0');
+  core.setOutput('sarif_file_path', '');
+
   try {
     // Get inputs from the action
     const githubToken = core.getInput('github_token', { required: true });
@@ -43,6 +48,10 @@ async function run(): Promise<void> {
     // Set outputs
     core.setOutput('total_github_links', allRepos.length.toString());
     core.setOutput('archived_repos_found', archivedRepos.length.toString());
+    
+    core.info(`📤 Outputs set:`);
+    core.info(`  total_github_links: ${allRepos.length}`);
+    core.info(`  archived_repos_found: ${archivedRepos.length}`);
 
     if (archivedRepos.length > 0) {
       // Generate SARIF report

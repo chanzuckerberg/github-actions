@@ -59,8 +59,7 @@ jobs:
             const archivedCount = '${{ steps.scan.outputs.archived_repos_found }}';
             const totalRepos = '${{ steps.scan.outputs.total_github_links }}';
             
-            const body = `
-            ## 🔍 Archived Repository Scan Results
+            const body = `## 🔍 Archived Repository Scan Results
             
             **⚠️ Found ${archivedCount} archived repository dependencies!**
             
@@ -76,8 +75,7 @@ jobs:
             1. **Find alternatives:** Look for actively maintained forks or alternative libraries
             2. **Fork if necessary:** If no alternatives exist, consider forking the repository
             3. **Update dependencies:** Remove or replace the dependency if possible
-            4. **Monitor security:** Be aware that archived repositories won't receive security updates
-            `;
+            4. **Monitor security:** Be aware that archived repositories won't receive security updates`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
