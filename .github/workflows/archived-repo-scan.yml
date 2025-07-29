@@ -1,0 +1,87 @@
+name: 'Archived Repository Scanner'
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  archived-repo-scan:
+    name: Scan for Archived Repository Dependencies
+    runs-on: ubuntu-latest
+    
+    permissions:
+      # Required for uploading SARIF results
+      security-events: write
+      # Required for accessing repository content
+      contents: read
+      # Required for accessing action
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Archived Repository Scanner
+        id: scan
+        uses: ./.github/actions/archived-repo-scanner
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          include_patterns: '**/*'
+          exclude_patterns: '.git/**,node_modules/**,dist/**,build/**,*.log,*.sarif'
+          severity: 'error'
+
+      - name: Upload SARIF results to GitHub Security tab
+        if: always() && steps.scan.outputs.sarif_file_path != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif_file_path }}
+          category: 'archived-dependencies'
+
+      - name: Upload SARIF as artifact
+        if: always() && steps.scan.outputs.sarif_file_path != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: archived-repos-sarif
+          path: ${{ steps.scan.outputs.sarif_file_path }}
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && steps.scan.outputs.archived_repos_found != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const archivedCount = '${{ steps.scan.outputs.archived_repos_found }}';
+            const totalRepos = '${{ steps.scan.outputs.total_github_links }}';
+            
+            const body = `
+            ## 🔍 Archived Repository Scan Results
+            
+            **⚠️ Found ${archivedCount} archived repository dependencies!**
+            
+            - **Total GitHub repositories found:** ${totalRepos}
+            - **Archived repositories found:** ${archivedCount}
+            
+            Please review the [Security tab](${context.payload.repository.html_url}/security/code-scanning) for detailed findings.
+            
+            ### Why this matters:
+            Archived repositories are read-only and no longer receive updates, which may pose security and maintenance risks.
+            
+            ### Recommended actions:
+            1. **Find alternatives:** Look for actively maintained forks or alternative libraries
+            2. **Fork if necessary:** If no alternatives exist, consider forking the repository
+            3. **Update dependencies:** Remove or replace the dependency if possible
+            4. **Monitor security:** Be aware that archived repositories won't receive security updates
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            }); 

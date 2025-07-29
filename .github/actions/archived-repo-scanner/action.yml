@@ -1,0 +1,37 @@
+name: 'Archived Repository Scanner'
+description: 'Scans for GitHub.com links in the repository and creates security vulnerabilities for archived repositories'
+author: 'CZI'
+
+inputs:
+  github_token:
+    description: 'GitHub token for API access'
+    required: true
+    default: ${{ github.token }}
+  include_patterns:
+    description: 'Comma-separated list of file patterns to include (default: all files)'
+    required: false
+    default: '**/*'
+  exclude_patterns:
+    description: 'Comma-separated list of file patterns to exclude'
+    required: false
+    default: '.git/**,node_modules/**,dist/**,build/**,*.log'
+  severity:
+    description: 'Security alert severity level (error, warning, note)'
+    required: false
+    default: 'error'
+
+outputs:
+  archived_repos_found:
+    description: 'Number of archived repositories found'
+  sarif_file_path:
+    description: 'Path to the generated SARIF file'
+  total_github_links:
+    description: 'Total number of GitHub links found'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'archive'
+  color: 'red' 
