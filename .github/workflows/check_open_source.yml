@@ -19,13 +19,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check for LICENSE.md
+      - name: Check for LICENSE.md or LICENSE
         run: |
-          if [ ! -f "LICENSE.md" ]; then
-            echo "❌ LICENSE.md file is missing"
+          if [ ! -f "LICENSE.md" ] && [ ! -f "LICENSE" ]; then
+            echo "❌ LICENSE.md or LICENSE file is missing"
             echo "missing_license=true" >> $GITHUB_ENV
           else
-            echo "✅ LICENSE.md file exists"
+            if [ -f "LICENSE.md" ]; then
+              echo "✅ LICENSE.md file exists"
+            else
+              echo "✅ LICENSE file exists"
+            fi
           fi
 
       - name: Check for SECURITY.md
@@ -61,7 +65,7 @@ jobs:
           failed=false
 
           if [ "$missing_license" = "true" ]; then
-            echo "::error::LICENSE.md file is missing"
+            echo "::error::LICENSE.md or LICENSE file is missing"
             failed=true
           fi
 
