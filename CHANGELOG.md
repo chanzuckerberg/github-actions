@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.6.0](https://github.com/chanzuckerberg/github-actions/compare/v6.5.0...v6.6.0) (2025-08-18)
+
+
+### Features
+
+* CCIE-4853 add check_open_source.yml workflow ([#433](https://github.com/chanzuckerberg/github-actions/issues/433)) ([1d148fe](https://github.com/chanzuckerberg/github-actions/commit/1d148fe2517beab38f8c6575bfe8682fa8b78ab9))
+
+
+### BugFixes
+
+* CCIE-4853 accept LICENSE file in OSS repos ([#435](https://github.com/chanzuckerberg/github-actions/issues/435)) ([6315133](https://github.com/chanzuckerberg/github-actions/commit/6315133c8968c66a93cede1b3335a6e75f537606))
+* make paginated calls to list changed files ([#437](https://github.com/chanzuckerberg/github-actions/issues/437)) ([5c536b2](https://github.com/chanzuckerberg/github-actions/commit/5c536b2400776ebd09f6f2e8074a53ca83448bad))
+
 ## [6.5.0](https://github.com/chanzuckerberg/github-actions/compare/v6.4.1...v6.5.0) (2025-07-23)
 
 
