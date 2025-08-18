@@ -61,11 +61,22 @@ async function getChangedFilesInPR(
   owner: string,
   prNumber: number,
 ): Promise<string[]> {
-  const listFilesResp = await gitClient.rest.pulls.listFiles({
-    owner,
-    repo,
-    pull_number: prNumber,
-  });
+  let page = 1;
+  const allFiles: string[] = [];
+  while (true) {
+    const listFilesResp = await gitClient.rest.pulls.listFiles({
+      owner,
+      repo,
+      pull_number: prNumber,
+      per_page: 100,
+      page,
+    });
+    if (listFilesResp.data.length === 0) {
+      break;
+    }
+    allFiles.push(...listFilesResp.data.map((file) => file.filename));
+    page += 1;
+  }
 
-  return listFilesResp.data.map((file) => file.filename);
+  return allFiles;
 }
