@@ -75,7 +75,7 @@ async function getChangedFilesInPR(
       break;
     }
     allFiles.push(...listFilesResp.data.map((file) => file.filename));
-    page++;
+    page += 1;
   }
 
   return allFiles;
