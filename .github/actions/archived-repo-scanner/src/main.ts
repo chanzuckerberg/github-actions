@@ -108,7 +108,11 @@ async function run(): Promise<void> {
           ]);
       }
 
-      await core.summary.write();
+      try {
+        await core.summary.write();
+      } catch (error) {
+        core.warning(`Failed to write job summary: ${error instanceof Error ? error.message : String(error)}`);
+      }
 
       if (severity === 'error') {
         core.setFailed(`Found ${archivedRepos.length} archived repository dependencies. Check the Security tab for details.`);
@@ -136,7 +140,11 @@ async function run(): Promise<void> {
           ['Archived repositories found', '0']
         ]);
 
-      await core.summary.write();
+      try {
+        await core.summary.write();
+      } catch (error) {
+        core.warning(`Failed to write job summary: ${error instanceof Error ? error.message : String(error)}`);
+      }
     }
 
   } catch (error) {
