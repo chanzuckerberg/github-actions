@@ -168,8 +168,11 @@ export class ArchiveScanner {
         }
       } catch (error: any) {
         if (error.status === 404) {
-          core.warning(`Repository not found: ${key} (may be private or deleted)`);
+          core.warning(`Repository not found: ${key} (private/deleted or insufficient permissions)`);
           repoRef.repo.archived = false; // Don't flag missing repos as archived
+        } else if (error.status === 403) {
+          core.warning(`Access denied to repository: ${key} (insufficient token permissions)`);
+          repoRef.repo.archived = false; // Don't flag inaccessible repos as archived
         } else {
           core.warning(`Failed to check repository ${key}: ${error.message}`);
           repoRef.repo.archived = false; // Default to not archived on error
