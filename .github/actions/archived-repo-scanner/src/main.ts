@@ -10,11 +10,10 @@ async function uploadSarifToCodeScanning(sarifPath: string, githubToken: string)
     const octokit = getOctokit(githubToken);
     const sarifContent = await fs.promises.readFile(sarifPath, 'utf8');
     
-    // Gzip compress the SARIF content, then base64 encode it
+    // GitHub API requires SARIF to be gzip-compressed and base64-encoded
     const gzippedSarif = zlib.gzipSync(Buffer.from(sarifContent, 'utf8'));
     const sarifBase64 = gzippedSarif.toString('base64');
     
-    // Get repository and commit information from environment
     const repo = process.env.GITHUB_REPOSITORY;
     const ref = process.env.GITHUB_SHA;
     
@@ -23,8 +22,6 @@ async function uploadSarifToCodeScanning(sarifPath: string, githubToken: string)
     }
     
     const [owner, repoName] = repo.split('/');
-    
-    core.info('📤 Uploading SARIF results to GitHub Code Scanning...');
     
     await octokit.rest.codeScanning.uploadSarif({
       owner,
@@ -35,10 +32,39 @@ async function uploadSarifToCodeScanning(sarifPath: string, githubToken: string)
       tool_name: 'Archived Repository Scanner'
     });
     
-    core.info('✅ SARIF results uploaded successfully to GitHub Code Scanning');
+    core.info('✅ SARIF uploaded to GitHub Code Scanning');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    core.warning(`Failed to upload SARIF to GitHub Code Scanning: ${errorMessage}`);
+    core.warning(`Failed to upload SARIF: ${errorMessage}`);
+  }
+}
+
+async function createJobSummary(allRepos: any[], archivedRepos: any[], severity: string): Promise<void> {
+  try {
+    core.summary
+      .addHeading('🔍 Archived Repository Scanner Results')
+      .addTable([
+        [{ data: 'Metric', header: true }, { data: 'Count', header: true }],
+        ['Total repositories found', allRepos.length.toString()],
+        ['Archived repositories', archivedRepos.length.toString()],
+        ['Severity level', severity]
+      ]);
+
+    if (archivedRepos.length > 0) {
+      core.summary
+        .addHeading('📋 Archived Repositories', 3)
+        .addTable([
+          [{ data: 'Repository', header: true }, { data: 'Locations', header: true }],
+          ...archivedRepos.map((repoRef: any) => [
+            `[${repoRef.repo.owner}/${repoRef.repo.name}](${repoRef.repo.url})`,
+            repoRef.locations.length.toString()
+          ])
+        ]);
+    }
+
+    await core.summary.write();
+  } catch (error) {
+    core.warning(`Failed to write job summary: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -47,18 +73,10 @@ async function run(): Promise<void> {
   core.setOutput('total_github_links', '0');
   core.setOutput('archived_repos_found', '0');
   core.setOutput('sarif_file_path', '');
-  
-  // Debug: Log that the action is starting
-  console.log('🚀 Archived Repository Scanner action starting...');
-  core.info('🚀 Action execution started');
-  core.info(`📍 Working directory: ${process.cwd()}`);
-  core.info(`📍 Node version: ${process.version}`);
 
   try {
-    // Get inputs from the action
-    core.info('📥 Reading action inputs...');
+    // Parse and validate inputs
     const githubToken = core.getInput('github_token', { required: true });
-    core.info(`🔑 GitHub token length: ${githubToken.length}`);
     const includePatterns = core.getInput('include_patterns')
       .split(',')
       .map(p => p.trim())
@@ -71,156 +89,65 @@ async function run(): Promise<void> {
     const failOnArchived = core.getInput('fail_on_archived').toLowerCase() === 'true';
     const uploadSarif = core.getInput('upload_sarif').toLowerCase() === 'true';
 
-    // Validate severity input
     if (!['error', 'warning', 'note'].includes(severity)) {
       throw new Error(`Invalid severity level: ${severity}. Must be one of: error, warning, note`);
     }
 
-    core.info('🔍 Starting archived repository scan...');
-    core.info(`Include patterns: ${includePatterns.join(', ')}`);
-    core.info(`Exclude patterns: ${excludePatterns.join(', ')}`);
-    core.info(`Severity level: ${severity}`);
-
-    // Initialize the scanner
+    // Scan repository and identify archived dependencies
     const scanner = new ArchiveScanner(githubToken);
-
-    // Scan the repository for GitHub links
     const allRepos = await scanner.scanRepository(includePatterns, excludePatterns);
-    
-    // Filter for archived repositories
     const archivedRepos = allRepos.filter(repoRef => repoRef.repo.archived === true);
 
-    core.info(`📊 Scan Results:`);
-    core.info(`  Total GitHub repositories found: ${allRepos.length}`);
-    core.info(`  Archived repositories found: ${archivedRepos.length}`);
+    core.info(`📊 Found ${allRepos.length} repositories, ${archivedRepos.length} archived`);
 
-    // Set outputs
+    // Set action outputs
     core.setOutput('total_github_links', allRepos.length.toString());
     core.setOutput('archived_repos_found', archivedRepos.length.toString());
-    
-    core.info(`📤 Outputs set:`);
-    core.info(`  total_github_links: ${allRepos.length}`);
-    core.info(`  archived_repos_found: ${archivedRepos.length}`);
+
+    // Generate and upload SARIF report
+    const sarifReport = scanner.generateSarifReport(archivedRepos, severity);
+    const sarifPath = path.join(process.cwd(), 'archived-repos-scan.sarif');
+    await fs.promises.writeFile(sarifPath, JSON.stringify(sarifReport, null, 2));
+    core.setOutput('sarif_file_path', sarifPath);
+
+    if (uploadSarif) {
+      await uploadSarifToCodeScanning(sarifPath, githubToken);
+    }
 
     if (archivedRepos.length > 0) {
-      // Generate SARIF report
-      const sarifReport = scanner.generateSarifReport(archivedRepos, severity);
-      
-      // Write SARIF file
-      const sarifPath = path.join(process.cwd(), 'archived-repos-scan.sarif');
-      await fs.promises.writeFile(sarifPath, JSON.stringify(sarifReport, null, 2));
-      
-      core.setOutput('sarif_file_path', sarifPath);
-      
-      core.info(`📝 SARIF report generated: ${sarifPath}`);
-      
-      // Upload SARIF to GitHub Code Scanning if enabled
-      if (uploadSarif) {
-        await uploadSarifToCodeScanning(sarifPath, githubToken);
-      }
-      
       // Log details about archived repositories
-      core.startGroup('📋 Archived Repositories Details');
+      core.startGroup('📋 Archived Repository Details');
       for (const repoRef of archivedRepos) {
-        core.info(`\n🗄️ ${repoRef.repo.owner}/${repoRef.repo.name}`);
-        core.info(`   URL: ${repoRef.repo.url}`);
-        core.info(`   Found in ${repoRef.locations.length} location(s):`);
+        core.info(`🗄️ ${repoRef.repo.owner}/${repoRef.repo.name} (${repoRef.locations.length} locations)`);
         for (const location of repoRef.locations) {
-          core.info(`     - ${location.file}:${location.line}:${location.column}`);
-          core.info(`       Context: ${location.context}`);
+          core.info(`  - ${location.file}:${location.line}`);
         }
       }
       core.endGroup();
 
-      // Create summary
-      core.summary
-        .addHeading('🔍 Archived Repository Scanner Results')
-        .addTable([
-          [
-            { data: 'Metric', header: true },
-            { data: 'Count', header: true }
-          ],
-          ['Total GitHub repositories found', allRepos.length.toString()],
-          ['Archived repositories found', archivedRepos.length.toString()],
-          ['Severity level', severity]
-        ]);
+      await createJobSummary(allRepos, archivedRepos, severity);
 
-      if (archivedRepos.length > 0) {
-        core.summary
-          .addHeading('📋 Archived Repositories', 3)
-          .addTable([
-            [
-              { data: 'Repository', header: true },
-              { data: 'Locations', header: true },
-              { data: 'Files', header: true }
-            ],
-            ...archivedRepos.map(repoRef => [
-              `[${repoRef.repo.owner}/${repoRef.repo.name}](${repoRef.repo.url})`,
-              repoRef.locations.length.toString(),
-              repoRef.locations.map(loc => `${loc.file}:${loc.line}`).join('<br>')
-            ])
-          ]);
-      }
-
-      try {
-        await core.summary.write();
-      } catch (error) {
-        core.warning(`Failed to write job summary: ${error instanceof Error ? error.message : String(error)}`);
-      }
-
+      // Set action result based on configuration
+      const message = `Found ${archivedRepos.length} archived repository dependencies. Check the Security tab for details.`;
       if (failOnArchived && severity === 'error') {
-        core.setFailed(`Found ${archivedRepos.length} archived repository dependencies. Check the Security tab for details.`);
+        core.setFailed(message);
       } else if (failOnArchived) {
-        core.warning(`Found ${archivedRepos.length} archived repository dependencies. Check the Security tab for details.`);
+        core.warning(message);
       } else {
-        core.info(`Found ${archivedRepos.length} archived repository dependencies. Check the Security tab for details.`);
+        core.info(message);
       }
     } else {
+      await createJobSummary(allRepos, archivedRepos, severity);
       core.info('✅ No archived repository dependencies found!');
-      
-      // Still create an empty SARIF file for consistency
-      const emptySarifReport = scanner.generateSarifReport([], severity);
-      const sarifPath = path.join(process.cwd(), 'archived-repos-scan.sarif');
-      await fs.promises.writeFile(sarifPath, JSON.stringify(emptySarifReport, null, 2));
-      core.setOutput('sarif_file_path', sarifPath);
-      
-      // Upload empty SARIF to GitHub Code Scanning if enabled
-      if (uploadSarif) {
-        await uploadSarifToCodeScanning(sarifPath, githubToken);
-      }
-
-      core.summary
-        .addHeading('🔍 Archived Repository Scanner Results')
-        .addRaw('✅ No archived repository dependencies found!')
-        .addTable([
-          [
-            { data: 'Metric', header: true },
-            { data: 'Count', header: true }
-          ],
-          ['Total GitHub repositories found', allRepos.length.toString()],
-          ['Archived repositories found', '0']
-        ]);
-
-      try {
-        await core.summary.write();
-      } catch (error) {
-        core.warning(`Failed to write job summary: ${error instanceof Error ? error.message : String(error)}`);
-      }
     }
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     core.setFailed(`Action failed: ${errorMessage}`);
-    
-    // Set outputs even on failure
-    core.setOutput('total_github_links', '0');
-    core.setOutput('archived_repos_found', '0');
-    core.setOutput('sarif_file_path', '');
   }
 }
 
-// Only run if this is the main module
-// Ensure the action runs in all environments
+// Execute the action
 run();
 
 export { run }; 

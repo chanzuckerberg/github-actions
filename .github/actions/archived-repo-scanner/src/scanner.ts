@@ -27,13 +27,12 @@ export class ArchiveScanner {
     includePatterns: string[],
     excludePatterns: string[]
   ): Promise<RepoReference[]> {
-    core.info('Starting repository scan for GitHub links...');
-    
     const files = await this.getFilesToScan(includePatterns, excludePatterns);
-    core.info(`Found ${files.length} files to scan`);
+    core.info(`Scanning ${files.length} files for GitHub repository references`);
 
     const repoMap = new Map<string, RepoReference>();
 
+    // Extract repository references from all files
     for (const file of files) {
       try {
         const content = await fs.promises.readFile(file, 'utf8');
@@ -55,9 +54,7 @@ export class ArchiveScanner {
     const repoReferences = Array.from(repoMap.values());
     core.info(`Found ${repoReferences.length} unique GitHub repositories`);
 
-    // Check archive status for all repositories
     await this.checkArchiveStatus(repoReferences);
-
     return repoReferences;
   }
 
@@ -149,6 +146,7 @@ export class ArchiveScanner {
     for (const repoRef of repoReferences) {
       const key = `${repoRef.repo.owner}/${repoRef.repo.name}`;
       
+      // Use cached result if available
       if (this.checkedRepos.has(key)) {
         repoRef.repo.archived = this.checkedRepos.get(key);
         continue;
@@ -167,16 +165,16 @@ export class ArchiveScanner {
           core.info(`Found archived repository: ${key}`);
         }
       } catch (error: any) {
+        // Handle API errors gracefully - don't flag inaccessible repos as archived
         if (error.status === 404) {
           core.warning(`Repository not found: ${key} (private/deleted or insufficient permissions)`);
-          repoRef.repo.archived = false; // Don't flag missing repos as archived
         } else if (error.status === 403) {
           core.warning(`Access denied to repository: ${key} (insufficient token permissions)`);
-          repoRef.repo.archived = false; // Don't flag inaccessible repos as archived
         } else {
           core.warning(`Failed to check repository ${key}: ${error.message}`);
-          repoRef.repo.archived = false; // Default to not archived on error
         }
+        
+        repoRef.repo.archived = false;
         this.checkedRepos.set(key, false);
       }
     }
@@ -186,6 +184,8 @@ export class ArchiveScanner {
     archivedRepos: RepoReference[],
     severity: 'error' | 'warning' | 'note' = 'error'
   ): SarifReport {
+    const securitySeverity = severity === 'error' ? '7.0' : severity === 'warning' ? '5.0' : '3.0';
+    
     const rule: SarifRule = {
       id: 'archived-dependency',
       name: 'ArchivedDependency',
@@ -204,7 +204,7 @@ export class ArchiveScanner {
       },
       properties: {
         tags: ['security', 'maintenance', 'dependency'],
-        'security-severity': severity === 'error' ? '7.0' : severity === 'warning' ? '5.0' : '3.0',
+        'security-severity': securitySeverity,
       },
     };
 
