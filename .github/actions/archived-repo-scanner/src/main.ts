@@ -216,8 +216,7 @@ async function run(): Promise<void> {
 }
 
 // Only run if this is the main module
-if (require.main === module) {
-  run();
-}
+// Ensure the action runs in all environments
+run();
 
 export { run }; 
