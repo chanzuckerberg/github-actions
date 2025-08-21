@@ -43,10 +43,18 @@ async function run(): Promise<void> {
   core.setOutput('total_github_links', '0');
   core.setOutput('archived_repos_found', '0');
   core.setOutput('sarif_file_path', '');
+  
+  // Debug: Log that the action is starting
+  console.log('🚀 Archived Repository Scanner action starting...');
+  core.info('🚀 Action execution started');
+  core.info(`📍 Working directory: ${process.cwd()}`);
+  core.info(`📍 Node version: ${process.version}`);
 
   try {
     // Get inputs from the action
+    core.info('📥 Reading action inputs...');
     const githubToken = core.getInput('github_token', { required: true });
+    core.info(`🔑 GitHub token length: ${githubToken.length}`);
     const includePatterns = core.getInput('include_patterns')
       .split(',')
       .map(p => p.trim())
