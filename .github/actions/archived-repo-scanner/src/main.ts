@@ -1,7 +1,42 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getOctokit } from '@actions/github';
 import { ArchiveScanner } from './scanner';
+
+async function uploadSarifToCodeScanning(sarifPath: string, githubToken: string): Promise<void> {
+  try {
+    const octokit = getOctokit(githubToken);
+    const sarifContent = await fs.promises.readFile(sarifPath, 'utf8');
+    const sarifBase64 = Buffer.from(sarifContent).toString('base64');
+    
+    // Get repository and commit information from environment
+    const repo = process.env.GITHUB_REPOSITORY;
+    const ref = process.env.GITHUB_SHA;
+    
+    if (!repo || !ref) {
+      throw new Error('Missing required environment variables GITHUB_REPOSITORY or GITHUB_SHA');
+    }
+    
+    const [owner, repoName] = repo.split('/');
+    
+    core.info('📤 Uploading SARIF results to GitHub Code Scanning...');
+    
+    await octokit.rest.codeScanning.uploadSarif({
+      owner,
+      repo: repoName,
+      commit_sha: ref,
+      ref: process.env.GITHUB_REF || `refs/heads/${process.env.GITHUB_REF_NAME || 'main'}`,
+      sarif: sarifBase64,
+      tool_name: 'Archived Repository Scanner'
+    });
+    
+    core.info('✅ SARIF results uploaded successfully to GitHub Code Scanning');
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    core.warning(`Failed to upload SARIF to GitHub Code Scanning: ${errorMessage}`);
+  }
+}
 
 async function run(): Promise<void> {
   // Initialize outputs early to ensure they're always set
@@ -21,6 +56,8 @@ async function run(): Promise<void> {
       .map(p => p.trim())
       .filter(p => p.length > 0);
     const severity = core.getInput('severity') as 'error' | 'warning' | 'note';
+    const failOnArchived = core.getInput('fail_on_archived').toLowerCase() === 'true';
+    const uploadSarif = core.getInput('upload_sarif').toLowerCase() === 'true';
 
     // Validate severity input
     if (!['error', 'warning', 'note'].includes(severity)) {
@@ -64,6 +101,11 @@ async function run(): Promise<void> {
       core.setOutput('sarif_file_path', sarifPath);
       
       core.info(`📝 SARIF report generated: ${sarifPath}`);
+      
+      // Upload SARIF to GitHub Code Scanning if enabled
+      if (uploadSarif) {
+        await uploadSarifToCodeScanning(sarifPath, githubToken);
+      }
       
       // Log details about archived repositories
       core.startGroup('📋 Archived Repositories Details');
@@ -114,10 +156,12 @@ async function run(): Promise<void> {
         core.warning(`Failed to write job summary: ${error instanceof Error ? error.message : String(error)}`);
       }
 
-      if (severity === 'error') {
+      if (failOnArchived && severity === 'error') {
         core.setFailed(`Found ${archivedRepos.length} archived repository dependencies. Check the Security tab for details.`);
-      } else {
+      } else if (failOnArchived) {
         core.warning(`Found ${archivedRepos.length} archived repository dependencies. Check the Security tab for details.`);
+      } else {
+        core.info(`Found ${archivedRepos.length} archived repository dependencies. Check the Security tab for details.`);
       }
     } else {
       core.info('✅ No archived repository dependencies found!');
@@ -127,6 +171,11 @@ async function run(): Promise<void> {
       const sarifPath = path.join(process.cwd(), 'archived-repos-scan.sarif');
       await fs.promises.writeFile(sarifPath, JSON.stringify(emptySarifReport, null, 2));
       core.setOutput('sarif_file_path', sarifPath);
+      
+      // Upload empty SARIF to GitHub Code Scanning if enabled
+      if (uploadSarif) {
+        await uploadSarifToCodeScanning(sarifPath, githubToken);
+      }
 
       core.summary
         .addHeading('🔍 Archived Repository Scanner Results')

@@ -19,6 +19,14 @@ inputs:
     description: 'Security alert severity level (error, warning, note)'
     required: false
     default: 'error'
+  fail_on_archived:
+    description: 'Whether the action should fail when archived repositories are found'
+    required: false
+    default: 'true'
+  upload_sarif:
+    description: 'Whether to upload SARIF results to GitHub Code Scanning'
+    required: false
+    default: 'true'
 
 outputs:
   archived_repos_found:
