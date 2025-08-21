@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as zlib from 'zlib';
 import { getOctokit } from '@actions/github';
 import { ArchiveScanner } from './scanner';
 
@@ -8,7 +9,10 @@ async function uploadSarifToCodeScanning(sarifPath: string, githubToken: string)
   try {
     const octokit = getOctokit(githubToken);
     const sarifContent = await fs.promises.readFile(sarifPath, 'utf8');
-    const sarifBase64 = Buffer.from(sarifContent).toString('base64');
+    
+    // Gzip compress the SARIF content, then base64 encode it
+    const gzippedSarif = zlib.gzipSync(Buffer.from(sarifContent, 'utf8'));
+    const sarifBase64 = gzippedSarif.toString('base64');
     
     // Get repository and commit information from environment
     const repo = process.env.GITHUB_REPOSITORY;
