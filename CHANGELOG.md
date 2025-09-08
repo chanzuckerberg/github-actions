@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.7.0](https://github.com/chanzuckerberg/github-actions/compare/v6.6.0...v6.7.0) (2025-09-08)
+
+
+### Features
+
+* mock out the argus/argo injected data so linter can work with dynamic CRDs ([#438](https://github.com/chanzuckerberg/github-actions/issues/438)) ([d35be57](https://github.com/chanzuckerberg/github-actions/commit/d35be57125ed1db2987a8908bfce1b2a72a08298))
+
 ## [6.6.0](https://github.com/chanzuckerberg/github-actions/compare/v6.5.0...v6.6.0) (2025-08-18)
 
 
