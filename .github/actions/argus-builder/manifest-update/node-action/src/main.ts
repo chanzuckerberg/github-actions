@@ -58,6 +58,11 @@ export async function main() {
   core.info('Values files updated successfully');
 }
 
+export function tagProductionImages(): void {
+  core.info('Tagging production images with "production" tag');
+  child_process.execFileSync('yq', ['eval', '-i', '(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "latest"', 'production/values.yaml']);
+}
+
 export function determineValuesFilesToUpdate(images: ProcessedImage[], envs: string[]): string[] {
   const argusInfraDirs = images.map((image) => {
     if (!image.should_build) {
