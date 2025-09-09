@@ -109,7 +109,7 @@ runs:
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
         name: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
         registry: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}
-        custom_tag: ${{ inputs.image_tag }}\nproduction
+        custom_tag: ${{ inputs.image_tag }}
         platforms: ${{ inputs.platform }}
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
