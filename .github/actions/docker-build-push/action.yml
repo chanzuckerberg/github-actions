@@ -83,8 +83,8 @@ runs:
       with:
         script: |
           let cacheFrom = [
-            "release-please--branches--main",
             "${{ steps.refs.outputs.headRef }}",
+            "release-please--branches--main",
           ].map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
             .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
           console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
