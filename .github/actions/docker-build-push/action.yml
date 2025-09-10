@@ -83,7 +83,7 @@ runs:
       with:
         script: |
           let cacheFrom = [
-            "${{ steps.refs.outputs.baseRef }}",
+            "release-please--branches--main",
             "${{ steps.refs.outputs.headRef }}",
           ].map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
             .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
