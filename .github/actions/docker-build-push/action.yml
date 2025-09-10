@@ -97,7 +97,6 @@ runs:
         push: true
         load: ${{ inputs.load }}
         tags: ${{ steps.meta.outputs.tags }}
-        provenance: true
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: ${{ steps.cache-from.outputs.cacheFrom }}
         cache-to: |
