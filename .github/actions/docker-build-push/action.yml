@@ -32,7 +32,7 @@ inputs:
   load:
     description: "Load the image into the Docker daemon"
     required: false
-    default: 'false'
+    default: "false"
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -101,6 +101,8 @@ runs:
         cache-from: ${{ steps.cache-from.outputs.cacheFrom }}
         cache-to: |
           type=inline,mode=max
-        build-args: ${{ inputs.build_args }}
+        build-args: |
+          ${{ inputs.build_args }}
+          --progress=plain
         secret-files: ${{ inputs.secret-files }}
         platforms: ${{ inputs.platforms }}
