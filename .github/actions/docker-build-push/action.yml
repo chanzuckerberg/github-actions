@@ -97,6 +97,7 @@ runs:
         push: true
         load: ${{ inputs.load }}
         tags: ${{ steps.meta.outputs.tags }}
+        attests: '["type=provenance,mode=max"]'
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: ${{ steps.cache-from.outputs.cacheFrom }}
         cache-to: |
