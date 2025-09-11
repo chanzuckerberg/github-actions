@@ -114,6 +114,6 @@ runs:
           type=inline,mode=max
         build-args: |
           ${{ inputs.build_args }}
-          --progress=plain
         secret-files: ${{ inputs.secret-files }}
         platforms: ${{ inputs.platforms }}
+        build-opts: --progress=plain
