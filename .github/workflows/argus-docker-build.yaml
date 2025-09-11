@@ -129,7 +129,7 @@ jobs:
           secret_files: ${{ matrix.image.secret_files }}
           image_tag: |
             ${{ needs.prep.outputs.image_tag }}
-            ${{ (contains(inputs.envs, 'prod') && 'production') || '' }}
+            ${{ contains(inputs.envs, 'prod') && (join('prod-', needs.prep.outputs.image_tag) || '') }}
           github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
           fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
