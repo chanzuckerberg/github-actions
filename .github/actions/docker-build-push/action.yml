@@ -77,14 +77,21 @@ runs:
     - name: Calculate Branch and Base Names
       id: refs
       uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1.4.0
+    - name: Calculate all the release-please branches
+      id: release-please-branches
+      run: |
+        RELEASE_PLEASE_BRANCHES=$(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please")
+        echo "${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
     - name: Calculate Cache-From
       id: cache-from
       uses: actions/github-script@v7
       with:
+        env:
+          RELEASE_PLEASE_BRANCHES: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
         script: |
           let cacheFrom = [
             "${{ steps.refs.outputs.headRef }}",
-            "release-please--branches--main",
+            ...process.env.RELEASE_PLEASE_BRANCHES.split("\n").filter(Boolean)
           ].map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
             .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
           console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
