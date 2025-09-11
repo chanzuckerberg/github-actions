@@ -93,7 +93,6 @@ runs:
         RELEASE_PLEASE_BRANCHES: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
       with:
         script: |
-
           let cacheFrom = [
             "${{ steps.refs.outputs.headRef }}",
             ...process.env.RELEASE_PLEASE_BRANCHES.split("\n").filter(Boolean)
