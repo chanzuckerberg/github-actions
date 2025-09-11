@@ -86,9 +86,9 @@ runs:
     - name: Calculate Cache-From
       id: cache-from
       uses: actions/github-script@v7
+      env:
+        RELEASE_PLEASE_BRANCHES: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
       with:
-        env:
-          RELEASE_PLEASE_BRANCHES: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
         script: |
           let cacheFrom = [
             "${{ steps.refs.outputs.headRef }}",
