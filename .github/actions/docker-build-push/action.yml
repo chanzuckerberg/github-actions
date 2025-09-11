@@ -19,7 +19,7 @@ inputs:
     description: "A list of build arguments to pass to the docker build."
     required: false
   custom_tag:
-    description: "A single custom tag to apply to the built image."
+    description: "Tag(s) to apply to the built image. If you supply a multi-line string, each line will be applied as a tag."
     required: false
     default: ""
   secret-files:
