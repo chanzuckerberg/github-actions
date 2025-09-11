@@ -81,6 +81,9 @@ runs:
       id: release-please-branches
       shell: bash
       run: |
+        echo "Current dir: $(pwd)"
+        echo "Changing to context dir: $(dirname ${{ inputs.context }})"
+        cd $(dirname ${{ inputs.context }})
         RELEASE_PLEASE_BRANCHES=$(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please")
         echo "RELEASE_PLEASE_BRANCHES=${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
     - name: Calculate Cache-From
@@ -90,6 +93,7 @@ runs:
         RELEASE_PLEASE_BRANCHES: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
       with:
         script: |
+
           let cacheFrom = [
             "${{ steps.refs.outputs.headRef }}",
             ...process.env.RELEASE_PLEASE_BRANCHES.split("\n").filter(Boolean)
