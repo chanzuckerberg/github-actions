@@ -79,6 +79,7 @@ runs:
       uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1.4.0
     - name: Calculate all the release-please branches
       id: release-please-branches
+      shell: bash
       run: |
         RELEASE_PLEASE_BRANCHES=$(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please")
         echo "${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
