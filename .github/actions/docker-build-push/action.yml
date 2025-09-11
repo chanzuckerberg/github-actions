@@ -84,7 +84,7 @@ runs:
         echo "Current dir: $(pwd)"
         echo "Changing to context dir: $(dirname ${{ inputs.context }})"
         cd $(dirname ${{ inputs.context }})
-        RELEASE_PLEASE_BRANCHES=$(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please")
+        RELEASE_PLEASE_BRANCHES=$(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please" || true)
         echo "RELEASE_PLEASE_BRANCHES=${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
     - name: Calculate Cache-From
       id: cache-from
