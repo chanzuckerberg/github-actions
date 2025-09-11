@@ -1,0 +1,27 @@
+docker run -v /Users/jheath/Documents/argus-example-app:/app --rm  --privileged --entrypoint "/bin/sh"  -it docker:dind
+
+docker buildx build \
+--build-arg IMAGE_TAG=sha-8280599 \
+--build-arg TEST_TEST_TEST=testing-build-args \
+--build-arg \
+--progress=plain \
+--cache-from type=registry,ref=533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/argus-example-app/src/frontend/frontend:branch-heathj-testcustomtags \
+--cache-from type=registry,ref=533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/argus-example-app/src/frontend/frontend:branch-release-please--branches--main \
+--cache-to type=inline,mode=max \
+--iidfile /iidfile.txt \
+--label org.opencontainers.image.created=2025-09-10T22:40:48.785Z \
+--label org.opencontainers.image.description="Example layout for an app deployed to Argus" \
+--label org.opencontainers.image.licenses= \
+--label org.opencontainers.image.revision=82805992aa55a381699aafcea2b0c544393e238f \
+--label org.opencontainers.image.source=https://github.com/chanzuckerberg/argus-example-app \
+--label org.opencontainers.image.title=argus-example-app \
+--label org.opencontainers.image.url=https://github.com/chanzuckerberg/argus-example-app \
+--label org.opencontainers.image.version=branch-heathj-testcustomtags \
+--platform linux/arm64 \
+--tag 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/argus-example-app/src/frontend/frontend:branch-heathj-testcustomtags \
+--tag 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/argus-example-app/src/frontend/frontend:sha-8280599 \
+--tag 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/argus-example-app/src/frontend/frontend:sha-82805992aa55a381699aafcea2b0c544393e238f \
+--load \
+--metadata-file /metadata.json \
+--push \
+/app/src/frontend/
