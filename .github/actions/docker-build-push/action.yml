@@ -82,7 +82,7 @@ runs:
       shell: bash
       run: |
         RELEASE_PLEASE_BRANCHES=$(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please")
-        echo "${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
+        echo "RELEASE_PLEASE_BRANCHES=${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
     - name: Calculate Cache-From
       id: cache-from
       uses: actions/github-script@v7
