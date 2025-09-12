@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.8.0](https://github.com/chanzuckerberg/github-actions/compare/v6.7.0...v6.8.0) (2025-09-12)
+
+
+### Features
+
+* add a production tag to images that have "prod" in the envs section ([#440](https://github.com/chanzuckerberg/github-actions/issues/440)) ([28581bb](https://github.com/chanzuckerberg/github-actions/commit/28581bb661ec8f350a5cf6dbdde9cd84a5ddddec))
+
+
+### BugFixes
+
+* use the cache from prod/staging argus builds ([#441](https://github.com/chanzuckerberg/github-actions/issues/441)) ([09eb2e4](https://github.com/chanzuckerberg/github-actions/commit/09eb2e44cb47517ee9b380d26f37b2f03aa69bf2))
+
 ## [6.7.0](https://github.com/chanzuckerberg/github-actions/compare/v6.6.0...v6.7.0) (2025-09-08)
 
 
