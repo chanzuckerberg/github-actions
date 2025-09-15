@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.0...docker-build-push-v1.9.1) (2025-09-15)
+
+
+### BugFixes
+
+* hallucination by AI; not my fault ([#443](https://github.com/chanzuckerberg/github-actions/issues/443)) ([5235650](https://github.com/chanzuckerberg/github-actions/commit/5235650f4991d74fe43679fb7660af0cbfd6f31a))
+* multiline output when multiple release-please branches ([#444](https://github.com/chanzuckerberg/github-actions/issues/444)) ([3a0e005](https://github.com/chanzuckerberg/github-actions/commit/3a0e005eccb13ab9483e62a6864a605ec48f89e0))
+
 ## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.8.0...docker-build-push-v1.9.0) (2025-09-12)
 
 
