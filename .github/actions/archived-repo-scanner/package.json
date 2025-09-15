@@ -1,0 +1,24 @@
+{
+  "name": "archived-repo-scanner-action",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub Action that scans for archived repository dependencies and reports them as security vulnerabilities",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest --config=../../../../jest.config.js --rootDir=./",
+    "build": "ncc build src/main.ts --source-map --minify",
+    "lint": "eslint --max-warnings=0 src/",
+    "lint:fix": "eslint --fix src/",
+    "eslint": "eslint"
+  },
+  "author": "CZI",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^6.0.0",
+    "glob": "^10.3.10"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0"
+  }
+} 
