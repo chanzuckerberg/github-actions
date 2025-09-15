@@ -116,5 +116,3 @@ runs:
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret-files }}
         platforms: ${{ inputs.platforms }}
-        build-opts: |
-          --progress=plain
