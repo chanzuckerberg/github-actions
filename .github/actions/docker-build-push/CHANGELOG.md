@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.2](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.1...docker-build-push-v1.9.2) (2025-09-24)
+
+
+### BugFixes
+
+* use the cache from prod/staging argus builds ([#441](https://github.com/chanzuckerberg/github-actions/issues/441)) ([#446](https://github.com/chanzuckerberg/github-actions/issues/446)) ([d5e4410](https://github.com/chanzuckerberg/github-actions/commit/d5e4410720dd4285cf8a359f60893d4cf0a4d1ec))
+
 ## [1.9.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.0...docker-build-push-v1.9.1) (2025-09-15)
 
 
