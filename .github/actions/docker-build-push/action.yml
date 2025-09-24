@@ -84,7 +84,7 @@ runs:
         echo "Current dir: $(pwd)"
         echo "Changing to context dir: $(dirname ${{ inputs.context }})"
         cd $(dirname ${{ inputs.context }})
-        RELEASE_PLEASE_BRANCHES=$(for i in $(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please" || true); do echo -n "$i,"; done)
+        RELEASE_PLEASE_BRANCHES=$(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please" || true)
         echo "RELEASE_PLEASE_BRANCHES=${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
     - name: Calculate Cache-From
       id: cache-from
@@ -95,7 +95,7 @@ runs:
         script: |
           let cacheFrom = [
             "${{ steps.refs.outputs.headRef }}",
-            ...process.env.RELEASE_PLEASE_BRANCHES.split(",").filter(Boolean)
+            ...process.env.RELEASE_PLEASE_BRANCHES.split("\n").filter(Boolean)
           ].map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
             .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
           console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
