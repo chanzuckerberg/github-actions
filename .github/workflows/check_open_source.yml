@@ -1,0 +1,92 @@
+name: Check Open Source Requirements
+
+permissions:
+  contents: read
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  check-open-source-files:
+    # Only run on public repositories
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for LICENSE.md or LICENSE
+        run: |
+          if [ ! -f "LICENSE.md" ] && [ ! -f "LICENSE" ]; then
+            echo "❌ LICENSE.md or LICENSE file is missing"
+            echo "missing_license=true" >> $GITHUB_ENV
+          else
+            if [ -f "LICENSE.md" ]; then
+              echo "✅ LICENSE.md file exists"
+            else
+              echo "✅ LICENSE file exists"
+            fi
+          fi
+
+      - name: Check for SECURITY.md
+        run: |
+          if [ ! -f "SECURITY.md" ]; then
+            echo "❌ SECURITY.md file is missing"
+            echo "missing_security=true" >> $GITHUB_ENV
+          else
+            echo "✅ SECURITY.md file exists"
+          fi
+
+      - name: Check for README.md
+        run: |
+          if [ ! -f "README.md" ]; then
+            echo "❌ README.md file is missing"
+            echo "missing_readme=true" >> $GITHUB_ENV
+          else
+            echo "✅ README.md file exists"
+          fi
+
+      - name: Check for Code of Conduct
+        run: |
+          if ! grep -iq "code of conduct" * 2>/dev/null; then
+            echo "❌ 'Code of Conduct' string not found in repository root"
+            echo "missing_coc=true" >> $GITHUB_ENV
+          else
+            echo "✅ 'Code of Conduct' reference found"
+            grep -i "code of conduct" * 2>/dev/null | head -5
+          fi
+
+      - name: Report results
+        run: |
+          failed=false
+
+          if [ "$missing_license" = "true" ]; then
+            echo "::error::LICENSE.md or LICENSE file is missing"
+            failed=true
+          fi
+
+          if [ "$missing_security" = "true" ]; then
+            echo "::error::SECURITY.md file is missing"
+            failed=true
+          fi
+
+          if [ "$missing_readme" = "true" ]; then
+            echo "::error::README.md file is missing"
+            failed=true
+          fi
+
+          if [ "$missing_coc" = "true" ]; then
+            echo "::error::Code of Conduct reference is missing from repository root"
+            failed=true
+          fi
+
+          if [ "$failed" = "true" ]; then
+            echo "::error::Open source requirements check failed"
+            exit 1
+          else
+            echo "✅ All open source requirements are met!"
+          fi

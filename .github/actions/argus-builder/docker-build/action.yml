@@ -90,7 +90,17 @@ runs:
             '${{ inputs.context }}',
             '${{ inputs.image_name }}',
           );
-          const IMAGE_URI = `${ECR_REGISTRY}/${ECR_REPO_NAME}:${{ inputs.image_tag }}`;
+
+          // inputs.image_tag can be a multi-line string so we split on newlines and take the first non-empty line
+          const inputTagLines = `${{ inputs.image_tag }}`.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+          if (inputTagLines.length === 0) {
+            throw new Error("inputs.image_tag must contain at least one non-empty line");
+          }
+          if (inputTagLines.length > 1) {
+            console.warn(`inputs.image_tag contains multiple non-empty lines, using the first one: ${inputTagLines[0]}`);
+          }
+
+          const IMAGE_URI = `${ECR_REGISTRY}/${ECR_REPO_NAME}:${inputTagLines[0]}`;
 
           core.setOutput('ECR_REGISTRY', ECR_REGISTRY);
           core.setOutput('ECR_REPO_NAME', ECR_REPO_NAME);
@@ -103,7 +113,7 @@ runs:
         lifecycle-policy: argus-artifacts/settings/ecr/lifecycle-policy.json
         repository-policy: argus-artifacts/settings/ecr/repository-policy.json
     - name: Build And Push
-      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@193e90c0872c379105b55b1d02cf55e9992f6f16
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@v6
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
@@ -122,5 +132,5 @@ runs:
       id: scan
       with:
         image_name: ${{ inputs.image_name }}
-        image_uri: ${{ steps.create_ecr_repo.outputs.repository-uri }}:${{ inputs.image_tag }}
+        image_uri: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
         fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}

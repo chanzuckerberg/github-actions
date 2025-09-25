@@ -1,5 +1,52 @@
 # Changelog
 
+## [6.8.2](https://github.com/chanzuckerberg/github-actions/compare/v6.8.1...v6.8.2) (2025-09-24)
+
+
+### BugFixes
+
+* use the cache from prod/staging argus builds ([#441](https://github.com/chanzuckerberg/github-actions/issues/441)) ([#446](https://github.com/chanzuckerberg/github-actions/issues/446)) ([d5e4410](https://github.com/chanzuckerberg/github-actions/commit/d5e4410720dd4285cf8a359f60893d4cf0a4d1ec))
+
+## [6.8.1](https://github.com/chanzuckerberg/github-actions/compare/v6.8.0...v6.8.1) (2025-09-15)
+
+
+### BugFixes
+
+* hallucination by AI; not my fault ([#443](https://github.com/chanzuckerberg/github-actions/issues/443)) ([5235650](https://github.com/chanzuckerberg/github-actions/commit/5235650f4991d74fe43679fb7660af0cbfd6f31a))
+* multiline output when multiple release-please branches ([#444](https://github.com/chanzuckerberg/github-actions/issues/444)) ([3a0e005](https://github.com/chanzuckerberg/github-actions/commit/3a0e005eccb13ab9483e62a6864a605ec48f89e0))
+
+## [6.8.0](https://github.com/chanzuckerberg/github-actions/compare/v6.7.0...v6.8.0) (2025-09-12)
+
+
+### Features
+
+* add a production tag to images that have "prod" in the envs section ([#440](https://github.com/chanzuckerberg/github-actions/issues/440)) ([28581bb](https://github.com/chanzuckerberg/github-actions/commit/28581bb661ec8f350a5cf6dbdde9cd84a5ddddec))
+
+
+### BugFixes
+
+* use the cache from prod/staging argus builds ([#441](https://github.com/chanzuckerberg/github-actions/issues/441)) ([09eb2e4](https://github.com/chanzuckerberg/github-actions/commit/09eb2e44cb47517ee9b380d26f37b2f03aa69bf2))
+
+## [6.7.0](https://github.com/chanzuckerberg/github-actions/compare/v6.6.0...v6.7.0) (2025-09-08)
+
+
+### Features
+
+* mock out the argus/argo injected data so linter can work with dynamic CRDs ([#438](https://github.com/chanzuckerberg/github-actions/issues/438)) ([d35be57](https://github.com/chanzuckerberg/github-actions/commit/d35be57125ed1db2987a8908bfce1b2a72a08298))
+
+## [6.6.0](https://github.com/chanzuckerberg/github-actions/compare/v6.5.0...v6.6.0) (2025-08-18)
+
+
+### Features
+
+* CCIE-4853 add check_open_source.yml workflow ([#433](https://github.com/chanzuckerberg/github-actions/issues/433)) ([1d148fe](https://github.com/chanzuckerberg/github-actions/commit/1d148fe2517beab38f8c6575bfe8682fa8b78ab9))
+
+
+### BugFixes
+
+* CCIE-4853 accept LICENSE file in OSS repos ([#435](https://github.com/chanzuckerberg/github-actions/issues/435)) ([6315133](https://github.com/chanzuckerberg/github-actions/commit/6315133c8968c66a93cede1b3335a6e75f537606))
+* make paginated calls to list changed files ([#437](https://github.com/chanzuckerberg/github-actions/issues/437)) ([5c536b2](https://github.com/chanzuckerberg/github-actions/commit/5c536b2400776ebd09f6f2e8074a53ca83448bad))
+
 ## [6.5.0](https://github.com/chanzuckerberg/github-actions/compare/v6.4.1...v6.5.0) (2025-07-23)
 
 

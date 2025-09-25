@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.9.2](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.1...docker-build-push-v1.9.2) (2025-09-24)
+
+
+### BugFixes
+
+* use the cache from prod/staging argus builds ([#441](https://github.com/chanzuckerberg/github-actions/issues/441)) ([#446](https://github.com/chanzuckerberg/github-actions/issues/446)) ([d5e4410](https://github.com/chanzuckerberg/github-actions/commit/d5e4410720dd4285cf8a359f60893d4cf0a4d1ec))
+
+## [1.9.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.0...docker-build-push-v1.9.1) (2025-09-15)
+
+
+### BugFixes
+
+* hallucination by AI; not my fault ([#443](https://github.com/chanzuckerberg/github-actions/issues/443)) ([5235650](https://github.com/chanzuckerberg/github-actions/commit/5235650f4991d74fe43679fb7660af0cbfd6f31a))
+* multiline output when multiple release-please branches ([#444](https://github.com/chanzuckerberg/github-actions/issues/444)) ([3a0e005](https://github.com/chanzuckerberg/github-actions/commit/3a0e005eccb13ab9483e62a6864a605ec48f89e0))
+
+## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.8.0...docker-build-push-v1.9.0) (2025-09-12)
+
+
+### Features
+
+* add a production tag to images that have "prod" in the envs section ([#440](https://github.com/chanzuckerberg/github-actions/issues/440)) ([28581bb](https://github.com/chanzuckerberg/github-actions/commit/28581bb661ec8f350a5cf6dbdde9cd84a5ddddec))
+
+
+### BugFixes
+
+* use the cache from prod/staging argus builds ([#441](https://github.com/chanzuckerberg/github-actions/issues/441)) ([09eb2e4](https://github.com/chanzuckerberg/github-actions/commit/09eb2e44cb47517ee9b380d26f37b2f03aa69bf2))
+
 ## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.7.0...docker-build-push-v1.8.0) (2025-02-27)
 
 

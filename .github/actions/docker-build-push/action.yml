@@ -19,7 +19,7 @@ inputs:
     description: "A list of build arguments to pass to the docker build."
     required: false
   custom_tag:
-    description: "A single custom tag to apply to the built image."
+    description: "Tag(s) to apply to the built image. If you supply a multi-line string, each line will be applied as a tag."
     required: false
     default: ""
   secret-files:
@@ -32,7 +32,7 @@ inputs:
   load:
     description: "Load the image into the Docker daemon"
     required: false
-    default: 'false'
+    default: "false"
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -83,7 +83,6 @@ runs:
       with:
         script: |
           let cacheFrom = [
-            "${{ steps.refs.outputs.baseRef }}",
             "${{ steps.refs.outputs.headRef }}",
           ].map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
             .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
@@ -101,6 +100,7 @@ runs:
         cache-from: ${{ steps.cache-from.outputs.cacheFrom }}
         cache-to: |
           type=inline,mode=max
-        build-args: ${{ inputs.build_args }}
+        build-args: |
+          ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret-files }}
         platforms: ${{ inputs.platforms }}
