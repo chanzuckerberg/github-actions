@@ -98,9 +98,10 @@ runs:
         load: ${{ inputs.load }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: ${{ steps.cache-from.outputs.cacheFrom }}
-        cache-to: |
-          type=inline,mode=max
+        # TODO: this is not working as expected and breaking people's CI we think...
+        #cache-from: ${{ steps.cache-from.outputs.cacheFrom }}
+        #cache-to: |
+        #  type=inline,mode=max
         build-args: |
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret-files }}
