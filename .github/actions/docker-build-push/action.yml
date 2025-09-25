@@ -85,7 +85,7 @@ runs:
           let cacheFrom = [
             "${{ steps.refs.outputs.headRef }}"
           ].map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
-            .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:branch-${ref}`).join('\r\n');
+            .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:cache-branch-${ref}`).join('\r\n');
           console.log(`Will use cached images from ${JSON.stringify(cacheFrom, null, 2)}`);
           core.setOutput("cacheFrom", cacheFrom);
     - name: Build and push
@@ -96,10 +96,10 @@ runs:
         push: true
         load: ${{ inputs.load }}
         tags: ${{ steps.meta.outputs.tags }}
-        # labels: ${{ steps.meta.outputs.labels }}
-        cache-from: ${{ steps.cache-from.outputs.cacheFrom }}
+        cache-from: |
+          ${{ steps.cache-from.outputs.cacheFrom }}
         cache-to: |
-          type=inline,mode=max
+          ${{ steps.cache-from.outputs.cacheFrom }},mode=max
         build-args: |
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret-files }}
