@@ -122,7 +122,6 @@ runs:
         custom_tag: ${{ inputs.image_tag }}
         platforms: ${{ inputs.platform }}
         build_args: |
-          IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret_files }}
         load: ${{ inputs.enable_vuln_container_scan }}
