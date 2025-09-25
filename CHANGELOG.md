@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.8.3](https://github.com/chanzuckerberg/github-actions/compare/v6.8.2...v6.8.3) (2025-09-25)
+
+
+### BugFixes
+
+* add the base ref back in ([#448](https://github.com/chanzuckerberg/github-actions/issues/448)) ([c2614ce](https://github.com/chanzuckerberg/github-actions/commit/c2614ce0dd4a0c5fe23ee306a1824fb2b7cffc44))
+
 ## [6.8.2](https://github.com/chanzuckerberg/github-actions/compare/v6.8.1...v6.8.2) (2025-09-24)
 
 
