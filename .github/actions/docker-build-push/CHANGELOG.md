@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.4](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.3...docker-build-push-v1.9.4) (2025-09-25)
+
+
+### BugFixes
+
+* disable docker caching for now ([#450](https://github.com/chanzuckerberg/github-actions/issues/450)) ([5074592](https://github.com/chanzuckerberg/github-actions/commit/5074592af72e08b102e2b6014666da5b4bb5078b))
+
 ## [1.9.3](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.2...docker-build-push-v1.9.3) (2025-09-25)
 
 
