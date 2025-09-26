@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.9.0](https://github.com/chanzuckerberg/github-actions/compare/v6.8.4...v6.9.0) (2025-09-26)
+
+
+### Features
+
+* switch cache from inline to registry ([#452](https://github.com/chanzuckerberg/github-actions/issues/452)) ([70506c2](https://github.com/chanzuckerberg/github-actions/commit/70506c267fba594a540cb13e9c985895106a5eae))
+
 ## [6.8.4](https://github.com/chanzuckerberg/github-actions/compare/v6.8.3...v6.8.4) (2025-09-25)
 
 
