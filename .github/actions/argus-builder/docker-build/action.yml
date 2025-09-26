@@ -125,7 +125,7 @@ runs:
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret_files }}
-        load: true
+        load: ${{ inputs.enable_vuln_container_scan }}
     - name: Scan for vulnerabilities
       if: ${{ inputs.enable_vuln_container_scan == 'true' }}
       uses: chanzuckerberg/github-actions/.github/actions/container-scanning@v6
