@@ -94,7 +94,7 @@ runs:
       with:
         script: |
           let cacheFrom = [
-            "${{ steps.refs.outputs.headRef }}"
+            "${{ steps.refs.outputs.headRef }}",
             ...process.env.RELEASE_PLEASE_BRANCHES.split("\n").filter(Boolean)
           ].map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
             .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:cache-branch-${ref}`).join('\r\n');
