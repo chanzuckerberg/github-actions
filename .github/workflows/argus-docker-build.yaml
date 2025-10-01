@@ -118,7 +118,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@v6
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@3a0e005eccb13ab9483e62a6864a605ec48f89e0
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
