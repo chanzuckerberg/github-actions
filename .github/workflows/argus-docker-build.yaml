@@ -118,7 +118,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@heathj/add-back-release-please-cache
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@v6
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}

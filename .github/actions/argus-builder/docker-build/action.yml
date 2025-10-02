@@ -121,7 +121,7 @@ runs:
         RELEASE_PLEASE_BRANCHES=$(for i in $(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please" || true); do echo -n "$i,"; done)
         echo "RELEASE_PLEASE_BRANCHES=${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
     - name: Build And Push
-      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@heathj/add-back-release-please-cache
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@v6
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
