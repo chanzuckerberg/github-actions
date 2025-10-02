@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.10.0](https://github.com/chanzuckerberg/github-actions/compare/v6.9.0...v6.10.0) (2025-10-02)
+
+
+### Features
+
+* add back in the release-please  branches in cache-from ([#454](https://github.com/chanzuckerberg/github-actions/issues/454)) ([c8fda6f](https://github.com/chanzuckerberg/github-actions/commit/c8fda6f293ebd88e10dc46d399f78ceb8f32fdbf))
+
 ## [6.9.0](https://github.com/chanzuckerberg/github-actions/compare/v6.8.4...v6.9.0) (2025-09-26)
 
 
