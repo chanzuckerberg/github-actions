@@ -77,6 +77,7 @@ async function run(): Promise<void> {
   try {
     // Parse and validate inputs
     const githubToken = core.getInput('github_token', { required: true });
+    const sarifUploadToken = core.getInput('sarif_upload_token') || githubToken; // Use separate token for SARIF upload if provided
     const includePatterns = core.getInput('include_patterns')
       .split(',')
       .map(p => p.trim())
@@ -111,7 +112,7 @@ async function run(): Promise<void> {
     core.setOutput('sarif_file_path', sarifPath);
 
     if (uploadSarif) {
-      await uploadSarifToCodeScanning(sarifPath, githubToken);
+      await uploadSarifToCodeScanning(sarifPath, sarifUploadToken);
     }
 
     if (archivedRepos.length > 0) {
