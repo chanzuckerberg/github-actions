@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Scan for archived repositories
-        uses: ./.github/actions/archived-repo-scanner
+        uses: chanzuckerberg/github-actions/.github/actions/archived-repo-scanner@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -47,7 +47,7 @@ jobs:
 
 ```yaml
 - name: Scan for archived repositories
-  uses: ./.github/actions/archived-repo-scanner
+  uses: chanzuckerberg/github-actions/.github/actions/archived-repo-scanner@main
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     include_patterns: '**/*.js,**/*.ts,**/*.json,**/*.md'
@@ -105,9 +105,7 @@ Archived repositories pose several risks:
 When archived dependencies are found:
 
 1. **Find Alternatives**: Look for actively maintained forks or alternative libraries
-2. **Fork if Necessary**: Create your own fork if no alternatives exist
-3. **Update Dependencies**: Remove or replace the dependency if possible
-4. **Monitor Security**: Be aware that archived repositories won't receive security updates
+2. **Fork if Necessary**: Create your own fork if no alternatives exist. You will need to own security scanning and mitigate findings for the fork.
 
 ## Permissions
 
