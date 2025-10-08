@@ -27,7 +27,7 @@ export class ArchiveScanner {
     includePatterns: string[],
     excludePatterns: string[]
   ): Promise<RepoReference[]> {
-    const files = await this.getFilesToScan(includePatterns, excludePatterns);
+    const files = await ArchiveScanner.getFilesToScan(includePatterns, excludePatterns);
     core.info(`Scanning ${files.length} files for GitHub repository references`);
 
     const repoMap = new Map<string, RepoReference>();
@@ -36,7 +36,7 @@ export class ArchiveScanner {
     await Promise.all(files.map(async (file) => {
       try {
         const content = await fs.promises.readFile(file, 'utf8');
-        const repos = this.extractGitHubRepos(content, file);
+        const repos = ArchiveScanner.extractGitHubRepos(content, file);
         
         repos.forEach(({ repo, location }) => {
           const key = `${repo.owner}/${repo.name}`;
@@ -58,7 +58,7 @@ export class ArchiveScanner {
     return repoReferences;
   }
 
-  private async getFilesToScan(
+  private static async getFilesToScan(
     includePatterns: string[],
     excludePatterns: string[]
   ): Promise<string[]> {
@@ -98,13 +98,13 @@ export class ArchiveScanner {
     return !binaryExtensions.includes(ext);
   }
 
-  private extractGitHubRepos(content: string, filePath: string): Array<{repo: GitHubRepo, location: FileLocation}> {
+  private static extractGitHubRepos(content: string, filePath: string): Array<{repo: GitHubRepo, location: FileLocation}> {
     const results: Array<{repo: GitHubRepo, location: FileLocation}> = [];
     const lines = content.split('\n');
 
     lines.forEach((line, lineIndex) => {
-      GITHUB_URL_PATTERNS.forEach((pattern) => {
-        pattern.lastIndex = 0; // Reset regex global state
+      GITHUB_URL_PATTERNS.forEach((originalPattern) => {
+        const pattern = new RegExp(originalPattern.source, originalPattern.flags);
         let match = pattern.exec(line);
         
         while (match !== null) {
@@ -151,7 +151,8 @@ export class ArchiveScanner {
       
       // Use cached result if available
       if (this.checkedRepos.has(key)) {
-        repoRef.repo.archived = this.checkedRepos.get(key);
+        const cachedResult = this.checkedRepos.get(key);
+        repoRef.repo.archived = cachedResult;
         return;
       }
 
@@ -161,10 +162,11 @@ export class ArchiveScanner {
           repo: repoRef.repo.name,
         });
 
-        repoRef.repo.archived = repo.archived;
-        this.checkedRepos.set(key, repo.archived);
+        const isArchived = repo.archived;
+        repoRef.repo.archived = isArchived;
+        this.checkedRepos.set(key, isArchived);
         
-        if (repo.archived) {
+        if (isArchived) {
           core.info(`Found archived repository: ${key}`);
         }
       } catch (error: any) {
@@ -177,8 +179,9 @@ export class ArchiveScanner {
           core.warning(`Failed to check repository ${key}: ${error.message}`);
         }
         
-        repoRef.repo.archived = false;
-        this.checkedRepos.set(key, false);
+        const archivedStatus = false;
+        repoRef.repo.archived = archivedStatus;
+        this.checkedRepos.set(key, archivedStatus);
       }
     }));
   }
