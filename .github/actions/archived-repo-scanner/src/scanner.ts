@@ -148,41 +148,41 @@ export class ArchiveScanner {
     
     await Promise.all(repoReferences.map(async (repoRef) => {
       const key = `${repoRef.repo.owner}/${repoRef.repo.name}`;
+      let archivedStatus: boolean | undefined;
       
       // Use cached result if available
       if (this.checkedRepos.has(key)) {
-        const cachedResult = this.checkedRepos.get(key);
-        repoRef.repo.archived = cachedResult;
-        return;
-      }
+        archivedStatus = this.checkedRepos.get(key);
+      } else {
+        try {
+          const { data: repo } = await this.octokit.rest.repos.get({
+            owner: repoRef.repo.owner,
+            repo: repoRef.repo.name,
+          });
 
-      try {
-        const { data: repo } = await this.octokit.rest.repos.get({
-          owner: repoRef.repo.owner,
-          repo: repoRef.repo.name,
-        });
-
-        const isArchived = repo.archived;
-        repoRef.repo.archived = isArchived;
-        this.checkedRepos.set(key, isArchived);
-        
-        if (isArchived) {
-          core.info(`Found archived repository: ${key}`);
+          archivedStatus = repo.archived;
+          this.checkedRepos.set(key, archivedStatus);
+          
+          if (archivedStatus) {
+            core.info(`Found archived repository: ${key}`);
+          }
+        } catch (error: any) {
+          // Handle API errors gracefully - don't flag inaccessible repos as archived
+          if (error.status === 404) {
+            core.warning(`Repository not found: ${key} (private/deleted or insufficient permissions)`);
+          } else if (error.status === 403) {
+            core.warning(`Access denied to repository: ${key} (insufficient token permissions)`);
+          } else {
+            core.warning(`Failed to check repository ${key}: ${error.message}`);
+          }
+          
+          archivedStatus = false;
+          this.checkedRepos.set(key, archivedStatus);
         }
-      } catch (error: any) {
-        // Handle API errors gracefully - don't flag inaccessible repos as archived
-        if (error.status === 404) {
-          core.warning(`Repository not found: ${key} (private/deleted or insufficient permissions)`);
-        } else if (error.status === 403) {
-          core.warning(`Access denied to repository: ${key} (insufficient token permissions)`);
-        } else {
-          core.warning(`Failed to check repository ${key}: ${error.message}`);
-        }
-        
-        const archivedStatus = false;
-        repoRef.repo.archived = archivedStatus;
-        this.checkedRepos.set(key, archivedStatus);
       }
+      
+      // Update the repository reference with the determined status
+      repoRef.repo.archived = archivedStatus;
     }));
   }
 
