@@ -146,7 +146,7 @@ export class ArchiveScanner {
   private async checkArchiveStatus(repoReferences: RepoReference[]): Promise<void> {
     core.info('Checking archive status for repositories...');
     
-    await Promise.all(repoReferences.map(async (repoRef) => {
+    const statusResults = await Promise.all(repoReferences.map(async (repoRef) => {
       const key = `${repoRef.repo.owner}/${repoRef.repo.name}`;
       let archivedStatus: boolean | undefined;
       
@@ -181,9 +181,13 @@ export class ArchiveScanner {
         }
       }
       
-      // Update the repository reference with the determined status
-      repoRef.repo.archived = archivedStatus;
+      return { repoRef, archivedStatus };
     }));
+    
+    // Update all repository references with their determined status
+    statusResults.forEach(({ repoRef, archivedStatus }) => {
+      repoRef.repo.archived = archivedStatus;
+    });
   }
 
   static generateSarifReport(
