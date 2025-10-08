@@ -146,7 +146,7 @@ export class ArchiveScanner {
   private async checkArchiveStatus(repoReferences: RepoReference[]): Promise<void> {
     core.info('Checking archive status for repositories...');
     
-    const statusResults = await Promise.all(repoReferences.map(async (repoRef) => {
+    const statusResults = await Promise.all(repoReferences.map(async (repoRef, index) => {
       const key = `${repoRef.repo.owner}/${repoRef.repo.name}`;
       let archivedStatus: boolean | undefined;
       
@@ -181,12 +181,12 @@ export class ArchiveScanner {
         }
       }
       
-      return { repoRef, archivedStatus };
+      return { index, archivedStatus };
     }));
     
-    // Update all repository references with their determined status
-    statusResults.forEach(({ repoRef, archivedStatus }) => {
-      repoRef.repo.archived = archivedStatus;
+    // Update all repository references with their determined status using array indices
+    statusResults.forEach(({ index, archivedStatus }) => {
+      repoReferences[index].repo.archived = archivedStatus;
     });
   }
 
