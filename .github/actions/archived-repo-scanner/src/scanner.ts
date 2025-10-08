@@ -33,23 +33,23 @@ export class ArchiveScanner {
     const repoMap = new Map<string, RepoReference>();
 
     // Extract repository references from all files
-    for (const file of files) {
+    await Promise.all(files.map(async (file) => {
       try {
         const content = await fs.promises.readFile(file, 'utf8');
         const repos = this.extractGitHubRepos(content, file);
         
-        for (const { repo, location } of repos) {
+        repos.forEach(({ repo, location }) => {
           const key = `${repo.owner}/${repo.name}`;
           if (repoMap.has(key)) {
             repoMap.get(key)!.locations.push(location);
           } else {
             repoMap.set(key, { repo, locations: [location] });
           }
-        }
+        });
       } catch (error) {
         core.warning(`Failed to read file ${file}: ${error}`);
       }
-    }
+    }));
 
     const repoReferences = Array.from(repoMap.values());
     core.info(`Found ${repoReferences.length} unique GitHub repositories`);
@@ -64,23 +64,28 @@ export class ArchiveScanner {
   ): Promise<string[]> {
     const allFiles: string[] = [];
 
-    for (const pattern of includePatterns) {
+    const filePromises = includePatterns.map(async (pattern) => {
       const files = await glob(pattern, {
         ignore: excludePatterns,
         dot: false,
         nodir: true,
       });
+      return files;
+    });
+    
+    const fileArrays = await Promise.all(filePromises);
+    fileArrays.forEach((files) => {
       allFiles.push(...files);
-    }
+    });
 
     // Remove duplicates and filter out binary files
     const uniqueFiles = [...new Set(allFiles)];
-    const textFiles = uniqueFiles.filter(file => this.isTextFile(file));
+    const textFiles = uniqueFiles.filter(file => ArchiveScanner.isTextFile(file));
     
     return textFiles;
   }
 
-  private isTextFile(filePath: string): boolean {
+  private static isTextFile(filePath: string): boolean {
     const binaryExtensions = [
       '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.ico', '.svg',
       '.pdf', '.zip', '.tar', '.gz', '.bz2', '.7z', '.rar',
@@ -97,44 +102,42 @@ export class ArchiveScanner {
     const results: Array<{repo: GitHubRepo, location: FileLocation}> = [];
     const lines = content.split('\n');
 
-    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-      const line = lines[lineIndex];
-      
-      for (const pattern of GITHUB_URL_PATTERNS) {
+    lines.forEach((line, lineIndex) => {
+      GITHUB_URL_PATTERNS.forEach((pattern) => {
         pattern.lastIndex = 0; // Reset regex global state
-        let match;
+        let match = pattern.exec(line);
         
-        while ((match = pattern.exec(line)) !== null) {
+        while (match !== null) {
           const owner = match[1];
           const repoName = match[2];
           
           // Skip if this looks like a file extension or invalid repo name
-          if (repoName.includes('.') && !this.isValidRepoName(repoName)) {
-            continue;
+          if (!repoName.includes('.') || ArchiveScanner.isValidRepoName(repoName)) {
+            const repo: GitHubRepo = {
+              owner,
+              name: repoName.replace(/\.git$/, ''), // Remove .git suffix if present
+              url: `https://github.com/${owner}/${repoName}`,
+            };
+
+            const location: FileLocation = {
+              file: filePath,
+              line: lineIndex + 1,
+              column: match.index + 1,
+              context: line.trim(),
+            };
+
+            results.push({ repo, location });
           }
-
-          const repo: GitHubRepo = {
-            owner,
-            name: repoName.replace(/\.git$/, ''), // Remove .git suffix if present
-            url: `https://github.com/${owner}/${repoName}`,
-          };
-
-          const location: FileLocation = {
-            file: filePath,
-            line: lineIndex + 1,
-            column: match.index + 1,
-            context: line.trim(),
-          };
-
-          results.push({ repo, location });
+          
+          match = pattern.exec(line);
         }
-      }
-    }
+      });
+    });
 
     return results;
   }
 
-  private isValidRepoName(name: string): boolean {
+  private static isValidRepoName(name: string): boolean {
     // GitHub repo names can contain dots, but this helps filter out file extensions
     const validRepoPattern = /^[a-zA-Z0-9][a-zA-Z0-9._-]*[a-zA-Z0-9]$/;
     return validRepoPattern.test(name) && name.length <= 100;
@@ -143,13 +146,13 @@ export class ArchiveScanner {
   private async checkArchiveStatus(repoReferences: RepoReference[]): Promise<void> {
     core.info('Checking archive status for repositories...');
     
-    for (const repoRef of repoReferences) {
+    await Promise.all(repoReferences.map(async (repoRef) => {
       const key = `${repoRef.repo.owner}/${repoRef.repo.name}`;
       
       // Use cached result if available
       if (this.checkedRepos.has(key)) {
         repoRef.repo.archived = this.checkedRepos.get(key);
-        continue;
+        return;
       }
 
       try {
@@ -177,14 +180,21 @@ export class ArchiveScanner {
         repoRef.repo.archived = false;
         this.checkedRepos.set(key, false);
       }
-    }
+    }));
   }
 
-  generateSarifReport(
+  static generateSarifReport(
     archivedRepos: RepoReference[],
     severity: 'error' | 'warning' | 'note' = 'error'
   ): SarifReport {
-    const securitySeverity = severity === 'error' ? '7.0' : severity === 'warning' ? '5.0' : '3.0';
+    let securitySeverity: string;
+    if (severity === 'error') {
+      securitySeverity = '7.0';
+    } else if (severity === 'warning') {
+      securitySeverity = '5.0';
+    } else {
+      securitySeverity = '3.0';
+    }
     
     const rule: SarifRule = {
       id: 'archived-dependency',
@@ -193,14 +203,24 @@ export class ArchiveScanner {
         text: 'Dependency on archived GitHub repository',
       },
       fullDescription: {
-        text: 'This code references a GitHub repository that has been archived. Archived repositories are read-only and no longer maintained, which may pose security and maintenance risks.',
+        text: 'This code references a GitHub repository that has been archived. ' +
+              'Archived repositories are read-only and no longer maintained, ' +
+              'which may pose security and maintenance risks.',
       },
       defaultConfiguration: {
         level: severity,
       },
       help: {
         text: 'Consider migrating to an actively maintained alternative or forking the repository if needed.',
-        markdown: '# Archived Repository Dependency\n\nThis code references a GitHub repository that has been archived. Archived repositories are read-only and no longer receive updates, which may pose security and maintenance risks.\n\n## Recommendations\n\n1. **Find alternatives**: Look for actively maintained forks or alternative libraries\n2. **Fork if necessary**: If no alternatives exist, consider forking the repository\n3. **Update dependencies**: Remove or replace the dependency if possible\n4. **Monitor security**: Be aware that archived repositories won\'t receive security updates',
+        markdown: '# Archived Repository Dependency\n\n' +
+                  'This code references a GitHub repository that has been archived. ' +
+                  'Archived repositories are read-only and no longer receive updates, ' +
+                  'which may pose security and maintenance risks.\n\n' +
+                  '## Recommendations\n\n' +
+                  '1. **Find alternatives**: Look for actively maintained forks or alternative libraries\n' +
+                  '2. **Fork if necessary**: If no alternatives exist, consider forking the repository\n' +
+                  '3. **Update dependencies**: Remove or replace the dependency if possible\n' +
+                  '4. **Monitor security**: Be aware that archived repositories won\'t receive security updates',
       },
       properties: {
         tags: ['security', 'maintenance', 'dependency'],
@@ -210,8 +230,8 @@ export class ArchiveScanner {
 
     const results: SarifResult[] = [];
 
-    for (const repoRef of archivedRepos) {
-      for (const location of repoRef.locations) {
+    archivedRepos.forEach((repoRef) => {
+      repoRef.locations.forEach((location) => {
         results.push({
           ruleId: 'archived-dependency',
           message: {
@@ -242,8 +262,8 @@ export class ArchiveScanner {
             tags: ['archived-repository', 'security', 'maintenance'],
           },
         });
-      }
-    }
+      });
+    });
 
     return {
       version: '2.1.0',

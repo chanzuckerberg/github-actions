@@ -106,7 +106,7 @@ async function run(): Promise<void> {
     core.setOutput('archived_repos_found', archivedRepos.length.toString());
 
     // Generate and upload SARIF report
-    const sarifReport = scanner.generateSarifReport(archivedRepos, severity);
+    const sarifReport = ArchiveScanner.generateSarifReport(archivedRepos, severity);
     const sarifPath = path.join(process.cwd(), 'archived-repos-scan.sarif');
     await fs.promises.writeFile(sarifPath, JSON.stringify(sarifReport, null, 2));
     core.setOutput('sarif_file_path', sarifPath);
@@ -118,12 +118,12 @@ async function run(): Promise<void> {
     if (archivedRepos.length > 0) {
       // Log details about archived repositories
       core.startGroup('📋 Archived Repository Details');
-      for (const repoRef of archivedRepos) {
+      archivedRepos.forEach((repoRef) => {
         core.info(`🗄️ ${repoRef.repo.owner}/${repoRef.repo.name} (${repoRef.locations.length} locations)`);
-        for (const location of repoRef.locations) {
+        repoRef.locations.forEach((location) => {
           core.info(`  - ${location.file}:${location.line}`);
-        }
-      }
+        });
+      });
       core.endGroup();
 
       await createJobSummary(allRepos, archivedRepos, severity);
