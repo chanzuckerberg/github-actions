@@ -3,7 +3,9 @@ import * as path from 'path';
 import { glob } from 'glob';
 import { getOctokit } from '@actions/github';
 import * as core from '@actions/core';
-import { GitHubRepo, RepoReference, FileLocation, SarifReport, SarifResult, SarifRule } from './types';
+import {
+  GitHubRepo, RepoReference, FileLocation, SarifReport, SarifResult, SarifRule,
+} from './types';
 
 // Regex to match various GitHub URL formats
 const GITHUB_URL_PATTERNS = [
@@ -17,6 +19,7 @@ const GITHUB_URL_PATTERNS = [
 
 export class ArchiveScanner {
   private octokit: ReturnType<typeof getOctokit>;
+
   private checkedRepos = new Map<string, boolean>();
 
   constructor(githubToken: string) {
@@ -25,7 +28,7 @@ export class ArchiveScanner {
 
   async scanRepository(
     includePatterns: string[],
-    excludePatterns: string[]
+    excludePatterns: string[],
   ): Promise<RepoReference[]> {
     const files = await ArchiveScanner.getFilesToScan(includePatterns, excludePatterns);
     core.info(`Scanning ${files.length} files for GitHub repository references`);
@@ -37,7 +40,7 @@ export class ArchiveScanner {
       try {
         const content = await fs.promises.readFile(file, 'utf8');
         const repos = ArchiveScanner.extractGitHubRepos(content, file);
-        
+
         repos.forEach(({ repo, location }) => {
           const key = `${repo.owner}/${repo.name}`;
           if (repoMap.has(key)) {
@@ -60,7 +63,7 @@ export class ArchiveScanner {
 
   private static async getFilesToScan(
     includePatterns: string[],
-    excludePatterns: string[]
+    excludePatterns: string[],
   ): Promise<string[]> {
     const allFiles: string[] = [];
 
@@ -72,7 +75,7 @@ export class ArchiveScanner {
       });
       return files;
     });
-    
+
     const fileArrays = await Promise.all(filePromises);
     fileArrays.forEach((files) => {
       allFiles.push(...files);
@@ -80,8 +83,8 @@ export class ArchiveScanner {
 
     // Remove duplicates and filter out binary files
     const uniqueFiles = [...new Set(allFiles)];
-    const textFiles = uniqueFiles.filter(file => ArchiveScanner.isTextFile(file));
-    
+    const textFiles = uniqueFiles.filter((file) => ArchiveScanner.isTextFile(file));
+
     return textFiles;
   }
 
@@ -91,26 +94,26 @@ export class ArchiveScanner {
       '.pdf', '.zip', '.tar', '.gz', '.bz2', '.7z', '.rar',
       '.exe', '.dll', '.so', '.dylib', '.bin', '.dat',
       '.mp3', '.mp4', '.avi', '.mov', '.wav', '.flac',
-      '.woff', '.woff2', '.ttf', '.eot', '.otf'
+      '.woff', '.woff2', '.ttf', '.eot', '.otf',
     ];
 
     const ext = path.extname(filePath).toLowerCase();
     return !binaryExtensions.includes(ext);
   }
 
-  private static extractGitHubRepos(content: string, filePath: string): Array<{repo: GitHubRepo, location: FileLocation}> {
-    const results: Array<{repo: GitHubRepo, location: FileLocation}> = [];
+  private static extractGitHubRepos(content: string, filePath: string): Array<{ repo: GitHubRepo, location: FileLocation }> {
+    const results: Array<{ repo: GitHubRepo, location: FileLocation }> = [];
     const lines = content.split('\n');
 
     lines.forEach((line, lineIndex) => {
       GITHUB_URL_PATTERNS.forEach((originalPattern) => {
         const pattern = new RegExp(originalPattern.source, originalPattern.flags);
         let match = pattern.exec(line);
-        
+
         while (match !== null) {
           const owner = match[1];
           const repoName = match[2];
-          
+
           // Skip if this looks like a file extension or invalid repo name
           if (!repoName.includes('.') || ArchiveScanner.isValidRepoName(repoName)) {
             const repo: GitHubRepo = {
@@ -128,7 +131,7 @@ export class ArchiveScanner {
 
             results.push({ repo, location });
           }
-          
+
           match = pattern.exec(line);
         }
       });
@@ -145,54 +148,50 @@ export class ArchiveScanner {
 
   private async checkArchiveStatus(repoReferences: RepoReference[]): Promise<void> {
     core.info('Checking archive status for repositories...');
-    
-    const statusResults = await Promise.all(repoReferences.map(async (repoRef, index) => {
+
+    await Promise.all(repoReferences.map(async (repoRef) => {
       const key = `${repoRef.repo.owner}/${repoRef.repo.name}`;
-      let archivedStatus: boolean | undefined;
-      
+
       // Use cached result if available
       if (this.checkedRepos.has(key)) {
-        archivedStatus = this.checkedRepos.get(key);
-      } else {
-        try {
-          const { data: repo } = await this.octokit.rest.repos.get({
-            owner: repoRef.repo.owner,
-            repo: repoRef.repo.name,
-          });
-
-          archivedStatus = repo.archived;
-          this.checkedRepos.set(key, archivedStatus);
-          
-          if (archivedStatus) {
-            core.info(`Found archived repository: ${key}`);
-          }
-        } catch (error: any) {
-          // Handle API errors gracefully - don't flag inaccessible repos as archived
-          if (error.status === 404) {
-            core.warning(`Repository not found: ${key} (private/deleted or insufficient permissions)`);
-          } else if (error.status === 403) {
-            core.warning(`Access denied to repository: ${key} (insufficient token permissions)`);
-          } else {
-            core.warning(`Failed to check repository ${key}: ${error.message}`);
-          }
-          
-          archivedStatus = false;
-          this.checkedRepos.set(key, archivedStatus);
-        }
+        // eslint-disable-next-line no-param-reassign
+        repoRef.repo.archived = this.checkedRepos.get(key);
+        return;
       }
-      
-      return { index, archivedStatus };
+
+      try {
+        const { data: repo } = await this.octokit.rest.repos.get({
+          owner: repoRef.repo.owner,
+          repo: repoRef.repo.name,
+        });
+
+        // eslint-disable-next-line no-param-reassign
+        repoRef.repo.archived = repo.archived;
+        this.checkedRepos.set(key, repo.archived);
+
+        if (repo.archived) {
+          core.info(`Found archived repository: ${key}`);
+        }
+      } catch (error: any) {
+        // Handle API errors gracefully - don't flag inaccessible repos as archived
+        if (error.status === 404) {
+          core.warning(`Repository not found: ${key} (private/deleted or insufficient permissions)`);
+        } else if (error.status === 403) {
+          core.warning(`Access denied to repository: ${key} (insufficient token permissions)`);
+        } else {
+          core.warning(`Failed to check repository ${key}: ${error.message}`);
+        }
+
+        // eslint-disable-next-line no-param-reassign
+        repoRef.repo.archived = false;
+        this.checkedRepos.set(key, false);
+      }
     }));
-    
-    // Update all repository references with their determined status using array indices
-    statusResults.forEach(({ index, archivedStatus }) => {
-      repoReferences[index].repo.archived = archivedStatus;
-    });
   }
 
   static generateSarifReport(
     archivedRepos: RepoReference[],
-    severity: 'error' | 'warning' | 'note' = 'error'
+    severity: 'error' | 'warning' | 'note' = 'error',
   ): SarifReport {
     let securitySeverity: string;
     if (severity === 'error') {
@@ -202,7 +201,7 @@ export class ArchiveScanner {
     } else {
       securitySeverity = '3.0';
     }
-    
+
     const rule: SarifRule = {
       id: 'archived-dependency',
       name: 'ArchivedDependency',
@@ -210,24 +209,24 @@ export class ArchiveScanner {
         text: 'Dependency on archived GitHub repository',
       },
       fullDescription: {
-        text: 'This code references a GitHub repository that has been archived. ' +
-              'Archived repositories are read-only and no longer maintained, ' +
-              'which may pose security and maintenance risks.',
+        text: 'This code references a GitHub repository that has been archived. '
+              + 'Archived repositories are read-only and no longer maintained, '
+              + 'which may pose security and maintenance risks.',
       },
       defaultConfiguration: {
         level: severity,
       },
       help: {
         text: 'Consider migrating to an actively maintained alternative or forking the repository if needed.',
-        markdown: '# Archived Repository Dependency\n\n' +
-                  'This code references a GitHub repository that has been archived. ' +
-                  'Archived repositories are read-only and no longer receive updates, ' +
-                  'which may pose security and maintenance risks.\n\n' +
-                  '## Recommendations\n\n' +
-                  '1. **Find alternatives**: Look for actively maintained forks or alternative libraries\n' +
-                  '2. **Fork if necessary**: If no alternatives exist, consider forking the repository\n' +
-                  '3. **Update dependencies**: Remove or replace the dependency if possible\n' +
-                  '4. **Monitor security**: Be aware that archived repositories won\'t receive security updates',
+        markdown: '# Archived Repository Dependency\n\n'
+                  + 'This code references a GitHub repository that has been archived. '
+                  + 'Archived repositories are read-only and no longer receive updates, '
+                  + 'which may pose security and maintenance risks.\n\n'
+                  + '## Recommendations\n\n'
+                  + '1. **Find alternatives**: Look for actively maintained forks or alternative libraries\n'
+                  + '2. **Fork if necessary**: If no alternatives exist, consider forking the repository\n'
+                  + '3. **Update dependencies**: Remove or replace the dependency if possible\n'
+                  + '4. **Monitor security**: Be aware that archived repositories won\'t receive security updates',
       },
       properties: {
         tags: ['security', 'maintenance', 'dependency'],
@@ -288,4 +287,4 @@ export class ArchiveScanner {
       }],
     };
   }
-} 
+}

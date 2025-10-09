@@ -86,4 +86,4 @@ export interface SarifReport {
     };
     results: SarifResult[];
   }>;
-} 
+}

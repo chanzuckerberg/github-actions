@@ -9,29 +9,29 @@ async function uploadSarifToCodeScanning(sarifPath: string, githubToken: string)
   try {
     const octokit = getOctokit(githubToken);
     const sarifContent = await fs.promises.readFile(sarifPath, 'utf8');
-    
+
     // GitHub API requires SARIF to be gzip-compressed and base64-encoded
     const gzippedSarif = zlib.gzipSync(Buffer.from(sarifContent, 'utf8'));
     const sarifBase64 = gzippedSarif.toString('base64');
-    
+
     const repo = process.env.GITHUB_REPOSITORY;
     const ref = process.env.GITHUB_SHA;
-    
+
     if (!repo || !ref) {
       throw new Error('Missing required environment variables GITHUB_REPOSITORY or GITHUB_SHA');
     }
-    
+
     const [owner, repoName] = repo.split('/');
-    
+
     await octokit.rest.codeScanning.uploadSarif({
       owner,
       repo: repoName,
       commit_sha: ref,
       ref: process.env.GITHUB_REF || `refs/heads/${process.env.GITHUB_REF_NAME || 'main'}`,
       sarif: sarifBase64,
-      tool_name: 'Archived Repository Scanner'
+      tool_name: 'Archived Repository Scanner',
     });
-    
+
     core.info('✅ SARIF uploaded to GitHub Code Scanning');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -47,7 +47,7 @@ async function createJobSummary(allRepos: any[], archivedRepos: any[], severity:
         [{ data: 'Metric', header: true }, { data: 'Count', header: true }],
         ['Total repositories found', allRepos.length.toString()],
         ['Archived repositories', archivedRepos.length.toString()],
-        ['Severity level', severity]
+        ['Severity level', severity],
       ]);
 
     if (archivedRepos.length > 0) {
@@ -57,8 +57,8 @@ async function createJobSummary(allRepos: any[], archivedRepos: any[], severity:
           [{ data: 'Repository', header: true }, { data: 'Locations', header: true }],
           ...archivedRepos.map((repoRef: any) => [
             `[${repoRef.repo.owner}/${repoRef.repo.name}](${repoRef.repo.url})`,
-            repoRef.locations.length.toString()
-          ])
+            repoRef.locations.length.toString(),
+          ]),
         ]);
     }
 
@@ -80,12 +80,12 @@ async function run(): Promise<void> {
     const sarifUploadToken = core.getInput('sarif_upload_token') || githubToken; // Use separate token for SARIF upload if provided
     const includePatterns = core.getInput('include_patterns')
       .split(',')
-      .map(p => p.trim())
-      .filter(p => p.length > 0);
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
     const excludePatterns = core.getInput('exclude_patterns')
       .split(',')
-      .map(p => p.trim())
-      .filter(p => p.length > 0);
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
     const severity = core.getInput('severity') as 'error' | 'warning' | 'note';
     const failOnArchived = core.getInput('fail_on_archived').toLowerCase() === 'true';
     const uploadSarif = core.getInput('upload_sarif').toLowerCase() === 'true';
@@ -97,7 +97,7 @@ async function run(): Promise<void> {
     // Scan repository and identify archived dependencies
     const scanner = new ArchiveScanner(githubToken);
     const allRepos = await scanner.scanRepository(includePatterns, excludePatterns);
-    const archivedRepos = allRepos.filter(repoRef => repoRef.repo.archived === true);
+    const archivedRepos = allRepos.filter((repoRef) => repoRef.repo.archived === true);
 
     core.info(`📊 Found ${allRepos.length} repositories, ${archivedRepos.length} archived`);
 
@@ -141,7 +141,6 @@ async function run(): Promise<void> {
       await createJobSummary(allRepos, archivedRepos, severity);
       core.info('✅ No archived repository dependencies found!');
     }
-
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     core.setFailed(`Action failed: ${errorMessage}`);
@@ -151,4 +150,4 @@ async function run(): Promise<void> {
 // Execute the action
 run();
 
-export { run }; 
+export { run };
