@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.11.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.10.0...docker-build-push-v1.11.0) (2025-10-02)
+
+
+### Features
+
+* add back in the release-please  branches in cache-from ([#454](https://github.com/chanzuckerberg/github-actions/issues/454)) ([c8fda6f](https://github.com/chanzuckerberg/github-actions/commit/c8fda6f293ebd88e10dc46d399f78ceb8f32fdbf))
+
+## [1.10.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.4...docker-build-push-v1.10.0) (2025-09-26)
+
+
+### Features
+
+* switch cache from inline to registry ([#452](https://github.com/chanzuckerberg/github-actions/issues/452)) ([70506c2](https://github.com/chanzuckerberg/github-actions/commit/70506c267fba594a540cb13e9c985895106a5eae))
+
+## [1.9.4](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.3...docker-build-push-v1.9.4) (2025-09-25)
+
+
+### BugFixes
+
+* disable docker caching for now ([#450](https://github.com/chanzuckerberg/github-actions/issues/450)) ([5074592](https://github.com/chanzuckerberg/github-actions/commit/5074592af72e08b102e2b6014666da5b4bb5078b))
+
+## [1.9.3](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.2...docker-build-push-v1.9.3) (2025-09-25)
+
+
+### BugFixes
+
+* add the base ref back in ([#448](https://github.com/chanzuckerberg/github-actions/issues/448)) ([c2614ce](https://github.com/chanzuckerberg/github-actions/commit/c2614ce0dd4a0c5fe23ee306a1824fb2b7cffc44))
+
 ## [1.9.2](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.9.1...docker-build-push-v1.9.2) (2025-09-24)
 
 
