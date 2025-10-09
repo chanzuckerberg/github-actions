@@ -57,8 +57,8 @@ export class ArchiveScanner {
     const repoReferences = Array.from(repoMap.values());
     core.info(`Found ${repoReferences.length} unique GitHub repositories`);
 
-    await this.checkArchiveStatus(repoReferences);
-    return repoReferences;
+    // Check archive status and return updated references
+    return this.checkArchiveStatus(repoReferences);
   }
 
   private static async getFilesToScan(
@@ -146,47 +146,55 @@ export class ArchiveScanner {
     return validRepoPattern.test(name) && name.length <= 100;
   }
 
-  private async checkArchiveStatus(repoReferences: RepoReference[]): Promise<void> {
+  private async checkArchiveStatus(repoReferences: RepoReference[]): Promise<RepoReference[]> {
     core.info('Checking archive status for repositories...');
 
-    await Promise.all(repoReferences.map(async (repoRef) => {
+    const updatedReferences = await Promise.all(repoReferences.map(async (repoRef) => {
       const key = `${repoRef.repo.owner}/${repoRef.repo.name}`;
+      let archivedStatus: boolean;
 
       // Use cached result if available
       if (this.checkedRepos.has(key)) {
-        // eslint-disable-next-line no-param-reassign
-        repoRef.repo.archived = this.checkedRepos.get(key);
-        return;
+        archivedStatus = this.checkedRepos.get(key)!;
+      } else {
+        try {
+          const { data: repo } = await this.octokit.rest.repos.get({
+            owner: repoRef.repo.owner,
+            repo: repoRef.repo.name,
+          });
+
+          archivedStatus = repo.archived;
+          this.checkedRepos.set(key, repo.archived);
+
+          if (repo.archived) {
+            core.info(`Found archived repository: ${key}`);
+          }
+        } catch (error: any) {
+          // Handle API errors gracefully - don't flag inaccessible repos as archived
+          if (error.status === 404) {
+            core.warning(`Repository not found: ${key} (private/deleted or insufficient permissions)`);
+          } else if (error.status === 403) {
+            core.warning(`Access denied to repository: ${key} (insufficient token permissions)`);
+          } else {
+            core.warning(`Failed to check repository ${key}: ${error.message}`);
+          }
+
+          archivedStatus = false;
+          this.checkedRepos.set(key, false);
+        }
       }
 
-      try {
-        const { data: repo } = await this.octokit.rest.repos.get({
-          owner: repoRef.repo.owner,
-          repo: repoRef.repo.name,
-        });
-
-        // eslint-disable-next-line no-param-reassign
-        repoRef.repo.archived = repo.archived;
-        this.checkedRepos.set(key, repo.archived);
-
-        if (repo.archived) {
-          core.info(`Found archived repository: ${key}`);
-        }
-      } catch (error: any) {
-        // Handle API errors gracefully - don't flag inaccessible repos as archived
-        if (error.status === 404) {
-          core.warning(`Repository not found: ${key} (private/deleted or insufficient permissions)`);
-        } else if (error.status === 403) {
-          core.warning(`Access denied to repository: ${key} (insufficient token permissions)`);
-        } else {
-          core.warning(`Failed to check repository ${key}: ${error.message}`);
-        }
-
-        // eslint-disable-next-line no-param-reassign
-        repoRef.repo.archived = false;
-        this.checkedRepos.set(key, false);
-      }
+      // Return a new object with updated archived status
+      return {
+        ...repoRef,
+        repo: {
+          ...repoRef.repo,
+          archived: archivedStatus,
+        },
+      };
     }));
+
+    return updatedReferences;
   }
 
   static generateSarifReport(
