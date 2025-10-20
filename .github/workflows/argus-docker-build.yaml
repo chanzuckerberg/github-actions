@@ -8,41 +8,41 @@ on:
         required: true
         type: string
       images:
-        description: 'JSON object specifying the images to build'
+        description: "JSON object specifying the images to build"
         required: true
         type: string
       path_filters:
-        description: 'Glob patterns to match against changed files in the repository, comma delimited'
+        description: "Glob patterns to match against changed files in the repository, comma delimited"
         required: false
         type: string
-        default: '**/*'
+        default: "**/*"
       branches_include:
-        description: 'Branch names to run this job on, supports wildcards, comma delimited'
+        description: "Branch names to run this job on, supports wildcards, comma delimited"
         required: false
         type: string
-        default: '*'
+        default: "*"
       branches_ignore:
-        description: 'Branch names to run this job on, supports wildcards, comma delimited'
+        description: "Branch names to run this job on, supports wildcards, comma delimited"
         required: false
         type: string
-        default: ''
+        default: ""
       force_update_manifests:
-        description: 'Whether to always update ArgoCD manifests after building the Docker images, regardless of which labels are present on the PR'
+        description: "Whether to always update ArgoCD manifests after building the Docker images, regardless of which labels are present on the PR"
         required: false
         type: boolean
         default: false
       fail_on_vulnerabilities:
-        description: 'whether to fail the action if vulnerabilities are found'
+        description: "whether to fail the action if vulnerabilities are found"
         required: false
         type: boolean
         default: true
       arm_runner_labels:
-        description: 'Runner label to use for steps that use an arm-based action runner'
+        description: "Runner label to use for steps that use an arm-based action runner"
         required: false
         type: string
         default: "['arm64-privileged']"
       amd_runner_labels:
-        description: 'Runner label to use for steps that use an amd64-based action runner'
+        description: "Runner label to use for steps that use an amd64-based action runner"
         required: false
         type: string
         default: "['amd64-privileged']"
@@ -52,7 +52,7 @@ on:
           If ANY of the labels are found on the PR, the manifest will be updated.
         required: false
         type: string
-        default: 'stack,stack-*'
+        default: "stack,stack-*"
       enable_vuln_container_scan:
         description: Opt in to scan containers with AWS inspector
         required: false
