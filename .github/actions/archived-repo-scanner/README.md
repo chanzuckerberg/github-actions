@@ -1,29 +1,39 @@
 # Archived Repository Scanner
 
-A GitHub Action that scans your repository for references to GitHub repositories and identifies which ones have been archived. Archived repositories are read-only and no longer receive updates, which may pose security and maintenance risks.
+A GitHub Action that scans your repository for references to GitHub repositories and identifies which ones have been archived. Archived repositories are read-only and no longer receive updates, which poses two key risks:
+
+1. **No Security Updates**: Archived repos don't receive security patches
+2. **Maintenance Issues**: No bug fixes or compatibility updates
+
+When archived dependencies are found, please:
+
+1. **Find Alternatives**: Look for actively maintained forks or alternative libraries
+2. **Fork if Necessary**: Create your own fork if no alternatives exist. You will need to own security scanning and mitigation for the fork.
 
 ## Features
 
-- 🔍 Scans all files in your repository for GitHub.com links
-- 🗄️ Checks if referenced repositories are archived using the GitHub API
-- 🚨 Reports findings as security vulnerabilities in GitHub Code Scanning
-- 📊 Provides detailed SARIF reports for integration with security tools
-- 💬 Comments on pull requests when archived dependencies are found
-- ⚙️ Configurable file patterns and severity levels
+- Scans all files in your repository for GitHub.com links
+- Checks if referenced repositories are archived using the GitHub API
+- Reports findings as security vulnerabilities in GitHub Code Scanning
+- Provides detailed SARIF reports for integration with security tools
+- Comments on pull requests when archived dependencies are found
+- Configurable file patterns and severity levels
 
 ## Usage
 
-### Basic Usage
-
-Add this to your workflow file (e.g., `.github/workflows/security.yml`):
+Add this to your workflow file (e.g., `.github/workflows/archived-repo-scan.yml`):
 
 ```yaml
-name: Security Scan
+name: 'Archived Repository Scanner'
+
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly on Sundays at 2 AM UTC
+  workflow_dispatch:
 
 jobs:
   archived-repo-scan:
@@ -32,37 +42,35 @@ jobs:
       security-events: write
       contents: read
       actions: read
-    
+      pull-requests: write
+      id-token: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
+      - name: Generate GitHub App token
+        id: generate_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+          owner: chanzuckerberg
+
       - name: Scan for archived repositories
         uses: chanzuckerberg/github-actions/.github/actions/archived-repo-scanner@main
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-```
-
-### Advanced Usage
-
-```yaml
-- name: Scan for archived repositories
-  uses: chanzuckerberg/github-actions/.github/actions/archived-repo-scanner@main
-  with:
-    github_token: ${{ secrets.GITHUB_TOKEN }}
-    include_patterns: '**/*.js,**/*.ts,**/*.json,**/*.md'
-    exclude_patterns: '.git/**,node_modules/**,dist/**'
-    severity: 'high'
+          github_token: ${{ steps.generate_token.outputs.token }}
+          fail_on_archived: 'false'
 ```
 
 ## Inputs
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `github_token` | GitHub token for API access | Yes | `${{ github.token }}` |
-| `include_patterns` | Comma-separated list of file patterns to include | No | `**/*` |
+| `github_token` | GitHub token for API access | No | `${{ github.token }}` |
+| `fail_on_archived` | Whether to fail the workflow if archived repos are found | No | `true` |
 | `exclude_patterns` | Comma-separated list of file patterns to exclude | No | `.git/**,node_modules/**,dist/**,build/**,*.log` |
-| `severity` | Security alert severity level (`error`, `warning`, `note`) | No | `error` |
 
 ## Outputs
 
@@ -80,40 +88,16 @@ The scanner recognizes these GitHub URL formats:
 - `git@github.com:owner/repo.git`
 - `github.com/owner/repo` (without protocol)
 
-## SARIF Integration
-
-The action generates SARIF (Static Analysis Results Interchange Format) reports that integrate with:
-
-- GitHub Code Scanning (Security tab)
-- Third-party security tools
-- IDE extensions
-- CI/CD pipelines
-
-## Security Considerations
-
-### Why Archived Repositories Matter
-
-Archived repositories pose several risks:
-
-1. **No Security Updates**: Archived repos don't receive security patches
-2. **Maintenance Issues**: No bug fixes or compatibility updates
-3. **Dependency Chain**: May affect your software supply chain security
-4. **Compliance**: May not meet organizational security policies
-
-### Recommended Actions
-
-When archived dependencies are found:
-
-1. **Find Alternatives**: Look for actively maintained forks or alternative libraries
-2. **Fork if Necessary**: Create your own fork if no alternatives exist. You will need to own security scanning and mitigate findings for the fork.
-
 ## Permissions
 
 The action requires these permissions:
 
-- `security-events: write` - To upload SARIF results to Code Scanning
-- `contents: read` - To access repository files
-- `actions: read` - To access the action itself
+- `security-events: write` - Upload SARIF results to Code Scanning
+- `contents: read` - Access repository files
+- `actions: read` - Access the action itself
+- `pull-requests: write` - Comment on pull requests (optional)
+- `id-token: write` - Generate GitHub App tokens (if using app authentication)
+
 
 ## Development
 
@@ -140,4 +124,4 @@ npm run lint:fix
 
 ## License
 
-MIT License - see LICENSE file for details. 
+MIT License - see LICENSE file for details.
