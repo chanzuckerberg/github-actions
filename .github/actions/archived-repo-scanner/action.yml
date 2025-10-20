@@ -5,7 +5,7 @@ author: 'CZI'
 inputs:
   github_token:
     description: 'GitHub token for API access (can be GITHUB_TOKEN or GitHub App token)'
-    required: true
+    required: false
     default: ${{ github.token }}
   include_patterns:
     description: 'Comma-separated list of file patterns to include (default: all files)'
@@ -30,6 +30,7 @@ inputs:
   sarif_upload_token:
     description: 'Token for SARIF upload (defaults to github_token if not provided)'
     required: false
+    default: ${{ github.token }}
 
 outputs:
   archived_repos_found:
