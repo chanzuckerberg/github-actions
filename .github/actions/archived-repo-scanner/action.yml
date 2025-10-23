@@ -7,30 +7,14 @@ inputs:
     description: 'GitHub token for API access (can be GITHUB_TOKEN or GitHub App token)'
     required: false
     default: ${{ github.token }}
-  include_patterns:
-    description: 'Comma-separated list of file patterns to include (default: all files)'
-    required: false
-    default: '**/*'
   exclude_patterns:
     description: 'Comma-separated list of file patterns to exclude'
     required: false
     default: '.git/**,node_modules/**,dist/**,build/**,*.log'
-  severity:
-    description: 'Security alert severity level (error, warning, note)'
-    required: false
-    default: 'error'
   fail_on_archived:
     description: 'Whether the action should fail when archived repositories are found'
     required: false
     default: 'true'
-  upload_sarif:
-    description: 'Whether to upload SARIF results to GitHub Code Scanning'
-    required: false
-    default: 'true'
-  sarif_upload_token:
-    description: 'Token for SARIF upload (defaults to github_token if not provided)'
-    required: false
-    default: ${{ github.token }}
 
 outputs:
   archived_repos_found:

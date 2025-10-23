@@ -17,7 +17,7 @@ When archived dependencies are found, please:
 - Reports findings as security vulnerabilities in GitHub Code Scanning
 - Provides detailed SARIF reports for integration with security tools
 - Comments on pull requests when archived dependencies are found
-- Configurable file patterns and severity levels
+- Configurable file exclusion patterns
 
 ## Usage
 

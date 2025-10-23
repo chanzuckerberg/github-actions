@@ -39,7 +39,7 @@ async function uploadSarifToCodeScanning(sarifPath: string, githubToken: string)
   }
 }
 
-async function createJobSummary(allRepos: any[], archivedRepos: any[], severity: string): Promise<void> {
+async function createJobSummary(allRepos: any[], archivedRepos: any[]): Promise<void> {
   try {
     core.summary
       .addHeading('🔍 Archived Repository Scanner Results')
@@ -47,7 +47,6 @@ async function createJobSummary(allRepos: any[], archivedRepos: any[], severity:
         [{ data: 'Metric', header: true }, { data: 'Count', header: true }],
         ['Total repositories found', allRepos.length.toString()],
         ['Archived repositories', archivedRepos.length.toString()],
-        ['Severity level', severity],
       ]);
 
     if (archivedRepos.length > 0) {
@@ -77,26 +76,18 @@ async function run(): Promise<void> {
   try {
     // Parse and validate inputs
     const githubToken = core.getInput('github_token', { required: true });
-    const sarifUploadToken = core.getInput('sarif_upload_token') || githubToken; // Use separate token for SARIF upload if provided
-    const includePatterns = core.getInput('include_patterns')
-      .split(',')
-      .map((p) => p.trim())
-      .filter((p) => p.length > 0);
     const excludePatterns = core.getInput('exclude_patterns')
       .split(',')
       .map((p) => p.trim())
       .filter((p) => p.length > 0);
-    const severity = core.getInput('severity') as 'error' | 'warning' | 'note';
     const failOnArchived = core.getInput('fail_on_archived').toLowerCase() === 'true';
-    const uploadSarif = core.getInput('upload_sarif').toLowerCase() === 'true';
 
-    if (!['error', 'warning', 'note'].includes(severity)) {
-      throw new Error(`Invalid severity level: ${severity}. Must be one of: error, warning, note`);
-    }
+    // Get the default GitHub token for SARIF upload (must use github.token, not app token)
+    const defaultGitHubToken = process.env.GITHUB_TOKEN || '';
 
     // Scan repository and identify archived dependencies
     const scanner = new ArchiveScanner(githubToken);
-    const allRepos = await scanner.scanRepository(includePatterns, excludePatterns);
+    const allRepos = await scanner.scanRepository(excludePatterns);
     const archivedRepos = allRepos.filter((repoRef) => repoRef.repo.archived === true);
 
     core.info(`📊 Found ${allRepos.length} repositories, ${archivedRepos.length} archived`);
@@ -106,14 +97,13 @@ async function run(): Promise<void> {
     core.setOutput('archived_repos_found', archivedRepos.length.toString());
 
     // Generate and upload SARIF report
-    const sarifReport = ArchiveScanner.generateSarifReport(archivedRepos, severity);
+    const sarifReport = ArchiveScanner.generateSarifReport(archivedRepos);
     const sarifPath = path.join(process.cwd(), 'archived-repos-scan.sarif');
     await fs.promises.writeFile(sarifPath, JSON.stringify(sarifReport, null, 2));
     core.setOutput('sarif_file_path', sarifPath);
 
-    if (uploadSarif) {
-      await uploadSarifToCodeScanning(sarifPath, sarifUploadToken);
-    }
+    // Always use default GitHub token for SARIF upload (has security-events: write permission)
+    await uploadSarifToCodeScanning(sarifPath, defaultGitHubToken);
 
     if (archivedRepos.length > 0) {
       // Log details about archived repositories
@@ -126,19 +116,17 @@ async function run(): Promise<void> {
       });
       core.endGroup();
 
-      await createJobSummary(allRepos, archivedRepos, severity);
+      await createJobSummary(allRepos, archivedRepos);
 
       // Set action result based on configuration
       const message = `Found ${archivedRepos.length} archived repository dependencies. Check the Security tab for details.`;
-      if (failOnArchived && severity === 'error') {
+      if (failOnArchived) {
         core.setFailed(message);
-      } else if (failOnArchived) {
-        core.warning(message);
       } else {
         core.info(message);
       }
     } else {
-      await createJobSummary(allRepos, archivedRepos, severity);
+      await createJobSummary(allRepos, archivedRepos);
       core.info('✅ No archived repository dependencies found!');
     }
   } catch (error) {

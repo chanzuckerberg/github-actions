@@ -26,11 +26,8 @@ export class ArchiveScanner {
     this.octokit = getOctokit(githubToken);
   }
 
-  async scanRepository(
-    includePatterns: string[],
-    excludePatterns: string[],
-  ): Promise<RepoReference[]> {
-    const files = await ArchiveScanner.getFilesToScan(includePatterns, excludePatterns);
+  async scanRepository(excludePatterns: string[]): Promise<RepoReference[]> {
+    const files = await ArchiveScanner.getFilesToScan(excludePatterns);
     core.info(`Scanning ${files.length} files for GitHub repository references`);
 
     const repoMap = new Map<string, RepoReference>();
@@ -61,29 +58,15 @@ export class ArchiveScanner {
     return this.checkArchiveStatus(repoReferences);
   }
 
-  private static async getFilesToScan(
-    includePatterns: string[],
-    excludePatterns: string[],
-  ): Promise<string[]> {
-    const allFiles: string[] = [];
-
-    const filePromises = includePatterns.map(async (pattern) => {
-      const files = await glob(pattern, {
-        ignore: excludePatterns,
-        dot: false,
-        nodir: true,
-      });
-      return files;
+  private static async getFilesToScan(excludePatterns: string[]): Promise<string[]> {
+    const files = await glob('**/*', {
+      ignore: excludePatterns,
+      dot: false,
+      nodir: true,
     });
 
-    const fileArrays = await Promise.all(filePromises);
-    fileArrays.forEach((files) => {
-      allFiles.push(...files);
-    });
-
-    // Remove duplicates and filter out binary files
-    const uniqueFiles = [...new Set(allFiles)];
-    const textFiles = uniqueFiles.filter((file) => ArchiveScanner.isTextFile(file));
+    // Filter out binary files
+    const textFiles = files.filter((file) => ArchiveScanner.isTextFile(file));
 
     return textFiles;
   }
@@ -197,18 +180,9 @@ export class ArchiveScanner {
     return updatedReferences;
   }
 
-  static generateSarifReport(
-    archivedRepos: RepoReference[],
-    severity: 'error' | 'warning' | 'note' = 'error',
-  ): SarifReport {
-    let securitySeverity: string;
-    if (severity === 'error') {
-      securitySeverity = '7.0';
-    } else if (severity === 'warning') {
-      securitySeverity = '5.0';
-    } else {
-      securitySeverity = '3.0';
-    }
+  static generateSarifReport(archivedRepos: RepoReference[]): SarifReport {
+    const severity = 'error';
+    const securitySeverity = '7.0';
 
     const rule: SarifRule = {
       id: 'archived-dependency',
