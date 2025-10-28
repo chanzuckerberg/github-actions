@@ -1,0 +1,39 @@
+name: 'Archived Repository Scanner'
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  archived-repo-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Generate GitHub App token
+        id: generate_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+          owner: chanzuckerberg
+
+      - name: Scan for archived repositories
+        uses: chanzuckerberg/github-actions/.github/actions/archived-repo-scanner@feat/archived-repo-scanner
+        with:
+          github_token: ${{ steps.generate_token.outputs.token }}
+          fail_on_archived: 'false'
