@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.11.0](https://github.com/chanzuckerberg/github-actions/compare/v6.10.0...v6.11.0) (2025-10-28)
+
+
+### Features
+
+* add archived repository scanner action ([#432](https://github.com/chanzuckerberg/github-actions/issues/432)) ([367dd9a](https://github.com/chanzuckerberg/github-actions/commit/367dd9a1bcb24385bbf9808b13fe3a4a6066d96c))
+
+
+### BugFixes
+
+* Update archive repo scan to use v6 not dev branch ([#458](https://github.com/chanzuckerberg/github-actions/issues/458)) ([5ddfb87](https://github.com/chanzuckerberg/github-actions/commit/5ddfb87f9fc7896af9fc26d67c10c3eee15e3e07))
+
 ## [6.10.0](https://github.com/chanzuckerberg/github-actions/compare/v6.9.0...v6.10.0) (2025-10-02)
 
 
