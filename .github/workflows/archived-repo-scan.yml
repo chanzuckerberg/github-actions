@@ -33,7 +33,7 @@ jobs:
           owner: chanzuckerberg
 
       - name: Scan for archived repositories
-        uses: chanzuckerberg/github-actions/.github/actions/archived-repo-scanner@feat/archived-repo-scanner
+        uses: chanzuckerberg/github-actions/.github/actions/archived-repo-scanner@v6
         with:
           github_token: ${{ steps.generate_token.outputs.token }}
           fail_on_archived: 'false'
