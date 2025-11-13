@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.11.1](https://github.com/chanzuckerberg/github-actions/compare/v6.11.0...v6.11.1) (2025-11-13)
+
+
+### BugFixes
+
+* helm lint not injecting mock secrets like argus does ([#459](https://github.com/chanzuckerberg/github-actions/issues/459)) ([3b2ccab](https://github.com/chanzuckerberg/github-actions/commit/3b2ccabe7883cacd226fb1920eb60e9cedcb4e71))
+
 ## [6.11.0](https://github.com/chanzuckerberg/github-actions/compare/v6.10.0...v6.11.0) (2025-10-28)
 
 
