@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.11.2](https://github.com/chanzuckerberg/github-actions/compare/v6.11.1...v6.11.2) (2025-11-20)
+
+
+### Misc
+
+* **deps:** bump glob from 10.4.5 to 11.1.0 ([#462](https://github.com/chanzuckerberg/github-actions/issues/462)) ([daad355](https://github.com/chanzuckerberg/github-actions/commit/daad35575c1f9318eae7d23cef1049b0f1795ed7))
+
 ## [6.11.1](https://github.com/chanzuckerberg/github-actions/compare/v6.11.0...v6.11.1) (2025-11-13)
 
 
