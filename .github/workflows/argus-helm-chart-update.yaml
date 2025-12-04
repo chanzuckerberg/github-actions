@@ -62,7 +62,7 @@ jobs:
     name: Update Helm Dependencies
     needs: [fetch-app-info]
     runs-on: ubuntu-latest
-    if: needs.fetch-app-info.outputs.app_envs_to_update != '[]'
+    if: needs.fetch-app-info.outputs.app_envs_to_update != '[]' && needs.fetch-app-info.outputs.app_envs_to_update != ''
     permissions:
       id-token: write
       contents: read
