@@ -11,7 +11,7 @@ on:
 
 jobs:
   prod-config-check:
-    runs-on: ARM64
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
@@ -30,9 +30,15 @@ jobs:
               const apps = ${{ steps.list_apps.outputs.apps }};
               core.info(`The app info is: ${JSON.stringify(apps, null, 2)}`);
             });
-      - name: Find changed files
-        id: find_changed_files
-        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@v6
+      - name: Find changed files since last commit
+        id: changed_files_since_last_commit
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@CCIE-5287-research-a-better-user-experience-for-changes-to-prod-values-yaml
+        with:
+          github_token: ${{ github.token }}
+          since_commit_sha: ${{ github.event.before || github.event.pull_request.base.sha }}
+      - name: Find changed files in PR
+        id: changed_files_in_pr
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@CCIE-5287-research-a-better-user-experience-for-changes-to-prod-values-yaml
         with:
           github_token: ${{ github.token }}
       - name: Check for changes affecting prod envs
@@ -40,6 +46,17 @@ jobs:
         with:
           script: |
             const path = require('path');
+            const getCommentBody = (appName, fileName) => {
+              return `
+            #### Prod Changes Detected
+
+            :warning: Changes in *${fileName}* could affect the prod env for **${appName}**
+
+            When you merge this PR, ArgoCD will sync configuration yaml file changes within 3 minutes (*even without publishing a release*). See Argus documentation for more details: https://chanzuckerberg.github.io/argus/workflows/developer_workflow.html
+
+            Please inspect the changes carefully and only merge when you want the changes to be applied to prod
+              `;
+            };
 
             const ownerAndRepo = '${{ github.repository }}';
             const [owner, repo] = ownerAndRepo.split('/');
@@ -52,58 +69,37 @@ jobs:
             const appsInRepoWithProdEnv = appsInRepo.filter(app => app.envs.find(env => env.name === 'prod'));
             core.info(`Apps in repository with prod env: ${JSON.stringify(appsInRepoWithProdEnv.map(app => app.name))}`);
 
-            const changedFiles = '${{ steps.find_changed_files.outputs.all_modified_files }}'.split(',');
-            const appToProdFilesChanged = new Map();
-            appsInRepoWithProdEnv.forEach(app => {
+            const changedFilesSinceLastCommit = '${{ steps.changed_files_since_last_commit.outputs.all_modified_files }}'.split(',');
+            const changedFilesInPR = '${{ steps.changed_files_in_pr.outputs.all_modified_files }}'.split(',');
+            // Find the intersection between changedFilesInPR and changedFilesSinceLastCommit to get the files that have changed since the last commit and are in the PR
+            // This ensures we ignore files that have changed since the last commit but are not in the PR (such as when a file is reverted to what is in the base branch)
+            const changedFiles = changedFilesInPR.filter(file => changedFilesSinceLastCommit.includes(file));
+            core.info(`Changed files: ${JSON.stringify(changedFiles, null, 2)}`);
+
+            for (const app of appsInRepoWithProdEnv) {
               const infraPath = path.join(app.project_root_path, '.infra');
-              const prodDir = path.join(infraPath, 'prod');
+              const infraProdDir = path.join(infraPath, 'prod');
               const commonValuesFile = path.join(infraPath, 'common.yaml');
 
-              const changedProdValuesFilesForApp = changedFiles.filter(file => file.startsWith(infraPath) || file === commonValuesFile);
-              if (changedProdValuesFilesForApp.length > 0) {
-                core.info(`Prod values changed for app: ${app.name}: ${JSON.stringify(changedProdValuesFilesForApp, null, 2)}`);
-                appToProdFilesChanged[app.name] = changedProdValuesFilesForApp;
-              } else {
+              let prodFilesChanged = false;
+              for (const file of changedFiles) {
+                if (file.startsWith(infraProdDir) || file === commonValuesFile) {
+                  prodFilesChanged = true;
+                  core.info(`Prod values changed for app ${app.name} in file ${file}`);
+
+                  const response = await github.rest.pulls.createReviewComment({
+                    owner,
+                    repo,
+                    pull_number: ${{ github.event.pull_request.number }},
+                    path: file,
+                    commit_id: '${{ github.event.pull_request.head.sha }}',
+                    subject_type: 'file',
+                    body: getCommentBody(app.name, file),
+                  });
+                }
+              }
+
+              if(!prodFilesChanged) {
                 core.info(`Prod values not changed for app: ${app.name}`);
               }
-            });
-
-            const prodApprovalCommentHeader = `
-            ### NOTICE: This PR has changes that could affect a prod Argus environment.
-
-            Please carefully review the following files for each app listed to ensure the production changes are intended. When you merge this PR, ArgoCD will sync configuration yaml file changes within 3 minutes (even without publishing a release). See Argus documentation for more details: https://chanzuckerberg.github.io/argus/workflows/developer_workflow.html
-            `;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner,
-              repo,
-              issue_number: ${{ github.event.pull_request.number }},
-            })
-
-            for (let comment of comments) {
-              if (comment.body.startsWith(prodApprovalCommentHeader) && comment.user.type === 'Bot') {
-                core.info(`Found comment to delete: ${JSON.stringify(comment, null, 2)}`);
-                await github.rest.issues.deleteComment({
-                  owner,
-                  repo,
-                  comment_id: comment.id,
-                });
-              }
             }
-
-            if (Object.keys(appToProdFilesChanged).length === 0) {
-              core.info('This PR does not affect any prod environments');
-              return;
-            }
-
-            const perAppCommentBody = Object.entries(appToProdFilesChanged).map(([appName, changedFiles]) => {
-              return `#### App Name: ${appName}\n\nChanged files that could affect prod:\n\n${changedFiles.map(file => `- ${file}`).join('\n')}`;
-            }).join('\n\n');
-            const commentBody = `${prodApprovalCommentHeader}\n\n${perAppCommentBody}`;
-
-            await github.rest.issues.createComment({
-              owner,
-              repo,
-              issue_number: ${{ github.event.pull_request.number }},
-              body: commentBody,
-            });
