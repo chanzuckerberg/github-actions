@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Get app info
         id: list_apps
-        uses: chanzuckerberg/argus/ci/packages/list-apps@CCIE-5287-research-a-better-user-experience-for-changes-to-prod-values-yaml
+        uses: chanzuckerberg/argus/ci/packages/list-apps@v0
         env:
           PLATFORM_BASE_URL: ${{ inputs.argus_base_url }}
       - name: Log apps
@@ -50,7 +50,7 @@ jobs:
               return `
             #### Prod Changes Detected
 
-            :warning: Changes in *${fileName}* could affect the prod env for **${appName}**
+            :warning: Changes in *${fileName}* will affect the prod env for **${appName}**
 
             When you merge this PR, ArgoCD will sync configuration yaml file changes within 3 minutes (*even without publishing a release*). See Argus documentation for more details: https://chanzuckerberg.github.io/argus/workflows/developer_workflow.html
 
