@@ -8,6 +8,9 @@ inputs:
   github_token:
     description: The GitHub token for authenticating with the GitHub API
     required: true
+  since_commit_sha:
+    description: The commit SHA to compare from (only used for pull_request events)
+    required: false
 
 outputs:
   all_modified_files:

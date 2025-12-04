@@ -9,7 +9,7 @@ type Inputs = {
 export function getInputs(): Inputs {
   return {
     githubToken: core.getInput('github_token', { required: true }),
-    sinceCommitSha: core.getInput('since_commit_sha', { required: true }),
+    sinceCommitSha: core.getInput('since_commit_sha', { required: false }),
   };
 }
 
