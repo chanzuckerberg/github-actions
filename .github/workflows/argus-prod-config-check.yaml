@@ -1,0 +1,109 @@
+name: Argus Prod Config Check
+
+on:
+  workflow_call:
+    inputs:
+      argus_base_url:
+        description: The base URL of the Argus API to fetch app info
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  prod-config-check:
+    runs-on: ARM64
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Get app info
+        id: list_apps
+        uses: chanzuckerberg/argus/ci/packages/list-apps@CCIE-5287-research-a-better-user-experience-for-changes-to-prod-values-yaml
+        env:
+          PLATFORM_BASE_URL: ${{ inputs.argus_base_url }}
+      - name: Log apps
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.group("Retrieved apps from Argus", () => {
+              const apps = ${{ steps.list_apps.outputs.apps }};
+              core.info(`The app info is: ${JSON.stringify(apps, null, 2)}`);
+            });
+      - name: Find changed files
+        id: find_changed_files
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@v6
+        with:
+          github_token: ${{ github.token }}
+      - name: Check for changes affecting prod envs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const path = require('path');
+
+            const ownerAndRepo = '${{ github.repository }}';
+            const [owner, repo] = ownerAndRepo.split('/');
+            core.info(`Checking for changes affecting prod envs in repository: ${ownerAndRepo}`);
+
+            const apps = ${{ steps.list_apps.outputs.apps }};
+            const appsInRepo = apps.filter(app => app.repo_slug === ownerAndRepo);
+            core.info(`Apps in repository: ${JSON.stringify(appsInRepo.map(app => app.name))}`);
+
+            const appsInRepoWithProdEnv = appsInRepo.filter(app => app.envs.find(env => env.name === 'prod'));
+            core.info(`Apps in repository with prod env: ${JSON.stringify(appsInRepoWithProdEnv.map(app => app.name))}`);
+
+            const changedFiles = '${{ steps.find_changed_files.outputs.all_modified_files }}'.split(',');
+            const appToProdFilesChanged = new Map();
+            appsInRepoWithProdEnv.forEach(app => {
+              const infraPath = path.join(app.project_root_path, '.infra');
+              const prodDir = path.join(infraPath, 'prod');
+              const commonValuesFile = path.join(infraPath, 'common.yaml');
+
+              const changedProdValuesFilesForApp = changedFiles.filter(file => file.startsWith(infraPath) || file === commonValuesFile);
+              if (changedProdValuesFilesForApp.length > 0) {
+                core.info(`Prod values changed for app: ${app.name}: ${JSON.stringify(changedProdValuesFilesForApp, null, 2)}`);
+                appToProdFilesChanged[app.name] = changedProdValuesFilesForApp;
+              } else {
+                core.info(`Prod values not changed for app: ${app.name}`);
+              }
+            });
+
+            const prodApprovalCommentHeader = `
+            ### NOTICE: This PR has changes that could affect a prod Argus environment.
+
+            Please carefully review the following files for each app listed to ensure the production changes are intended. When you merge this PR, ArgoCD will sync configuration yaml file changes within 3 minutes (even without publishing a release). See Argus documentation for more details: https://chanzuckerberg.github.io/argus/workflows/developer_workflow.html
+            `;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: ${{ github.event.pull_request.number }},
+            })
+
+            for (let comment of comments) {
+              if (comment.body.startsWith(prodApprovalCommentHeader) && comment.user.type === 'Bot') {
+                core.info(`Found comment to delete: ${JSON.stringify(comment, null, 2)}`);
+                await github.rest.issues.deleteComment({
+                  owner,
+                  repo,
+                  comment_id: comment.id,
+                });
+              }
+            }
+
+            if (Object.keys(appToProdFilesChanged).length === 0) {
+              core.info('This PR does not affect any prod environments');
+              return;
+            }
+
+            const perAppCommentBody = Object.entries(appToProdFilesChanged).map(([appName, changedFiles]) => {
+              return `#### App Name: ${appName}\n\nChanged files that could affect prod:\n\n${changedFiles.map(file => `- ${file}`).join('\n')}`;
+            }).join('\n\n');
+            const commentBody = `${prodApprovalCommentHeader}\n\n${perAppCommentBody}`;
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: ${{ github.event.pull_request.number }},
+              body: commentBody,
+            });
