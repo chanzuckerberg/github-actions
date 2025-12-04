@@ -32,13 +32,13 @@ jobs:
             });
       - name: Find changed files since last commit
         id: changed_files_since_last_commit
-        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@CCIE-5287-research-a-better-user-experience-for-changes-to-prod-values-yaml
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@v6
         with:
           github_token: ${{ github.token }}
           since_commit_sha: ${{ github.event.before || github.event.pull_request.base.sha }}
       - name: Find changed files in PR
         id: changed_files_in_pr
-        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@CCIE-5287-research-a-better-user-experience-for-changes-to-prod-values-yaml
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@v6
         with:
           github_token: ${{ github.token }}
       - name: Check for changes affecting prod envs
