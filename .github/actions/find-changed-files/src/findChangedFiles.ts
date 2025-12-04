@@ -113,11 +113,11 @@ export async function getChangedFilesInPRSinceCommit(
   const isCommitInBranch = await checkIfCommitInPR(gitClient, owner, repo, prNumber, sinceCommitSha);
 
   if (!isCommitInBranch) {
-    core.info(`Commit ${sinceCommitSha} not found in PR #${prNumber}, returning all changed files in PR`);
+    core.info(`Commit "${sinceCommitSha}" not found in PR #${prNumber}, returning all changed files in PR`);
     return getChangedFilesInPR(gitClient, repo, owner, prNumber);
   }
 
-  core.info(`Commit ${sinceCommitSha} found in PR #${prNumber}, getting files changed since that commit`);
+  core.info(`Commit "${sinceCommitSha}" found in PR #${prNumber}, getting files changed since that commit`);
 
   // Get files changed between sinceCommitSha and head of PR
   try {
