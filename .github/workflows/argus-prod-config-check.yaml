@@ -87,6 +87,24 @@ jobs:
                   prodFilesChanged = true;
                   core.info(`Prod values changed for app ${app.name} in file ${file}`);
 
+                  // List existing review comments on this file for this commit
+                  const existingCommentsResp = await github.rest.pulls.listReviewComments({
+                    owner,
+                    repo,
+                    pull_number: ${{ github.event.pull_request.number }},
+                  });
+
+                  const prodChangesDetectedAlready = existingCommentsResp.data.some(comment =>
+                    comment.path === file &&
+                    comment.commit_id === '${{ github.event.pull_request.head.sha }}' &&
+                    comment.body && comment.body.includes("Prod Changes Detected")
+                  );
+
+                  if (prodChangesDetectedAlready) {
+                    core.info(`A 'Prod Changes Detected' comment already exists for ${file} on this commit, skipping creation.`);
+                    continue;
+                  }
+
                   const response = await github.rest.pulls.createReviewComment({
                     owner,
                     repo,
