@@ -1,0 +1,123 @@
+name: Argus Prod Config Check
+
+on:
+  workflow_call:
+    inputs:
+      argus_base_url:
+        description: The base URL of the Argus API to fetch app info
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  prod-config-check:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Get app info
+        id: list_apps
+        uses: chanzuckerberg/argus-artifacts/ci/packages/list-apps@v0
+        env:
+          PLATFORM_BASE_URL: ${{ inputs.argus_base_url }}
+      - name: Log apps
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.group("Retrieved apps from Argus", () => {
+              const apps = ${{ steps.list_apps.outputs.apps }};
+              core.info(`The app info is: ${JSON.stringify(apps, null, 2)}`);
+            });
+      - name: Find changed files since last commit
+        id: changed_files_since_last_commit
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@v6
+        with:
+          github_token: ${{ github.token }}
+          since_commit_sha: ${{ github.event.before || github.event.pull_request.base.sha }}
+      - name: Find changed files in PR
+        id: changed_files_in_pr
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@v6
+        with:
+          github_token: ${{ github.token }}
+      - name: Check for changes affecting prod envs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const path = require('path');
+            const getCommentBody = (appName, fileName) => {
+              return `
+            #### Prod Changes Detected
+
+            :warning: Changes in *${fileName}* will affect the prod env for **${appName}**
+
+            When you merge this PR, ArgoCD will sync configuration yaml file changes within 3 minutes (*even without publishing a release*). See Argus documentation for more details: https://chanzuckerberg.github.io/argus/workflows/developer_workflow.html
+
+            Please inspect the changes carefully and only merge when you want the changes to be applied to prod
+              `;
+            };
+
+            const ownerAndRepo = '${{ github.repository }}';
+            const [owner, repo] = ownerAndRepo.split('/');
+            core.info(`Checking for changes affecting prod envs in repository: ${ownerAndRepo}`);
+
+            const apps = ${{ steps.list_apps.outputs.apps }};
+            const appsInRepo = apps.filter(app => app.repo_slug === ownerAndRepo);
+            core.info(`Apps in repository: ${JSON.stringify(appsInRepo.map(app => app.name))}`);
+
+            const appsInRepoWithProdEnv = appsInRepo.filter(app => app.envs.find(env => env.name === 'prod'));
+            core.info(`Apps in repository with prod env: ${JSON.stringify(appsInRepoWithProdEnv.map(app => app.name))}`);
+
+            const changedFilesSinceLastCommit = '${{ steps.changed_files_since_last_commit.outputs.all_modified_files }}'.split(',');
+            const changedFilesInPR = '${{ steps.changed_files_in_pr.outputs.all_modified_files }}'.split(',');
+            // Find the intersection between changedFilesInPR and changedFilesSinceLastCommit to get the files that have changed since the last commit and are in the PR
+            // This ensures we ignore files that have changed since the last commit but are not in the PR (such as when a file is reverted to what is in the base branch)
+            const changedFiles = changedFilesInPR.filter(file => changedFilesSinceLastCommit.includes(file));
+            core.info(`Changed files: ${JSON.stringify(changedFiles, null, 2)}`);
+
+            for (const app of appsInRepoWithProdEnv) {
+              const infraPath = path.join(app.project_root_path, '.infra');
+              const infraProdDir = path.join(infraPath, 'prod');
+              const commonValuesFile = path.join(infraPath, 'common.yaml');
+
+              let prodFilesChanged = false;
+              for (const file of changedFiles) {
+                if (file.startsWith(infraProdDir) || file === commonValuesFile) {
+                  prodFilesChanged = true;
+                  core.info(`Prod values changed for app ${app.name} in file ${file}`);
+
+                  // List existing review comments on this file for this commit
+                  const existingCommentsResp = await github.rest.pulls.listReviewComments({
+                    owner,
+                    repo,
+                    pull_number: ${{ github.event.pull_request.number }},
+                  });
+
+                  const prodChangesDetectedAlready = existingCommentsResp.data.some(comment =>
+                    comment.path === file &&
+                    comment.original_commit_id === '${{ github.event.pull_request.head.sha }}' &&
+                    comment.body && comment.body.includes("Prod Changes Detected")
+                  );
+
+                  if (prodChangesDetectedAlready) {
+                    core.info(`A 'Prod Changes Detected' comment already exists for ${file} on this commit, skipping creation.`);
+                    continue;
+                  }
+
+                  const response = await github.rest.pulls.createReviewComment({
+                    owner,
+                    repo,
+                    pull_number: ${{ github.event.pull_request.number }},
+                    path: file,
+                    commit_id: '${{ github.event.pull_request.head.sha }}',
+                    subject_type: 'file',
+                    body: getCommentBody(app.name, file),
+                  });
+                }
+              }
+
+              if(!prodFilesChanged) {
+                core.info(`Prod values not changed for app: ${app.name}`);
+              }
+            }
