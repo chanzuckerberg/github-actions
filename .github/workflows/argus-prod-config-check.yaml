@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Get app info
         id: list_apps
-        uses: chanzuckerberg/argus/ci/packages/list-apps@v0
+        uses: chanzuckerberg/argus-artifacts/ci/packages/list-apps@v0
         env:
           PLATFORM_BASE_URL: ${{ inputs.argus_base_url }}
       - name: Log apps
