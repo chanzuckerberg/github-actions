@@ -94,27 +94,11 @@ jobs:
                     pull_number: ${{ github.event.pull_request.number }},
                   });
 
-                  const currentCommitSha = '${{ github.event.pull_request.head.sha }}';
-                  core.info(`Current commit SHA: ${currentCommitSha}`);
-
-                  // Filter comments for this specific file and log them for debugging
-                  const commentsForFile = existingCommentsResp.data.filter(comment => comment.path === file);
-                  core.info(`Found ${commentsForFile.length} existing comments for file ${file}`);
-                  commentsForFile.forEach(comment => {
-                    core.info(`  Comment commit_id: ${comment.commit_id}, original_commit_id: ${comment.original_commit_id}, body preview: ${comment.body?.substring(0, 50)}...`);
-                  });
-
-                  const prodChangesDetectedAlready = existingCommentsResp.data.some(comment => {
-                    const pathMatches = comment.path === file;
-                    const commitMatches = comment.commit_id === currentCommitSha;
-                    const bodyMatches = comment.body && comment.body.includes("Prod Changes Detected");
-
-                    if (pathMatches && bodyMatches) {
-                      core.info(`Found existing "Prod Changes Detected" comment for ${file}, commit_id: ${comment.commit_id}, matches current: ${commitMatches}`);
-                    }
-
-                    return pathMatches && commitMatches && bodyMatches;
-                  });
+                  const prodChangesDetectedAlready = existingCommentsResp.data.some(comment =>
+                    comment.path === file &&
+                    comment.original_commit_id === '${{ github.event.pull_request.head.sha }}' &&
+                    comment.body && comment.body.includes("Prod Changes Detected")
+                  );
 
                   if (prodChangesDetectedAlready) {
                     core.info(`A 'Prod Changes Detected' comment already exists for ${file} on this commit, skipping creation.`);
