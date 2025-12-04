@@ -56,6 +56,9 @@ jobs:
               });
 
               core.info(`Matrix will process ${matrixItems.length} app-env combinations`);
+              matrixItems.forEach(item => {
+                core.info(` - App: ${item.app_name} Env: ${item.env_name} Project root path: ${item.project_root_path} Repo slug: ${item.repo_slug}`);
+              });
               core.setOutput("app_envs_to_update", JSON.stringify(matrixItems));
             });
   update-helm-deps:
