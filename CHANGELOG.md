@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.12.0](https://github.com/chanzuckerberg/github-actions/compare/v6.11.1...v6.12.0) (2025-12-05)
+
+
+### Features
+
+* add reusable workflow to notify users when a PR may affect prod config prior to next release ([#464](https://github.com/chanzuckerberg/github-actions/issues/464)) ([70e641b](https://github.com/chanzuckerberg/github-actions/commit/70e641b7a2aee51b7f5cda8e547ead86d3852fb6))
+* make app_name optional and run against all apps in repo when it's not supplied ([#465](https://github.com/chanzuckerberg/github-actions/issues/465)) ([5f71d77](https://github.com/chanzuckerberg/github-actions/commit/5f71d77fe92744a82b622cda2a03f4aee7ff7d4b))
+
+
+### Misc
+
+* **deps:** bump glob from 10.4.5 to 11.1.0 ([#462](https://github.com/chanzuckerberg/github-actions/issues/462)) ([daad355](https://github.com/chanzuckerberg/github-actions/commit/daad35575c1f9318eae7d23cef1049b0f1795ed7))
+
 ## [6.11.1](https://github.com/chanzuckerberg/github-actions/compare/v6.11.0...v6.11.1) (2025-11-13)
 
 
