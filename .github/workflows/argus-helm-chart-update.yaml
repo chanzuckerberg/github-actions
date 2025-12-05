@@ -5,7 +5,7 @@ on:
     inputs:
       app_name:
         description: The app name to update the Helm dependencies for
-        required: true
+        required: false
         type: string
       argus_base_url:
         description: The base URL of the Argus API to fetch app info
@@ -18,37 +18,65 @@ jobs:
     name: Fetch app info
     runs-on: ubuntu-latest
     outputs:
-      app_info: ${{ steps.get_app_info.outputs.app_info }}
+      app_envs_to_update: ${{ steps.process_apps_outputs.outputs.app_envs_to_update }}
     permissions:
       id-token: write
       contents: read
     steps:
-      - name: Get app info
-        id: get_app_info
-        uses: chanzuckerberg/argus-artifacts/ci/packages/get-app-info@v0
-        with:
-          app_name: ${{ inputs.app_name }}
+      - name: List apps
+        id: list_apps
+        uses: chanzuckerberg/argus-artifacts/ci/packages/list-apps@v0
         env:
           PLATFORM_BASE_URL: ${{ inputs.argus_base_url }}
-      - name: Log outputs
-        run: |
-          echo "The environments are: ${{ steps.get_app_info.outputs.app_info }}"
+      - name: Process apps outputs
+        id: process_apps_outputs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.group("Retrieved apps from Argus", () => {
+              const apps = ${{ steps.list_apps.outputs.apps }};
+
+              const ownerAndRepo = '${{ github.repository }}';
+              const appsToUpdate = `${{ inputs.app_name }}` ? apps.filter(app => app.name === `${{ inputs.app_name }}`) : apps.filter(app => app.repo_slug === ownerAndRepo);
+              core.info(`Checking for Helm chart updates for apps: ${JSON.stringify(appsToUpdate.map(app => app.name), null, 2)}`);
+
+              // Flatten apps and environments into a matrix
+              const matrixItems = [];
+              appsToUpdate.forEach(app => {
+                if (app.envs && Array.isArray(app.envs)) {
+                  app.envs.forEach(env => {
+                    matrixItems.push({
+                      app_name: app.name,
+                      env_name: env.name,
+                      project_root_path: app.project_root_path,
+                      repo_slug: app.repo_slug
+                    });
+                  });
+                }
+              });
+
+              core.info(`Matrix will process ${matrixItems.length} app-env combinations`);
+              matrixItems.forEach(item => {
+                core.info(` - App: ${item.app_name} Env: ${item.env_name} Project root path: ${item.project_root_path} Repo slug: ${item.repo_slug}`);
+              });
+              core.setOutput("app_envs_to_update", JSON.stringify(matrixItems));
+            });
   update-helm-deps:
     name: Update Helm Dependencies
     needs: [fetch-app-info]
     runs-on: ubuntu-latest
-    if: needs.fetch-app-info.outputs.app_info.envs != '[]'
+    if: needs.fetch-app-info.outputs.app_envs_to_update != '[]' && needs.fetch-app-info.outputs.app_envs_to_update != ''
     permissions:
       id-token: write
       contents: read
     strategy:
       fail-fast: false
       matrix:
-        env: ${{ fromJson(needs.fetch-app-info.outputs.app_info).envs }}
+        include: ${{ fromJson(needs.fetch-app-info.outputs.app_envs_to_update) }}
     steps:
       - name: Log info
         run: |
-          echo "Updating chart in env: ${{ matrix.env.name }} - app root dir: ${{ fromJson(needs.fetch-app-info.outputs.app_info).project_root_path }}"
+          echo "Updating chart for app: ${{ matrix.app_name }} in env: ${{ matrix.env_name }} - app root dir: ${{ matrix.project_root_path }}"
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup updatecli
@@ -63,7 +91,7 @@ jobs:
       - name: Write updatecli manifest
         id: write_manifest
         run: |
-          export UPDATECLI_MANIFEST_FILE=updatecli-${{ matrix.env.name }}.yaml
+          export UPDATECLI_MANIFEST_FILE=updatecli-${{ matrix.app_name }}-${{ matrix.env_name }}.yaml
           echo "UPDATECLI_MANIFEST_FILE=$UPDATECLI_MANIFEST_FILE" >> $GITHUB_OUTPUT
           cat <<EOF > $UPDATECLI_MANIFEST_FILE
           name: Helm chart update
@@ -85,7 +113,7 @@ jobs:
               spec:
                 engine: yamlpath
                 key: $.dependencies[?(@.name == 'stack')].version
-                file: ${{ fromJson(needs.fetch-app-info.outputs.app_info).project_root_path }}/.infra/${{ matrix.env.name }}/Chart.yaml
+                file: ${{ matrix.project_root_path }}/.infra/${{ matrix.env_name }}/Chart.yaml
           EOF
 
       - name: Run updatecli
@@ -110,9 +138,9 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           commit-message: update stack helm chart version
-          title: 'chore: update stack helm chart version for ${{ inputs.app_name }} ${{ matrix.env.name }}'
+          title: 'chore: update stack helm chart version for ${{ matrix.app_name }} ${{ matrix.env_name }}'
           body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
           base: main
-          branch: updatecli-bump-stack-chart-${{ inputs.app_name }}-${{ matrix.env.name }}
+          branch: updatecli-bump-stack-chart-${{ matrix.app_name }}-${{ matrix.env_name }}
           delete-branch: true
           token: ${{ steps.generate_token.outputs.token }}
