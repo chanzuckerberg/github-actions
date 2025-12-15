@@ -1,7 +1,7 @@
 name: "Get GitHub Ref Names"
 description: |
   A script that will attempt to get the current branch and upsream's default branch names.
-  Works when GitHub action triggers are pull_request or push.
+  Works when GitHub action triggers are pull_request, push, workflow_dispatch, delete, or release.
   Will also attempt to calculate docker-build-and-push's cache_from.
 
   NOTE: doesn't yet work when tags are pushed, only branches.

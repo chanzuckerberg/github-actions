@@ -59,6 +59,9 @@ runs:
             // return empty string if triggered by push, this is to ensure the checkout action uses the
             // default behavior which will prevent race condition commits from multiple builders triggered back-to-back
             return '';
+          } else if (eventName === "workflow_dispatch") {
+            // return empty string for manual triggers, similar to push behavior
+            return '';
           } else {
             core.setFailed(`EventName ${eventName} not supported`);
             return;
