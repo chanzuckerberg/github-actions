@@ -83,7 +83,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@v6
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@aku/support-workflow-dispatch
         id: build_prep
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -118,7 +118,7 @@ jobs:
         with:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@v6
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@aku/support-workflow-dispatch
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
@@ -144,7 +144,7 @@ jobs:
       contents: read
     if: always()
     steps:
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@v6
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@aku/support-workflow-dispatch
         with:
           should_deploy: ${{ needs.prep.outputs.should_deploy }}
           images: ${{ needs.prep.outputs.images }}
