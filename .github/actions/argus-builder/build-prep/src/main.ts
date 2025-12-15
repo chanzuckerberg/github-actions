@@ -192,6 +192,8 @@ function getTriggerSha(): string {
     return github.context.payload.pull_request?.head.sha;
   } if (eventName === 'push') {
     return github.context.sha;
+  } if (eventName === 'workflow_dispatch') {
+    return github.context.sha;
   }
   const errMsg = `EventName ${eventName} not supported`;
   core.setFailed(errMsg);
