@@ -41,6 +41,11 @@ runs:
           } else if (eventName === "release") {
             head = context.payload.repository.default_branch;
             base = context.payload.repository.default_branch;
+          } else if (eventName === "workflow_dispatch") {
+            // For manual triggers, use the current ref
+            const pruneHead = "refs/heads/";
+            head = context.ref.startsWith(pruneHead) ? context.ref.substring(pruneHead.length) : context.ref;
+            base = context.payload.repository.default_branch;
           } else {
             core.setFailed(`EventName ${eventName} not supported`);
             return;
