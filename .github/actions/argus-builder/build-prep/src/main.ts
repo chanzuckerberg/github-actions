@@ -112,7 +112,8 @@ export async function main() {
     });
 
     const matchingFiles: string[] = findMatchingChangedFiles(changedFiles, inputs.pathFilters.map((f: string) => [f]));
-    const filesMatched: boolean = matchingFiles.length > 0;
+    // For workflow_dispatch events, treat all files as matched (allows manual builds to proceed)
+    const filesMatched: boolean = github.context.eventName === 'workflow_dispatch' || matchingFiles.length > 0;
 
     const hasImages = Object.keys(inputs.images).length > 0;
     if (!hasImages) {
@@ -210,7 +211,8 @@ export function processImagesInput(images: Record<string, ImageInput>, changedFi
     core.info(`---\nLooking for file changes that match the filters for image: ${name}`);
     const matchingFiles = findMatchingChangedFiles(changedFiles, pathFilters);
     core.info(`> Files matched: ${matchingFiles}`);
-    const filesMatched = matchingFiles.length > 0;
+    // For workflow_dispatch events, treat all files as matched (allows manual builds to proceed)
+    const filesMatched = github.context.eventName === 'workflow_dispatch' || matchingFiles.length > 0;
 
     const branchesInclude = cleanArray(image.branches_include || ['*']);
     const branchesIgnore = cleanArray(image.branches_ignore || []);

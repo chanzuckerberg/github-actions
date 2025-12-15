@@ -53,6 +53,10 @@ export async function findChangedFiles(githubToken: string, sinceCommitSha: stri
     core.info(`Triggered by push (force=false), found changed files in commit: ${JSON.stringify(changedFilePaths, null, 2)}`);
     return { allModifiedFiles: changedFilePaths };
   }
+  if (github.context.eventName === 'workflow_dispatch') {
+    core.info('Triggered by workflow_dispatch event, returning empty changed files list (will build all matching images)');
+    return { allModifiedFiles: [] };
+  }
   throw new Error(`EventName ${github.context.eventName} not supported`);
 }
 
