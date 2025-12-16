@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.12.1](https://github.com/chanzuckerberg/github-actions/compare/v6.12.0...v6.12.1) (2025-12-16)
+
+
+### Misc
+
+* build image by finding diff between head and last push rather than only single commit ([#467](https://github.com/chanzuckerberg/github-actions/issues/467)) ([69917db](https://github.com/chanzuckerberg/github-actions/commit/69917db3e93cbb28d1e2e4bf4fb24676dd4d8f30))
+
 ## [6.12.0](https://github.com/chanzuckerberg/github-actions/compare/v6.11.1...v6.12.0) (2025-12-05)
 
 
