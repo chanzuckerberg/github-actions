@@ -80,7 +80,7 @@ runs:
         registry: ${{ inputs.registry }}
     - name: Calculate Branch and Base Names
       id: refs
-      uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1.4.0
+      uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@aku/support-workflow-dispatch
     - name: Calculate cache-to and cache-from
       id: cache
       uses: actions/github-script@v7
