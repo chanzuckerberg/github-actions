@@ -23,6 +23,7 @@ export async function findChangedFiles(githubToken: string, sinceCommitSha: stri
   } if (github.context.eventName === 'push') {
     core.debug(`Push event detected ${JSON.stringify(github.context.payload, null, 2)}`);
     const commitSha = github.context.sha;
+    const beforeSha = github.context.payload.before;
 
     const isForcedPush = github.context.payload.forced || false;
     if (isForcedPush) {
@@ -43,6 +44,28 @@ export async function findChangedFiles(githubToken: string, sinceCommitSha: stri
       return { allModifiedFiles: changedFilePaths };
     }
 
+    // Compare HEAD to the commit that was at the tip before this push
+    // This handles multiple commits pushed at once
+    if (beforeSha && beforeSha !== '0000000000000000000000000000000000000000') {
+      try {
+        core.info(`Comparing commits: ${beforeSha}...${commitSha}`);
+        const comparison = await gitClient.rest.repos.compareCommits({
+          owner,
+          repo,
+          base: beforeSha,
+          head: commitSha,
+        });
+
+        const changedFilePaths = (comparison.data.files || []).map((file) => file.filename);
+        core.info(`Triggered by push (force=false), found changed files between commits: ${JSON.stringify(changedFilePaths, null, 2)}`);
+        return { allModifiedFiles: changedFilePaths };
+      } catch (error) {
+        core.warning(`Error comparing commits ${beforeSha}...${commitSha}: ${error}`);
+        // Fall through to single commit comparison
+      }
+    }
+
+    // Fallback for new branches or if comparison fails
     const commitResp = await gitClient.rest.repos.getCommit({
       owner,
       repo,
@@ -50,7 +73,7 @@ export async function findChangedFiles(githubToken: string, sinceCommitSha: stri
     });
 
     const changedFilePaths = (commitResp.data.files || []).map((file) => file.filename);
-    core.info(`Triggered by push (force=false), found changed files in commit: ${JSON.stringify(changedFilePaths, null, 2)}`);
+    core.info(`Triggered by push (fallback), found changed files in commit: ${JSON.stringify(changedFilePaths, null, 2)}`);
     return { allModifiedFiles: changedFilePaths };
   }
   throw new Error(`EventName ${github.context.eventName} not supported`);
