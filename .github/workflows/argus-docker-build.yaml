@@ -83,7 +83,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
-      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@CCIE-5608-argus-build-image-by-finding-diff-from-last-pushed-commit
+      - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/build-prep@v6
         id: build_prep
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
