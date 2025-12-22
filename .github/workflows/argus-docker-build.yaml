@@ -142,7 +142,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: always() && needs.prep.result != 'skipped'
+    if: always() && needs.prep.outputs.should_deploy == 'true'
     steps:
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update@v6
         with:
