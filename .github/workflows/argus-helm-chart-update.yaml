@@ -113,18 +113,19 @@ jobs:
               spec:
                 engine: yamlpath
                 key: $.dependencies[?(@.name == 'stack')].version
-                file: ${{ matrix.project_root_path }}/.infra/${{ matrix.env_name }}/Chart.yaml
+                file: ${{ matrix.project_root_path }}${{ !endsWith(matrix.project_root_path, '/') && '/' || '' }}.infra/${{ matrix.env_name }}/Chart.yaml
           EOF
 
       - name: Run updatecli
         id: run_updatecli
         run: |
+          set -e
           export UPDATE_LOG_FILE=$(uuidgen)-update.log
           echo "Running updatecli with manifest ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }}"
           cat ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }}
 
           echo "----------------------------------------"
-          updatecli apply --config ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }} >> $UPDATE_LOG_FILE
+          updatecli apply --config ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }} >> $UPDATE_LOG_FILE 2>&1
           cat $UPDATE_LOG_FILE
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "update_logs<<$EOF" >> $GITHUB_OUTPUT
