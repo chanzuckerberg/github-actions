@@ -87,34 +87,53 @@ jobs:
         with:
           app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
-
+      - uses: actions/setup-node@v4
+      - run: npm install js-yaml@4.1.0
       - name: Write updatecli manifest
         id: write_manifest
-        run: |
-          export UPDATECLI_MANIFEST_FILE=updatecli-${{ matrix.app_name }}-${{ matrix.env_name }}.yaml
-          echo "UPDATECLI_MANIFEST_FILE=$UPDATECLI_MANIFEST_FILE" >> $GITHUB_OUTPUT
-          cat <<EOF > $UPDATECLI_MANIFEST_FILE
-          name: Helm chart update
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const yaml = require('js-yaml');
+            const appName = '${{ matrix.app_name }}';
+            const envName = '${{ matrix.env_name }}';
+            const projectRootPath = '${{ matrix.project_root_path }}';
 
-          # Defines how to get "source" information such as Jenkins version
-          sources:
-            stackHelmChart:
-              name: Get the latest Helm chart version
-              kind: helmchart
-              spec:
-                url: https://chanzuckerberg.github.io/argo-helm-charts
-                name: stack
+            const fileName = 'updatecli-' + appName + '-' + envName + '.yaml';
+            core.setOutput('UPDATECLI_MANIFEST_FILE', fileName);
 
-          # Defines "targets" which need to be updated if different than "source" information.
-          targets:
-            helmChartVersions:
-              name: Bump Helm chart versions
-              kind: yaml
-              spec:
-                engine: yamlpath
-                key: $.dependencies[?(@.name == 'stack')].version
-                file: ${{ matrix.project_root_path }}/.infra/${{ matrix.env_name }}/Chart.yaml
-          EOF
+            const chartPath = path.join(projectRootPath, '.infra', envName, 'Chart.yaml');
+            core.setOutput('CHART_PATH', chartPath);
+
+            const manifest = {
+              name: 'Helm chart update',
+              sources: {
+                stackHelmChart: {
+                  name: `Get the latest 'stack' Helm chart version`,
+                  kind: 'helmchart',
+                  spec: {
+                    url: 'https://chanzuckerberg.github.io/argo-helm-charts',
+                    name: 'stack'
+                  }
+                }
+              },
+              targets: {
+                helmChartVersions: {
+                  name: "Bump 'stack' Helm chart versions",
+                  kind: 'yaml',
+                  spec: {
+                    engine: 'yamlpath',
+                    key: '$.dependencies[?(@.name == \'stack\')].version',
+                    file: chartPath
+                  }
+                }
+              }
+            };
+
+            const manifestContent = yaml.dump(manifest);
+            fs.writeFileSync(fileName, manifestContent, 'utf8');
 
       - name: Run updatecli
         id: run_updatecli
@@ -124,7 +143,11 @@ jobs:
           cat ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }}
 
           echo "----------------------------------------"
-          updatecli apply --config ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }} >> $UPDATE_LOG_FILE
+          set +e
+          updatecli apply --config ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }} >> $UPDATE_LOG_FILE 2>&1
+          UPDATECLI_EXIT_CODE=$?
+          set -e
+
           cat $UPDATE_LOG_FILE
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "update_logs<<$EOF" >> $GITHUB_OUTPUT
@@ -133,10 +156,14 @@ jobs:
           rm $UPDATE_LOG_FILE
           rm ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }}
 
+          exit $UPDATECLI_EXIT_CODE
+
       - name: Create Pull Request
         id: create_pr
         uses: peter-evans/create-pull-request@v7
         with:
+          add-paths: |
+            ${{ steps.write_manifest.outputs.CHART_PATH }}
           commit-message: update stack helm chart version
           title: 'chore: update stack helm chart version for ${{ matrix.app_name }} ${{ matrix.env_name }}'
           body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
