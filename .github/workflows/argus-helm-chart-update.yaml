@@ -121,7 +121,7 @@ jobs:
               },
               targets: {
                 helmChartVersions: {
-                  name: `Bump 'stack' Helm chart versions`,
+                  name: "Bump 'stack' Helm chart versions",
                   kind: 'yaml',
                   spec: {
                     engine: 'yamlpath',
