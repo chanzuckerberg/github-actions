@@ -110,7 +110,7 @@ jobs:
               name: 'Helm chart update',
               sources: {
                 stackHelmChart: {
-                  name: 'Get the latest 'stack' Helm chart version',
+                  name: `Get the latest 'stack' Helm chart version`,
                   kind: 'helmchart',
                   spec: {
                     url: 'https://chanzuckerberg.github.io/argo-helm-charts',
