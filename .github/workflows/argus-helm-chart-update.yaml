@@ -105,6 +105,7 @@ jobs:
             core.setOutput('UPDATECLI_MANIFEST_FILE', fileName);
 
             const chartPath = path.join(projectRootPath, '.infra', envName, 'Chart.yaml');
+            core.setOutput('CHART_PATH', chartPath);
 
             const manifest = {
               name: 'Helm chart update',
@@ -156,6 +157,8 @@ jobs:
         id: create_pr
         uses: peter-evans/create-pull-request@v7
         with:
+          add-paths: |
+            ${{ steps.write_manifest.outputs.CHART_PATH }}
           commit-message: update stack helm chart version
           title: 'chore: update stack helm chart version for ${{ matrix.app_name }} ${{ matrix.env_name }}'
           body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
