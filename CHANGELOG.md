@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.12.2](https://github.com/chanzuckerberg/github-actions/compare/v6.12.1...v6.12.2) (2026-01-02)
+
+
+### BugFixes
+
+* handle trailing slash in project_root_path ([#470](https://github.com/chanzuckerberg/github-actions/issues/470)) ([8df93b7](https://github.com/chanzuckerberg/github-actions/commit/8df93b713fa6602d2bfd6c5425037b6bdad94cde))
+
 ## [6.12.1](https://github.com/chanzuckerberg/github-actions/compare/v6.12.0...v6.12.1) (2025-12-16)
 
 
