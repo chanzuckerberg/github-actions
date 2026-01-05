@@ -105,10 +105,26 @@ export function determineValuesFilesToUpdate(images: ProcessedImage[], envs: str
 export function updateValuesFiles(valuesFilesToUpdate: string[], imageTag: string): void {
   valuesFilesToUpdate.forEach((filePath) => {
     core.info(`Updating ${filePath} to use image tag ${imageTag}`);
-    child_process.execFileSync(
-      'yq',
-      ['eval', '-i', `(.. | select(has("tag")) | select(.tag == "sha-*")).tag = "${imageTag}"`, filePath],
+
+    /*
+     * Update tag values surgically - only modifies lines with tag: sha-*
+     * Handles all of the following cases:
+      tag: sha-abc123              → tag: sha-def456
+      tag: "sha-abc123"            → tag: "sha-def456"
+      tag: 'sha-abc123'            → tag: 'sha-def456'
+      tag: &imageTag sha-abc123    → tag: &imageTag sha-def456
+      tag: &imageTag "sha-abc123"  → tag: &imageTag "sha-def456"
+      tag: &imageTag 'sha-abc123'  → tag: &imageTag 'sha-def456'
+
+     * Also handles each of the above if they are in an array of tag values (examples are intentionally limited as they are the same as above)
+      - tag: sha-abc123            → - tag: sha-def456
+    */
+    const content = fs.readFileSync(filePath, 'utf8');
+    const updatedContent = content.replace(
+      /^(\s*(?:-\s+)?tag:\s+)(&\S+\s+)?(['"]?)sha-[^\s'"]*(['"]?)/gm,
+      `$1$2$3${imageTag}$4`
     );
+    fs.writeFileSync(filePath, updatedContent, 'utf8');
 
     core.info(`Updated ${filePath}\n---`);
     core.info(fs.readFileSync(filePath).toString());

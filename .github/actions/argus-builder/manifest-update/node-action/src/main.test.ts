@@ -308,7 +308,7 @@ describe('argus-builder-manifest-update', () => {
     });
   });
 
-  describe('updateTagsInFile', () => {
+  describe('updateValuesFiles', () => {
     let tempFilePath: string;
 
     beforeEach(() => {
