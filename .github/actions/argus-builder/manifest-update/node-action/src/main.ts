@@ -116,7 +116,8 @@ export function updateValuesFiles(valuesFilesToUpdate: string[], imageTag: strin
       tag: &imageTag "sha-abc123"  → tag: &imageTag "sha-def456"
       tag: &imageTag 'sha-abc123'  → tag: &imageTag 'sha-def456'
 
-     * Also handles each of the above if they are in an array of tag values (examples are intentionally limited as they are the same as above)
+     * Also handles each of the above if they are in an array of tag values
+     * (examples are intentionally limited as they are the same as above, but the regex handles all cases)
       - tag: sha-abc123            → - tag: sha-def456
     */
     const content = fs.readFileSync(filePath, 'utf8');
