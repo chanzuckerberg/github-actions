@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.12.4](https://github.com/chanzuckerberg/github-actions/compare/v6.12.3...v6.12.4) (2026-01-05)
+
+
+### BugFixes
+
+* use native JS instead of yq to more accurately update only intended yaml fields ([#474](https://github.com/chanzuckerberg/github-actions/issues/474)) ([106d31f](https://github.com/chanzuckerberg/github-actions/commit/106d31fe23283e80676120a1e6303e85f587d33b))
+
 ## [6.12.3](https://github.com/chanzuckerberg/github-actions/compare/v6.12.2...v6.12.3) (2026-01-05)
 
 
