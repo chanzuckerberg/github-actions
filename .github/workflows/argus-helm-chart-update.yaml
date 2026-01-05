@@ -87,25 +87,50 @@ jobs:
         with:
           app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
-      - uses: actions/setup-node@v4
-      - run: npm install js-yaml@4.1.0
-      - name: Write updatecli manifest
-        id: write_manifest
+      - name: Check chart path
+        id: check_chart_path
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const yaml = require('js-yaml');
+            const projectRootPath = '${{ matrix.project_root_path }}';
+            const envName = '${{ matrix.env_name }}';
+
+            const chartPath = path.join(projectRootPath, '.infra', envName, 'Chart.yaml');
+            core.setOutput('chart_path', chartPath);
+
+            const exists = fs.existsSync(chartPath);
+            core.setOutput('chart_exists', exists.toString());
+
+            if (exists) {
+              core.info(`Chart path exists: ${chartPath}`);
+            } else {
+              core.warning(`Chart path does not exist: ${chartPath}`);
+            }
+
+      - uses: actions/setup-node@v4
+        if: steps.check_chart_path.outputs.chart_exists == 'true'
+      - name: Install js-yaml in isolated directory
+        if: steps.check_chart_path.outputs.chart_exists == 'true'
+        run: |
+          mkdir -p /tmp/js-yaml-install
+          cd /tmp/js-yaml-install
+          npm install js-yaml --no-save
+      - name: Write updatecli manifest
+        id: write_manifest
+        if: steps.check_chart_path.outputs.chart_exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const yaml = require('/tmp/js-yaml-install/node_modules/js-yaml');
             const appName = '${{ matrix.app_name }}';
             const envName = '${{ matrix.env_name }}';
-            const projectRootPath = '${{ matrix.project_root_path }}';
+            const chartPath = '${{ steps.check_chart_path.outputs.chart_path }}';
 
             const fileName = 'updatecli-' + appName + '-' + envName + '.yaml';
             core.setOutput('UPDATECLI_MANIFEST_FILE', fileName);
-
-            const chartPath = path.join(projectRootPath, '.infra', envName, 'Chart.yaml');
-            core.setOutput('CHART_PATH', chartPath);
 
             const manifest = {
               name: 'Helm chart update',
@@ -137,6 +162,7 @@ jobs:
 
       - name: Run updatecli
         id: run_updatecli
+        if: steps.check_chart_path.outputs.chart_exists == 'true'
         run: |
           export UPDATE_LOG_FILE=$(uuidgen)-update.log
           echo "Running updatecli with manifest ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }}"
@@ -160,10 +186,11 @@ jobs:
 
       - name: Create Pull Request
         id: create_pr
+        if: steps.check_chart_path.outputs.chart_exists == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           add-paths: |
-            ${{ steps.write_manifest.outputs.CHART_PATH }}
+            ${{ steps.check_chart_path.outputs.chart_path }}
           commit-message: update stack helm chart version
           title: 'chore: update stack helm chart version for ${{ matrix.app_name }} ${{ matrix.env_name }}'
           body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
