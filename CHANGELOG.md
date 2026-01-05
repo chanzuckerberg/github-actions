@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.12.3](https://github.com/chanzuckerberg/github-actions/compare/v6.12.2...v6.12.3) (2026-01-05)
+
+
+### BugFixes
+
+* gracefully handle missing chart file & use isolated npm install ([#472](https://github.com/chanzuckerberg/github-actions/issues/472)) ([703c4b8](https://github.com/chanzuckerberg/github-actions/commit/703c4b84c4b364424cc8efaace1182a6d3bebecc))
+
 ## [6.12.2](https://github.com/chanzuckerberg/github-actions/compare/v6.12.1...v6.12.2) (2026-01-02)
 
 
