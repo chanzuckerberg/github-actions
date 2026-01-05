@@ -111,8 +111,12 @@ jobs:
 
       - uses: actions/setup-node@v4
         if: steps.check_chart_path.outputs.chart_exists == 'true'
-      - run: npm install js-yaml
+      - name: Install js-yaml in isolated directory
         if: steps.check_chart_path.outputs.chart_exists == 'true'
+        run: |
+          mkdir -p /tmp/js-yaml-install
+          cd /tmp/js-yaml-install
+          npm install js-yaml --no-save
       - name: Write updatecli manifest
         id: write_manifest
         if: steps.check_chart_path.outputs.chart_exists == 'true'
@@ -120,7 +124,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const yaml = require('js-yaml');
+            const yaml = require('/tmp/js-yaml-install/node_modules/js-yaml');
             const appName = '${{ matrix.app_name }}';
             const envName = '${{ matrix.env_name }}';
             const chartPath = '${{ steps.check_chart_path.outputs.chart_path }}';
