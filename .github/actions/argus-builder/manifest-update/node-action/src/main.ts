@@ -123,7 +123,7 @@ export function updateValuesFiles(valuesFilesToUpdate: string[], imageTag: strin
     const content = fs.readFileSync(filePath, 'utf8');
     const updatedContent = content.replace(
       /^(\s*(?:-\s+)?tag:\s+)(&\S+\s+)?(['"]?)sha-[^\s'"]*(['"]?)/gm,
-      `$1$2$3${imageTag}$4`
+      `$1$2$3${imageTag}$4`,
     );
     fs.writeFileSync(filePath, updatedContent, 'utf8');
 
