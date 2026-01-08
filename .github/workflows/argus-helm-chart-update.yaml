@@ -194,7 +194,7 @@ jobs:
           commit-message: update stack helm chart version
           title: 'chore: update stack helm chart version for ${{ matrix.app_name }} ${{ matrix.env_name }}'
           body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
-          base: main
+          base: ${{ github.event.repository.default_branch }}
           branch: updatecli-bump-stack-chart-${{ matrix.app_name }}-${{ matrix.env_name }}
           delete-branch: true
           token: ${{ steps.generate_token.outputs.token }}
