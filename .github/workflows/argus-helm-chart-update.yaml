@@ -12,6 +12,11 @@ on:
         required: false
         default: ""
         type: string
+      chart_name:
+        description: The name of the Helm chart to update
+        required: false
+        default: "stack"
+        type: string
 
 jobs:
   fetch-app-info:
@@ -117,6 +122,29 @@ jobs:
           mkdir -p /tmp/js-yaml-install
           cd /tmp/js-yaml-install
           npm install js-yaml --no-save
+      - name: Find chart repository URL
+        id: find_chart_url
+        if: steps.check_chart_path.outputs.chart_exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const yaml = require('/tmp/js-yaml-install/node_modules/js-yaml');
+            const chartPath = '${{ steps.check_chart_path.outputs.chart_path }}';
+            const chartName = '${{ inputs.chart_name }}';
+
+            // Read Chart.yaml and find the repository URL for the specified chart
+            const chartContent = fs.readFileSync(chartPath, 'utf8');
+            const chartYaml = yaml.load(chartContent);
+
+            const dependency = chartYaml.dependencies?.find(dep => dep.name === chartName);
+
+            if (dependency && dependency.repository) {
+              core.setOutput('chart_repository', dependency.repository);
+              core.info(`Found repository for ${chartName}: ${dependency.repository}`);
+            } else {
+              core.setFailed(`Could not find repository URL for chart: ${chartName}`);
+            }
       - name: Write updatecli manifest
         id: write_manifest
         if: steps.check_chart_path.outputs.chart_exists == 'true'
@@ -128,6 +156,8 @@ jobs:
             const appName = '${{ matrix.app_name }}';
             const envName = '${{ matrix.env_name }}';
             const chartPath = '${{ steps.check_chart_path.outputs.chart_path }}';
+            const chartName = '${{ inputs.chart_name }}';
+            const chartRepository = '${{ steps.find_chart_url.outputs.chart_repository }}';
 
             const fileName = 'updatecli-' + appName + '-' + envName + '.yaml';
             core.setOutput('UPDATECLI_MANIFEST_FILE', fileName);
@@ -135,22 +165,22 @@ jobs:
             const manifest = {
               name: 'Helm chart update',
               sources: {
-                stackHelmChart: {
-                  name: `Get the latest 'stack' Helm chart version`,
+                helmChart: {
+                  name: `Get the latest '${chartName}' Helm chart version`,
                   kind: 'helmchart',
                   spec: {
-                    url: 'https://chanzuckerberg.github.io/argo-helm-charts',
-                    name: 'stack'
+                    url: chartRepository,
+                    name: chartName
                   }
                 }
               },
               targets: {
                 helmChartVersions: {
-                  name: "Bump 'stack' Helm chart versions",
+                  name: `Bump '${chartName}' Helm chart versions`,
                   kind: 'yaml',
                   spec: {
                     engine: 'yamlpath',
-                    key: '$.dependencies[?(@.name == \'stack\')].version',
+                    key: `$.dependencies[?(@.name == '${chartName}')].version`,
                     file: chartPath
                   }
                 }
@@ -191,10 +221,10 @@ jobs:
         with:
           add-paths: |
             ${{ steps.check_chart_path.outputs.chart_path }}
-          commit-message: update stack helm chart version
-          title: 'chore: update stack helm chart version for ${{ matrix.app_name }} ${{ matrix.env_name }}'
+          commit-message: update '${{ inputs.chart_name }}' helm chart version
+          title: "chore: update '${{ inputs.chart_name }}' helm chart version for ${{ matrix.app_name }} ${{ matrix.env_name }}"
           body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
           base: ${{ github.event.repository.default_branch }}
-          branch: updatecli-bump-stack-chart-${{ matrix.app_name }}-${{ matrix.env_name }}
+          branch: updatecli-bump-${{ inputs.chart_name }}-chart-${{ matrix.app_name }}-${{ matrix.env_name }}
           delete-branch: true
           token: ${{ steps.generate_token.outputs.token }}
