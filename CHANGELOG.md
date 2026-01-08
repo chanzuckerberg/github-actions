@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.12.5](https://github.com/chanzuckerberg/github-actions/compare/v6.12.4...v6.12.5) (2026-01-08)
+
+
+### BugFixes
+
+* make pr against default branch instead of hardcoding 'main' ([#476](https://github.com/chanzuckerberg/github-actions/issues/476)) ([c6ac67f](https://github.com/chanzuckerberg/github-actions/commit/c6ac67feabab1fb54e00bb512c88b8d9d46e8e18))
+
 ## [6.12.4](https://github.com/chanzuckerberg/github-actions/compare/v6.12.3...v6.12.4) (2026-01-05)
 
 
