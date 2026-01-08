@@ -141,13 +141,15 @@ jobs:
 
             if (dependency && dependency.repository) {
               core.setOutput('chart_repository', dependency.repository);
+              core.setOutput('repository_found', 'true');
               core.info(`Found repository for ${chartName}: ${dependency.repository}`);
             } else {
-              core.setFailed(`Could not find repository URL for chart: ${chartName}`);
+              core.warning(`Could not find repository URL for chart: ${chartName}`);
+              core.setOutput('repository_found', 'false');
             }
       - name: Write updatecli manifest
         id: write_manifest
-        if: steps.check_chart_path.outputs.chart_exists == 'true'
+        if: steps.check_chart_path.outputs.chart_exists == 'true' && steps.find_chart_url.outputs.repository_found == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -192,7 +194,7 @@ jobs:
 
       - name: Run updatecli
         id: run_updatecli
-        if: steps.check_chart_path.outputs.chart_exists == 'true'
+        if: steps.check_chart_path.outputs.chart_exists == 'true' && steps.find_chart_url.outputs.repository_found == 'true'
         run: |
           export UPDATE_LOG_FILE=$(uuidgen)-update.log
           echo "Running updatecli with manifest ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }}"
@@ -216,7 +218,7 @@ jobs:
 
       - name: Create Pull Request
         id: create_pr
-        if: steps.check_chart_path.outputs.chart_exists == 'true'
+        if: steps.check_chart_path.outputs.chart_exists == 'true' && steps.find_chart_url.outputs.repository_found == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           add-paths: |
