@@ -118,6 +118,7 @@ jobs:
         if: steps.check_chart_path.outputs.chart_exists == 'true'
       - name: Install js-yaml in isolated directory
         if: steps.check_chart_path.outputs.chart_exists == 'true'
+        # Install js-yaml in an isolated directory in case the repo already has a package installed that conflicts with js-yaml
         run: |
           mkdir -p /tmp/js-yaml-install
           cd /tmp/js-yaml-install
