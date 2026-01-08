@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.13.0](https://github.com/chanzuckerberg/github-actions/compare/v6.12.5...v6.13.0) (2026-01-08)
+
+
+### Features
+
+* allow argus-helm-chart-update workflow to update non-stack charts ([#478](https://github.com/chanzuckerberg/github-actions/issues/478)) ([913a86f](https://github.com/chanzuckerberg/github-actions/commit/913a86f2e5235edd93fa1c9789d386230a7a559c))
+
 ## [6.12.5](https://github.com/chanzuckerberg/github-actions/compare/v6.12.4...v6.12.5) (2026-01-08)
 
 
