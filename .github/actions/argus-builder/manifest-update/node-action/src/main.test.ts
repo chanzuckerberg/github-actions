@@ -308,7 +308,7 @@ describe('argus-builder-manifest-update', () => {
     });
   });
 
-  describe('updateTagsInFile', () => {
+  describe('updateValuesFiles', () => {
     let tempFilePath: string;
 
     beforeEach(() => {
@@ -321,6 +321,12 @@ describe('argus-builder-manifest-update', () => {
 
     it('should update all relevant tags in a file', () => {
       const initialValuesFileContents = `tag: sha-XYZ
+tag: sha-XYZ
+tag: "sha-XYZ"
+tag: 'sha-XYZ'
+tag: &imageTag sha-XYZ
+tag: &imageTag "sha-XYZ"
+tag: &imageTag 'sha-XYZ'
 anchor:
   tag: &image-tag sha-XYZ
 thing: *image-tag
@@ -348,6 +354,12 @@ raw-arr:
 `;
 
       const expectedUpdatedValuesFileContents = `tag: sha-ABC
+tag: sha-ABC
+tag: "sha-ABC"
+tag: 'sha-ABC'
+tag: &imageTag sha-ABC
+tag: &imageTag "sha-ABC"
+tag: &imageTag 'sha-ABC'
 anchor:
   tag: &image-tag sha-ABC
 thing: *image-tag

@@ -1,5 +1,40 @@
 # Changelog
 
+## [6.13.0](https://github.com/chanzuckerberg/github-actions/compare/v6.12.5...v6.13.0) (2026-01-08)
+
+
+### Features
+
+* allow argus-helm-chart-update workflow to update non-stack charts ([#478](https://github.com/chanzuckerberg/github-actions/issues/478)) ([913a86f](https://github.com/chanzuckerberg/github-actions/commit/913a86f2e5235edd93fa1c9789d386230a7a559c))
+
+## [6.12.5](https://github.com/chanzuckerberg/github-actions/compare/v6.12.4...v6.12.5) (2026-01-08)
+
+
+### BugFixes
+
+* make pr against default branch instead of hardcoding 'main' ([#476](https://github.com/chanzuckerberg/github-actions/issues/476)) ([c6ac67f](https://github.com/chanzuckerberg/github-actions/commit/c6ac67feabab1fb54e00bb512c88b8d9d46e8e18))
+
+## [6.12.4](https://github.com/chanzuckerberg/github-actions/compare/v6.12.3...v6.12.4) (2026-01-05)
+
+
+### BugFixes
+
+* use native JS instead of yq to more accurately update only intended yaml fields ([#474](https://github.com/chanzuckerberg/github-actions/issues/474)) ([106d31f](https://github.com/chanzuckerberg/github-actions/commit/106d31fe23283e80676120a1e6303e85f587d33b))
+
+## [6.12.3](https://github.com/chanzuckerberg/github-actions/compare/v6.12.2...v6.12.3) (2026-01-05)
+
+
+### BugFixes
+
+* gracefully handle missing chart file & use isolated npm install ([#472](https://github.com/chanzuckerberg/github-actions/issues/472)) ([703c4b8](https://github.com/chanzuckerberg/github-actions/commit/703c4b84c4b364424cc8efaace1182a6d3bebecc))
+
+## [6.12.2](https://github.com/chanzuckerberg/github-actions/compare/v6.12.1...v6.12.2) (2026-01-02)
+
+
+### BugFixes
+
+* handle trailing slash in project_root_path ([#470](https://github.com/chanzuckerberg/github-actions/issues/470)) ([8df93b7](https://github.com/chanzuckerberg/github-actions/commit/8df93b713fa6602d2bfd6c5425037b6bdad94cde))
+
 ## [6.12.1](https://github.com/chanzuckerberg/github-actions/compare/v6.12.0...v6.12.1) (2025-12-16)
 
 
