@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.13.1](https://github.com/chanzuckerberg/github-actions/compare/v6.13.0...v6.13.1) (2026-02-04)
+
+
+### Misc
+
+* fix dependabot alert in brace-expansion package ([#481](https://github.com/chanzuckerberg/github-actions/issues/481)) ([33833e4](https://github.com/chanzuckerberg/github-actions/commit/33833e442a7e98c66e23dd61d4d5617b7d613560))
+
 ## [6.13.0](https://github.com/chanzuckerberg/github-actions/compare/v6.12.5...v6.13.0) (2026-01-08)
 
 
