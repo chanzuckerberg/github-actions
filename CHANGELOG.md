@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.13.1](https://github.com/chanzuckerberg/github-actions/compare/v6.13.0...v6.13.1) (2026-02-23)
+
+
+### BugFixes
+
+* update ECR repository action version to v1.436.0 ([#485](https://github.com/chanzuckerberg/github-actions/issues/485)) ([f4bd488](https://github.com/chanzuckerberg/github-actions/commit/f4bd48890b5349a27e3091069c30fde714a15ecb))
+
+
+### Misc
+
+* fix dependabot alert in brace-expansion package ([#481](https://github.com/chanzuckerberg/github-actions/issues/481)) ([33833e4](https://github.com/chanzuckerberg/github-actions/commit/33833e442a7e98c66e23dd61d4d5617b7d613560))
+
 ## [6.13.0](https://github.com/chanzuckerberg/github-actions/compare/v6.12.5...v6.13.0) (2026-01-08)
 
 
