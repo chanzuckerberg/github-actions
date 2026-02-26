@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.5.0...conventional-commits-v1.6.0) (2024-10-22)
 
 
