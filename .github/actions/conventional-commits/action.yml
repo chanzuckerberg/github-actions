@@ -30,7 +30,7 @@ runs:
           ]
 
           const typePattern = types.join('|')
-          const scopePattern = `(\\((${jiraProjects.join('|')}-[0-9]+|[a-z][a-z0-9-]*)\\))`
+          const scopePattern = `(\\(((?:${jiraProjects.join('|')})-[0-9]+|[a-z][a-z0-9-]*)\\))`
           const validator = new RegExp(`^(${typePattern})${scopePattern}?(!)?: .+$`)
 
           const title = context.payload.pull_request.title
