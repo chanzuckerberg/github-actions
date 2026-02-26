@@ -1,5 +1,10 @@
 name: Conventional Commits Checking
 description: "Validates that a pull request title is compatible with Conventional Commits."
+inputs:
+  extra-jira-projects:
+    description: "Comma-separated list of additional JIRA project prefixes to allow in scopes (e.g. 'INFRA,PLAT')."
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -28,6 +33,12 @@ runs:
             'PRODSEC',
             'SECENG',
           ]
+
+          const extra = `${{ inputs.extra-jira-projects }}`
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+          jiraProjects.push(...extra)
 
           const typePattern = types.join('|')
           const scopePattern = `(\\(((?:${jiraProjects.join('|')})-[0-9]+|[a-z][a-z0-9-]*)\\))`
