@@ -1,16 +1,55 @@
 name: Conventional Commits Checking
 description: "Validates that a pull request title is compatible with Conventional Commits."
+inputs:
+  extra-jira-projects:
+    description: "Comma-separated list of additional JIRA project prefixes to allow in scopes (e.g. 'INFRA,PLAT')."
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
-    - uses: actions/github-script@v5
+    - uses: actions/github-script@v7
       with:
         script: |
-          const validator = /^(chore|feat|fix|deps|revert|docs|style|test|ci|perf|refactor)(\((((CCIE|CDI|PRODSEC|SECENG|ONCALL)-[0-9]+)|([a-z-]+))\))?(!)?: (.)+$/
-          const title = context.payload.pull_request.title
-          const is_valid = validator.test(title)
+          // https://www.conventionalcommits.org/en/v1.0.0/
+          const types = [
+            'build',
+            'chore',
+            'ci',
+            'deps',
+            'docs',
+            'feat',
+            'fix',
+            'perf',
+            'refactor',
+            'revert',
+            'style',
+            'test',
+          ]
+          const jiraProjects = [
+            'CCIE',
+            'CDI',
+            'ONCALL',
+            'PRODSEC',
+            'SECENG',
+          ]
 
-          if (!is_valid) {
-            const regex = validator.toString()
-            core.setFailed(`Your pr title doesn't adhere to conventional commits syntax. Start with chore, feat, fix, test, revert, or docs and add an ! if the change is breaking. Title must satisfy this regex: ${regex}.`)
+          const extra = `${{ inputs.extra-jira-projects }}`
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+          jiraProjects.push(...extra)
+
+          const typePattern = types.join('|')
+          const scopePattern = `(\\(((?:${jiraProjects.join('|')})-[0-9]+|[a-z][a-z0-9-]*)\\))`
+          const validator = new RegExp(`^(${typePattern})${scopePattern}?(!)?: .+$`)
+
+          const title = context.payload.pull_request.title
+          if (!validator.test(title)) {
+            core.setFailed(
+              `PR title doesn't follow conventional commits.\n` +
+              `Expected format: <type>(<optional scope>): <description>\n` +
+              `Valid types: ${types.join(', ')}\n` +
+              `Example: feat(auth): add SSO login support`
+            )
           }
