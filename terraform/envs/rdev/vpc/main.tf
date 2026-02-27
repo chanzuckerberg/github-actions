@@ -4,7 +4,7 @@ terraform {
     organization = "shared-infra"
 
     workspaces {
-      name = "jheath-test-acction"
+      name = "accounts-czi-playground"
     }
   }
 
