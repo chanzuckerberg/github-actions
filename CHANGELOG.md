@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.13.2](https://github.com/chanzuckerberg/github-actions/compare/v6.13.1...v6.13.2) (2026-02-27)
+
+
+### BugFixes
+
+* minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern ([#491](https://github.com/chanzuckerberg/github-actions/issues/491)) ([c06e970](https://github.com/chanzuckerberg/github-actions/commit/c06e9701bb07eb195e83d951f13d5ace8d8dd8d9))
+
 ## [6.13.1](https://github.com/chanzuckerberg/github-actions/compare/v6.13.0...v6.13.1) (2026-02-23)
 
 
