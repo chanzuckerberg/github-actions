@@ -1,8 +1,8 @@
 name: Conventional Commits Checking
 description: "Validates that a pull request title is compatible with Conventional Commits."
 inputs:
-  extra-jira-projects:
-    description: "Comma-separated list of additional JIRA project prefixes to allow in scopes (e.g. 'INFRA,PLAT')."
+  extra-scopes:
+    description: "Comma-separated list of additional scope patterns to allow. Use * as a wildcard (e.g. 'INFRA-*,my-team' allows 'feat(INFRA-123): ...' and 'fix(my-team): ...')."
     required: false
     default: ""
 runs:
@@ -34,14 +34,20 @@ runs:
             'SECENG',
           ]
 
-          const extra = `${{ inputs.extra-jira-projects }}`
+          const extraScopes = `${{ inputs.extra-scopes }}`
             .split(',')
             .map(s => s.trim())
             .filter(Boolean)
-          jiraProjects.push(...extra)
+            .map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('\\*', '.+'))
+
+          const scopeAlternatives = [
+            `(?:${jiraProjects.join('|')})-[0-9]+`,
+            '[a-z][a-z0-9-]*',
+            ...extraScopes,
+          ]
 
           const typePattern = types.join('|')
-          const scopePattern = `(\\(((?:${jiraProjects.join('|')})-[0-9]+|[a-z][a-z0-9-]*)\\))`
+          const scopePattern = `(\\((${scopeAlternatives.join('|')})\\))`
           const validator = new RegExp(`^(${typePattern})${scopePattern}?(!)?: .+$`)
 
           const title = context.payload.pull_request.title
