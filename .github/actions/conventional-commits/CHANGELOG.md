@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.6.0...conventional-commits-v1.7.0) (2026-03-02)
+
+
+### Features
+
+* improve conventional commits validator readability ([#486](https://github.com/chanzuckerberg/github-actions/issues/486)) ([ccd6fd3](https://github.com/chanzuckerberg/github-actions/commit/ccd6fd3318ec7d13e41703700d87056727a14048))
+
 ## [1.6.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.5.0...conventional-commits-v1.6.0) (2024-10-22)
 
 
