@@ -226,7 +226,7 @@ jobs:
             ${{ steps.check_chart_path.outputs.chart_path }}
           commit-message: update '${{ inputs.chart_name }}' helm chart version
           title: "chore: update '${{ inputs.chart_name }}' helm chart version for ${{ matrix.app_name }} ${{ matrix.env_name }}"
-          body: "```${{ steps.run_updatecli.outputs.update_logs }}\n```"
+          body: "```\n${{ steps.run_updatecli.outputs.update_logs }}\n```"
           base: ${{ github.event.repository.default_branch }}
           branch: updatecli-bump-${{ inputs.chart_name }}-chart-${{ matrix.app_name }}-${{ matrix.env_name }}
           delete-branch: true
