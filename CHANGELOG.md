@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.14.0](https://github.com/chanzuckerberg/github-actions/compare/v6.13.2...v6.14.0) (2026-03-02)
+
+
+### Features
+
+* improve conventional commits validator readability ([#486](https://github.com/chanzuckerberg/github-actions/issues/486)) ([ccd6fd3](https://github.com/chanzuckerberg/github-actions/commit/ccd6fd3318ec7d13e41703700d87056727a14048))
+
+## [6.13.2](https://github.com/chanzuckerberg/github-actions/compare/v6.13.1...v6.13.2) (2026-03-02)
+
+
+### BugFixes
+
+* minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern ([#491](https://github.com/chanzuckerberg/github-actions/issues/491)) ([c06e970](https://github.com/chanzuckerberg/github-actions/commit/c06e9701bb07eb195e83d951f13d5ace8d8dd8d9))
+
+
+### Misc
+
+* Correct update logs formatting in workflow ([#494](https://github.com/chanzuckerberg/github-actions/issues/494)) ([7a59737](https://github.com/chanzuckerberg/github-actions/commit/7a59737ee3cf987dad42a97973b2dd13e2738034))
+
 ## [6.13.1](https://github.com/chanzuckerberg/github-actions/compare/v6.13.0...v6.13.1) (2026-02-23)
 
 
