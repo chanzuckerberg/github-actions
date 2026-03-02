@@ -203,7 +203,7 @@ jobs:
 
           echo "----------------------------------------"
           set +e
-          updatecli apply --config ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }} >> $UPDATE_LOG_FILE 2>&1
+          updatecli pipeline apply --config ${{ steps.write_manifest.outputs.UPDATECLI_MANIFEST_FILE }} >> $UPDATE_LOG_FILE 2>&1
           UPDATECLI_EXIT_CODE=$?
           set -e
 
