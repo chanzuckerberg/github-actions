@@ -9,6 +9,7 @@
     "noImplicitAny": false,
     "useUnknownInCatchVariables": false,
     "moduleResolution": "node",
+    "skipLibCheck": true,
     "resolveJsonModule": true
   },
   "exclude": [
