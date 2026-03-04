@@ -24,9 +24,21 @@
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@actions/github": "^6.0.0"
+    "@actions/github": "^8.0.1"
   },
   "workspaces": [
     ".github/actions/**/*"
-  ]
+  ],
+  "overrides": {
+    "lodash": "^4.17.23",
+    "undici": "^6.23.0",
+    "js-yaml@3": "3.14.2",
+    "js-yaml@4": "^4.1.1",
+    "fast-uri": "^3.1.0",
+    "path-scurry": "^2.0.0",
+    "minipass": "^7.1.2",
+    "jackspeak": "^4.1.1",
+    "foreground-child": "^3.3.1",
+    "package-json-from-dist": "^1.0.0"
+  }
 }
