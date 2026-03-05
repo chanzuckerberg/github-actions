@@ -36,14 +36,6 @@ inputs:
     description: "Whether to clean the repository before checking out"
     required: false
     default: "false"
-  fail_on_vulnerabilities:
-    description: "whether to fail the action if vulnerabilities are found"
-    required: false
-    default: "true"
-  enable_vuln_container_scan:
-    description: "Opt in to scan containers with AWS inspector"
-    required: false
-    default: "false"
 
 outputs:
   image_uri:
@@ -133,13 +125,5 @@ runs:
           IMAGE_TAG=${{ inputs.image_tag }}
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret_files }}
-        load: ${{ inputs.enable_vuln_container_scan }}
+        load: "false"
         extra_cache_branches: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
-    - name: Scan for vulnerabilities
-      if: ${{ inputs.enable_vuln_container_scan == 'true' }}
-      uses: chanzuckerberg/github-actions/.github/actions/container-scanning@v6
-      id: scan
-      with:
-        image_name: ${{ inputs.image_name }}
-        image_uri: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
-        fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
