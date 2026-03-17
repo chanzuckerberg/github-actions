@@ -1,0 +1,26 @@
+name: Test validate-json-schema
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/test-validate-json-schema.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - run: npm install
+      - run: npm run build --workspaces
+
+      - name: Test validate-json-schema
+        uses: ./.github/actions/validate-json-schema
+        with:
+          data: '{"foo":"bar"}'
+          schema: '{"type":"object","properties":{"foo":{"type":"string"}}}'
