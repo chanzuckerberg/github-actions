@@ -1,0 +1,68 @@
+name: Test Affected Actions
+
+on:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/actions/**'
+      - '.github/workflows/test-affected-actions.yml'
+
+concurrency:
+  group: test-affected-actions-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-affected-actions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build --workspaces
+
+      - name: Test find-changed-files
+        uses: ./.github/actions/find-changed-files
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Test archived-repo-scanner
+        uses: ./.github/actions/archived-repo-scanner
+        with:
+          fail_on_archived: 'false'
+
+      - name: Test argus-builder/build-prep
+        uses: ./.github/actions/argus-builder/build-prep
+        with:
+          github_token: ${{ github.token }}
+          images: '{"test":{"context":".","dockerfile":"Dockerfile"}}'
+
+      - name: Create test CSV
+        run: |
+          mkdir -p /tmp/csv-test
+          printf 'metadata\nmetadata\nID,Severity,fixed_ver\nCVE-2024-0001,HIGH,1.0.0\n' > /tmp/csv-test/primary.csv
+      - name: Test csv-vulnerability-filter
+        uses: ./.github/actions/csv-vulnerability-filter
+        with:
+          primary_csv_path: /tmp/csv-test/primary.csv
+
+      - name: Test validate-json-schema
+        uses: ./.github/actions/validate-json-schema
+        with:
+          data: '{"foo":"bar"}'
+          schema: '{"type":"object","properties":{"foo":{"type":"string"}}}'
+
+      - name: Test manifest-update node-action
+        uses: ./.github/actions/argus-builder/manifest-update/node-action
+        with:
+          should_deploy: 'false'
+          image_tag: test-tag
+          images: '[]'
+          build_results: success
+          envs: dev
