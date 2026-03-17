@@ -36,6 +36,14 @@ inputs:
     description: "Whether to clean the repository before checking out"
     required: false
     default: "false"
+  fail_on_vulnerabilities:
+    description: "DEPRECATED"
+    required: false
+    default: "true"
+  enable_vuln_container_scan:
+    description: "DEPRECATED"
+    required: false
+    default: "false"
 
 outputs:
   image_uri:
