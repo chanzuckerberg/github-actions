@@ -1,0 +1,28 @@
+name: Test find-changed-files
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/test-find-changed-files.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - run: npm install
+      - run: npm run build --workspaces
+
+      - name: Test find-changed-files
+        uses: ./.github/actions/find-changed-files
+        with:
+          github_token: ${{ github.token }}
