@@ -1,0 +1,31 @@
+name: Test build-prep
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/test-build-prep.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - run: npm install
+      - run: npm run build --workspaces
+
+      - run: echo 'FROM alpine:3' > Dockerfile
+
+      - name: Test argus-builder/build-prep
+        uses: ./.github/actions/argus-builder/build-prep
+        with:
+          github_token: ${{ github.token }}
+          images: '{"test":{"context":".","dockerfile":"Dockerfile"}}'
