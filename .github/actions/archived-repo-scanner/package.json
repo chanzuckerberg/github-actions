@@ -13,7 +13,8 @@
   "author": "CZI",
   "license": "MIT",
   "dependencies": {
-    "glob": "^11.1.0"
+    "glob": "^11.1.0",
+    "path-scurry": "^2.0.0"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0"
