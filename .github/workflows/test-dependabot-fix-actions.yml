@@ -1,0 +1,155 @@
+name: Test Dependabot Fix Actions
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_pr:
+        description: 'PR number to test (e.g. 502)'
+        required: true
+        default: '502'
+  push:
+    branches:
+      - fix/dependabot-alerts
+    paths:
+      - '.github/workflows/test-dependabot-fix-actions.yml'
+
+concurrency:
+  group: test-dependabot-fix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  create-test-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      pr_number: ${{ steps.cpr.outputs.pull-request-number }}
+      pr_url: ${{ steps.cpr.outputs.pull-request-url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Update action refs to fix/dependabot-alerts
+        run: |
+          BRANCH="fix/dependabot-alerts"
+          for file in \
+            .github/workflows/archived-repo-scan.yml \
+            .github/workflows/argus-prod-config-check.yaml \
+            .github/workflows/argus-docker-build.yaml \
+            .github/actions/argus-builder/manifest-update/action.yml \
+            .github/actions/container-scanning/action.yml
+          do
+            if [ -f "$file" ]; then
+              sed -i.bak "s|chanzuckerberg/github-actions/\([^@]*\)@v6|chanzuckerberg/github-actions/\1@$BRANCH|g" "$file"
+              rm -f "${file}.bak"
+            fi
+          done
+
+      - name: Add find-changed-files test workflow
+        run: |
+          cat > .github/workflows/test-find-changed-files.yml << 'EOF'
+          name: Test find-changed-files
+          on:
+            pull_request:
+              branches: [main, master]
+          jobs:
+            test:
+              runs-on: ubuntu-latest
+              permissions:
+                contents: read
+                pull-requests: read
+              steps:
+                - uses: actions/checkout@v4
+                - uses: chanzuckerberg/github-actions/.github/actions/find-changed-files@fix/dependabot-alerts
+                  with:
+                    github_token: ${{ github.token }}
+          EOF
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: test/dependabot-fix-${{ github.run_id }}
+          title: "test: verify actions from fix/dependabot-alerts"
+          body: |
+            Tests affected actions from PR #${{ github.event.inputs.source_pr || '502' }}.
+            - find-changed-files (argus-prod-config-check)
+            - archived-repo-scanner (archived-repo-scan)
+            - argus-builder/build-prep, manifest-update (argus-docker-build)
+            - csv-vulnerability-filter (container-scanning)
+            All refs updated to @fix/dependabot-alerts.
+          commit-message: "test: use fix/dependabot-alerts action refs"
+
+  wait-and-report:
+    needs: create-test-pr
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for test PR checks
+        run: |
+          PR="${{ needs.create-test-pr.outputs.pr_number }}"
+          if [ -n "$PR" ]; then
+            timeout 600 gh pr checks "$PR" --watch 2>/dev/null || true
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get check status
+        id: status
+        run: |
+          PR="${{ needs.create-test-pr.outputs.pr_number }}"
+          SOURCE_PR="${{ github.event.inputs.source_pr || '502' }}"
+          if [ -z "$PR" ]; then
+            echo "status=Test PR not created" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          CHECKS=$(gh pr checks "$PR" --json conclusion,name 2>/dev/null || echo "[]")
+          FAILED=$(echo "$CHECKS" | jq -r '[.[] | select(.conclusion == "FAILURE")] | length')
+          SUCCESS=$(echo "$CHECKS" | jq -r '[.[] | select(.conclusion == "SUCCESS")] | length')
+          PENDING=$(echo "$CHECKS" | jq -r '[.[] | select(.conclusion == null or .conclusion == "SKIPPED")] | length')
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "success=$SUCCESS" >> $GITHUB_OUTPUT
+          echo "pending=$PENDING" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on source PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sourcePr = parseInt('${{ github.event.inputs.source_pr || '502' }}', 10);
+            const testPr = '${{ needs.create-test-pr.outputs.pr_number }}';
+            const testPrUrl = '${{ needs.create-test-pr.outputs.pr_url }}' || '';
+            const failed = '${{ steps.status.outputs.failed }}' || '0';
+            const success = '${{ steps.status.outputs.success }}' || '0';
+            const pending = '${{ steps.status.outputs.pending }}' || '0';
+
+            const testPrLink = testPr && testPrUrl
+              ? `[#${testPr}](${testPrUrl})`
+              : 'Not created (no changes)';
+
+            const body = `## Dependabot fix action verification
+
+            | Status | Count |
+            |--------|-------|
+            | Passed | ${success} |
+            | Failed | ${failed} |
+            | Pending | ${pending} |
+
+            **Test PR:** ${testPrLink}
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: sourcePr,
+              body
+            });
