@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.15.0](https://github.com/chanzuckerberg/github-actions/compare/v6.14.1...v6.15.0) (2026-03-19)
+
+
+### Features
+
+* **argus-builder:** use shallow clone instead of full history fetch ([#509](https://github.com/chanzuckerberg/github-actions/issues/509)) ([fbf96ef](https://github.com/chanzuckerberg/github-actions/commit/fbf96eff809dc71e485319230067a36be86e9357))
+
 ## [6.14.1](https://github.com/chanzuckerberg/github-actions/compare/v6.14.0...v6.14.1) (2026-03-19)
 
 
