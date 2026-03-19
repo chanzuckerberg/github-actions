@@ -18,10 +18,10 @@ inputs:
     description: Outputs from build jobs indicating their status, comma delimited
     required: true
   github_app_id:
-    description: 'GitHub App ID'
+    description: "GitHub App ID"
     required: true
   github_private_key:
-    description: 'GitHub App private key'
+    description: "GitHub App private key"
     required: true
 
 runs:
@@ -63,17 +63,17 @@ runs:
             core.setFailed(`EventName ${eventName} not supported`);
             return;
           }
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         persist-credentials: true # creds used in Update Argus Manifest step
-        fetch-depth: 0
+        fetch-depth: 1
         token: ${{ steps.generate_token.outputs.token }}
         ref: ${{ steps.ref.outputs.result }}
 
     - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/manifest-update/node-action@v6
       with:
-          should_deploy: ${{ inputs.should_deploy }}
-          images: ${{ inputs.images }}
-          image_tag: ${{ inputs.image_tag }}
-          build_results: ${{ inputs.build_results }}
-          envs: ${{ inputs.envs }}
+        should_deploy: ${{ inputs.should_deploy }}
+        images: ${{ inputs.images }}
+        image_tag: ${{ inputs.image_tag }}
+        build_results: ${{ inputs.build_results }}
+        envs: ${{ inputs.envs }}
