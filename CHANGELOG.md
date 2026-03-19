@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.14.1](https://github.com/chanzuckerberg/github-actions/compare/v6.14.0...v6.14.1) (2026-03-19)
+
+
+### BugFixes
+
+* address Dependabot security alerts ([#493](https://github.com/chanzuckerberg/github-actions/issues/493)) ([da9c4ce](https://github.com/chanzuckerberg/github-actions/commit/da9c4ce9d1fbefc1a2b66b69f954fe2907933a60))
+* address Dependabot security alerts ([#503](https://github.com/chanzuckerberg/github-actions/issues/503)) ([1e4094b](https://github.com/chanzuckerberg/github-actions/commit/1e4094b704cdbae67b5c73f24f12ec77c86f0a8e))
+
 ## [6.14.0](https://github.com/chanzuckerberg/github-actions/compare/v6.13.2...v6.14.0) (2026-03-02)
 
 
