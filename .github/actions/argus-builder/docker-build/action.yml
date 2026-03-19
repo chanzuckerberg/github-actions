@@ -53,11 +53,10 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
-        persist-credentials: false
         clean: ${{ inputs.clean_checkout }}
-        fetch-depth: 0
+        fetch-depth: 1
         path: ${{ github.event.repository.name }}
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -71,7 +70,7 @@ runs:
       with:
         app-id: ${{ inputs.github_app_id }}
         private-key: ${{ inputs.github_private_key }}
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         persist-credentials: false
         repository: chanzuckerberg/argus-artifacts
@@ -117,8 +116,7 @@ runs:
       shell: bash
       working-directory: ${{ github.event.repository.name }}
       run: |
-        echo "Current dir: $(pwd)"
-        RELEASE_PLEASE_BRANCHES=$(for i in $(git branch -a | grep "release-please" | cut -d "/" -f 3 | grep "^release-please" || true); do echo -n "$i,"; done)
+        RELEASE_PLEASE_BRANCHES=$(git ls-remote --heads origin 'release-please*' | awk -F'/' '{print $NF}' | tr '\n' ',' || true)
         echo "RELEASE_PLEASE_BRANCHES=${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
     - name: Build And Push
       uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@v6
