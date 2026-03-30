@@ -88,7 +88,7 @@ runs:
             '${{ github.event.repository.name }}',
             '${{ inputs.context }}',
             '${{ inputs.image_name }}',
-          );
+          ).toLowerCase();
 
           // inputs.image_tag can be a multi-line string so we split on newlines and take the first non-empty line
           const inputTagLines = `${{ inputs.image_tag }}`.split('\n').map(line => line.trim()).filter(line => line.length > 0);
