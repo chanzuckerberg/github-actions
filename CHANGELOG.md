@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.15.1](https://github.com/chanzuckerberg/github-actions/compare/v6.15.0...v6.15.1) (2026-03-30)
+
+
+### BugFixes
+
+* convert ecr repo name to lower case to avoid error when github repo has capital letters ([#514](https://github.com/chanzuckerberg/github-actions/issues/514)) ([b53c95a](https://github.com/chanzuckerberg/github-actions/commit/b53c95ac1a585d6fa6f1c4920f34e54e90a23382))
+
 ## [6.15.0](https://github.com/chanzuckerberg/github-actions/compare/v6.14.1...v6.15.0) (2026-03-19)
 
 
