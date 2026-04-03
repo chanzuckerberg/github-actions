@@ -6,7 +6,7 @@ jobs:
   test-install-happy-latest:
     runs-on: [ARM64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: ./.github/actions/install-happy
@@ -15,7 +15,7 @@ jobs:
   test-install-happy-pinned:
     runs-on: [ARM64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: ./.github/actions/install-happy
@@ -26,7 +26,7 @@ jobs:
   test-install-happy-amd64:
     runs-on: [amd64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: ./.github/actions/install-happy
