@@ -61,7 +61,7 @@ runs:
         ${GHCLI_TOOL_PATH}/bin/gh auth login --with-token < <(echo $GH_TOKEN_TMP)
         ${GHCLI_TOOL_PATH}/bin/gh auth status
     - name: Install terraform
-      uses: hashicorp/setup-terraform@v2
+      uses: hashicorp/setup-terraform@v4
       with:
         terraform_version: 1.3.0
     - name: Install AWS CLI v2
@@ -85,7 +85,7 @@ runs:
 
     - name: Determine happy version to use
       id: determineHappyCliVersion
-      uses: actions/github-script@v6
+      uses: actions/github-script@v8
       env:
         HAPPY_VERSION: ${{ inputs.happy_version }}
         VERSION_LOCK_FILE: ${{ inputs.version_lock_file }}

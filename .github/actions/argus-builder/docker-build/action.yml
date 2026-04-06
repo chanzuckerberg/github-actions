@@ -59,13 +59,13 @@ runs:
         fetch-depth: 1
         path: ${{ github.event.repository.name }}
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         aws-region: us-west-2
         role-to-assume: arn:aws:iam::533267185808:role/gh_actions_core_platform_infra_prod_eks
         role-session-name: ArgusContainerBuilder
     - name: Generate token
-      uses: actions/create-github-app-token@v2
+      uses: actions/create-github-app-token@v3
       id: generate_token
       with:
         app-id: ${{ inputs.github_app_id }}
@@ -78,7 +78,7 @@ runs:
         token: ${{ steps.generate_token.outputs.token }}
     - name: ECR Metadata
       id: ecr_metadata
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           const path = require('path');

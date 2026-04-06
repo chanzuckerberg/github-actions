@@ -11,7 +11,7 @@ jobs:
   conventional_commit_title:
     runs-on: [ARM64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: ./.github/actions/conventional-commits
