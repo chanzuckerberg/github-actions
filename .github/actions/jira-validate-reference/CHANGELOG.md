@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.2.1...jira-validate-reference-v1.3.0) (2026-04-06)
+
+
+### Features
+
+* migrate off of EOL node20 ([#516](https://github.com/chanzuckerberg/github-actions/issues/516)) ([bb72e26](https://github.com/chanzuckerberg/github-actions/commit/bb72e263a10c158fd742716cf8bf15569e2a1b43))
+
 ## [1.2.1](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.2.0...jira-validate-reference-v1.2.1) (2025-03-31)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.7.1...install-happy-v1.8.0) (2026-04-06)
+
+
+### Features
+
+* migrate off of EOL node20 ([#516](https://github.com/chanzuckerberg/github-actions/issues/516)) ([bb72e26](https://github.com/chanzuckerberg/github-actions/commit/bb72e263a10c158fd742716cf8bf15569e2a1b43))
+
 ### [1.7.1](https://github.com/chanzuckerberg/github-actions/compare/install-happy-v1.7.0...install-happy-v1.7.1) (2024-02-01)
 
 

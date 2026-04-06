@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/chanzuckerberg/github-actions/compare/jira-find-marker-v1.1.0...jira-find-marker-v1.2.0) (2026-04-06)
+
+
+### Features
+
+* migrate off of EOL node20 ([#516](https://github.com/chanzuckerberg/github-actions/issues/516)) ([bb72e26](https://github.com/chanzuckerberg/github-actions/commit/bb72e263a10c158fd742716cf8bf15569e2a1b43))
+
 ## [1.1.0](https://github.com/chanzuckerberg/github-actions/compare/jira-find-marker-v1.0.1...jira-find-marker-v1.1.0) (2024-10-02)
 
 
