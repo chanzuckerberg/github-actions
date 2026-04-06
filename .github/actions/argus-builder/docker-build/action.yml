@@ -103,10 +103,11 @@ runs:
 
           core.setOutput('ECR_REGISTRY', ECR_REGISTRY);
           core.setOutput('ECR_REPO_NAME', ECR_REPO_NAME);
+          core.setOutput('IMAGE_TAG', inputTagLines[0]);
           core.setOutput('IMAGE_URI', IMAGE_URI);
     - name: Create ECR repo if necessary
       id: create_ecr_repo
-      uses: int128/create-ecr-repository-action@v1.436.0
+      uses: chanzuckerberg/github-actions/.github/actions/create-ecr-repository@v6
       with:
         repository: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
         lifecycle-policy: argus-artifacts/settings/ecr/lifecycle-policy.json
@@ -133,3 +134,11 @@ runs:
         secret-files: ${{ inputs.secret_files }}
         load: "false"
         extra_cache_branches: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
+    - name: Write job summary
+      shell: bash
+      run: |
+        echo "| Key | Value |" >> "$GITHUB_STEP_SUMMARY"
+        echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+        echo "| **Image** | \`${{ inputs.image_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+        echo "| **Tag** | \`${{ steps.ecr_metadata.outputs.IMAGE_TAG }}\` |" >> "$GITHUB_STEP_SUMMARY"
+        echo "| **URI** | \`${{ steps.ecr_metadata.outputs.IMAGE_URI }}\` |" >> "$GITHUB_STEP_SUMMARY"
