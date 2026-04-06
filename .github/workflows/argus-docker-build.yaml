@@ -139,7 +139,6 @@ jobs:
         if: matrix.image.should_build == true
         shell: bash
         run: |
-          echo "| | |" >> "$GITHUB_STEP_SUMMARY"
           echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
           echo "| **Image** | \`${{ matrix.image.name }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| **Tag** | \`${{ needs.prep.outputs.image_tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
