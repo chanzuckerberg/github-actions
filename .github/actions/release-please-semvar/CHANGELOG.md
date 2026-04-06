@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.1.2...release-please-semvar-v0.2.0) (2026-04-06)
+
+
+### Features
+
+* migrate off of EOL node20 ([#516](https://github.com/chanzuckerberg/github-actions/issues/516)) ([bb72e26](https://github.com/chanzuckerberg/github-actions/commit/bb72e263a10c158fd742716cf8bf15569e2a1b43))
+
 ## [0.1.2](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.1.1...release-please-semvar-v0.1.2) (2025-04-30)
 
 

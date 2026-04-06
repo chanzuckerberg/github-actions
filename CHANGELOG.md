@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.16.0](https://github.com/chanzuckerberg/github-actions/compare/v6.15.1...v6.16.0) (2026-04-06)
+
+
+### Features
+
+* migrate off of EOL node20 ([#516](https://github.com/chanzuckerberg/github-actions/issues/516)) ([bb72e26](https://github.com/chanzuckerberg/github-actions/commit/bb72e263a10c158fd742716cf8bf15569e2a1b43))
+
 ## [6.15.1](https://github.com/chanzuckerberg/github-actions/compare/v6.15.0...v6.15.1) (2026-03-30)
 
 

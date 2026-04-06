@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.9.2...happy-cleanup-v1.10.0) (2026-04-06)
+
+
+### Features
+
+* migrate off of EOL node20 ([#516](https://github.com/chanzuckerberg/github-actions/issues/516)) ([bb72e26](https://github.com/chanzuckerberg/github-actions/commit/bb72e263a10c158fd742716cf8bf15569e2a1b43))
+
 ## [1.9.2](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.9.1...happy-cleanup-v1.9.2) (2025-04-30)
 
 
