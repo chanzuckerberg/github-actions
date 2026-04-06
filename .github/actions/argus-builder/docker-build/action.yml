@@ -107,7 +107,7 @@ runs:
           core.setOutput('IMAGE_URI', IMAGE_URI);
     - name: Create ECR repo if necessary
       id: create_ecr_repo
-      uses: chanzuckerberg/github-actions/.github/actions/create-ecr-repository@CCIE-6433-implement-our-own-version-of-int-128-create-ecr-repository-action
+      uses: chanzuckerberg/github-actions/.github/actions/create-ecr-repository@v6
       with:
         repository: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
         lifecycle-policy: argus-artifacts/settings/ecr/lifecycle-policy.json
