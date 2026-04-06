@@ -119,6 +119,7 @@ jobs:
           script: |
             core.info(`Image to build: ${{ toJson(matrix.image) }}`);
       - uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@CCIE-6433-implement-our-own-version-of-int-128-create-ecr-repository-action
+        id: docker_build
         if: matrix.image.should_build == true
         with:
           image_name: ${{ matrix.image.name }}
@@ -134,6 +135,15 @@ jobs:
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
           fail_on_vulnerabilities: ${{ inputs.fail_on_vulnerabilities }}
           enable_vuln_container_scan: ${{ inputs.enable_vuln_container_scan }}
+      - name: Write job summary
+        if: matrix.image.should_build == true
+        shell: bash
+        run: |
+          echo "| | |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Image** | \`${{ matrix.image.name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Tag** | \`${{ needs.prep.outputs.image_tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **URI** | \`${{ steps.docker_build.outputs.image_uri }}\` |" >> "$GITHUB_STEP_SUMMARY"
 
   update-manifests:
     name: Update ArgoCD manifests
