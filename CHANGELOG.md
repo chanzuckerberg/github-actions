@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.17.0](https://github.com/chanzuckerberg/github-actions/compare/v6.16.0...v6.17.0) (2026-04-07)
+
+
+### Features
+
+* add create-ecr-repository action to replace unmaintained 3rd party action ([#518](https://github.com/chanzuckerberg/github-actions/issues/518)) ([2233bb9](https://github.com/chanzuckerberg/github-actions/commit/2233bb93df6987e03b74cd124fb1805fe79c6664))
+
+
+### BugFixes
+
+* updatecli/updatecli-action@v3 doesnt exist ([#520](https://github.com/chanzuckerberg/github-actions/issues/520)) ([5176ead](https://github.com/chanzuckerberg/github-actions/commit/5176ead1d4627d7fbd9e0ad5bda02612e9829d09))
+
 ## [6.16.0](https://github.com/chanzuckerberg/github-actions/compare/v6.15.1...v6.16.0) (2026-04-06)
 
 
