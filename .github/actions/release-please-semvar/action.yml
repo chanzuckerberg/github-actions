@@ -22,12 +22,10 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.app_token }}
+        REPO: ${{ github.repository }}
       run: |
-        SHAS="{}"
-        while IFS=$'\t' read -r sha ref; do
-          branch="${ref#refs/heads/}"
-          SHAS=$(echo "$SHAS" | jq -c --arg k "$branch" --arg v "$sha" '. + {($k): $v}')
-        done < <(git ls-remote origin 'refs/heads/release-please--branches--*')
+        SHAS=$(gh api "repos/${REPO}/git/matching-refs/heads/release-please--branches--" \
+          --jq '[.[] | {(.ref | sub("refs/heads/"; "")): .object.sha}] | add // {}')
         echo "branch_shas=${SHAS}" >> "$GITHUB_OUTPUT"
         echo "Captured release-please branch SHAs: ${SHAS}"
     - name: release please
