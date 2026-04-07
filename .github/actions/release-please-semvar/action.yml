@@ -9,15 +9,88 @@ inputs:
     description: 'If true, add prefix to tags and branches, allowing multiple libraries to be released from the same repository.'
     required: false
     default: false
+  preserve_files:
+    description: 'Comma-separated list of file paths to restore after release-please force-pushes the release branch. Files are restored from the state of the branch immediately before the force push.'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
+    - name: snapshot release branch shas
+      if: ${{ inputs.preserve_files != '' }}
+      id: snapshot
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.app_token }}
+      run: |
+        SHAS="{}"
+        while IFS=$'\t' read -r sha ref; do
+          branch="${ref#refs/heads/}"
+          SHAS=$(echo "$SHAS" | jq -c --arg k "$branch" --arg v "$sha" '. + {($k): $v}')
+        done < <(git ls-remote origin 'refs/heads/release-please--branches--*')
+        echo "branch_shas=${SHAS}" >> "$GITHUB_OUTPUT"
+        echo "Captured release-please branch SHAs: ${SHAS}"
     - name: release please
       uses: googleapis/release-please-action@v4
       id: release
       with:
         token: ${{ inputs.app_token }}
         include-component-in-tag: ${{ inputs.include_component_in_tag }}
+    - name: restore preserved files
+      if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.app_token }}
+        BRANCH_SHAS: ${{ steps.snapshot.outputs.branch_shas }}
+        PR_JSON: ${{ steps.release.outputs.pr }}
+        PRESERVE_FILES: ${{ inputs.preserve_files }}
+      run: |
+        BRANCH=$(echo "$PR_JSON" | jq -r '.headBranchName')
+        if [ -z "$BRANCH" ] || [ "$BRANCH" = "null" ]; then
+          echo "Could not determine release branch name from pr output, skipping"
+          exit 0
+        fi
+
+        OLD_SHA=$(echo "$BRANCH_SHAS" | jq -r --arg b "$BRANCH" '.[$b] // empty')
+        if [ -z "$OLD_SHA" ]; then
+          echo "No previous SHA found for $BRANCH (new branch), skipping"
+          exit 0
+        fi
+
+        echo "Restoring files from $OLD_SHA on branch $BRANCH"
+
+        git fetch origin "$BRANCH"
+        git checkout "$BRANCH"
+        git fetch origin "$OLD_SHA"
+
+        git config user.name "czi-github-helper[bot]"
+        git config user.email "95879977+czi-github-helper[bot]@users.noreply.github.com"
+
+        RESTORED=0
+        IFS=',' read -ra FILES <<< "$PRESERVE_FILES"
+        for file in "${FILES[@]}"; do
+          file=$(echo "$file" | xargs)
+          if [ -z "$file" ]; then
+            continue
+          fi
+          if git cat-file -e "${OLD_SHA}:${file}" 2>/dev/null; then
+            mkdir -p "$(dirname "$file")"
+            git show "${OLD_SHA}:${file}" > "$file"
+            git add "$file"
+            echo "Restored $file from $OLD_SHA"
+            RESTORED=$((RESTORED + 1))
+          else
+            echo "File $file did not exist at $OLD_SHA, skipping"
+          fi
+        done
+
+        if [ "$RESTORED" -gt 0 ] && ! git diff --cached --quiet; then
+          git commit -m "release-please-preserve: restore preserved files after release-please update"
+          git push origin "$BRANCH"
+          echo "Pushed $RESTORED restored file(s) to $BRANCH"
+        else
+          echo "No files needed restoring"
+        fi
     - uses: actions/checkout@v6
       with:
           persist-credentials: true # used in subsequent action to git push
