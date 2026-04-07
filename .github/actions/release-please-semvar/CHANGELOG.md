@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.2.0...release-please-semvar-v0.3.0) (2026-04-07)
+
+
+### Features
+
+* add preserve_files input to release-please-semver ([#521](https://github.com/chanzuckerberg/github-actions/issues/521)) ([5369792](https://github.com/chanzuckerberg/github-actions/commit/536979244f17bed2b7f191d1deb9199ed158d77d))
+
 ## [0.2.0](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.1.2...release-please-semvar-v0.2.0) (2026-04-06)
 
 
