@@ -1,0 +1,21 @@
+name: create-ecr-repository
+description: Create an Amazon ECR repository if it does not exist, and optionally apply lifecycle and repository policies.
+
+inputs:
+  repository:
+    description: ECR repository name to create
+    required: true
+  lifecycle-policy:
+    description: Path to a lifecycle policy JSON file (optional)
+    required: false
+  repository-policy:
+    description: Path to a repository policy JSON file (optional)
+    required: false
+
+outputs:
+  repository-uri:
+    description: URI of the repository (e.g. ACCOUNT.dkr.ecr.REGION.amazonaws.com/NAME)
+
+runs:
+  using: 'node24'
+  main: 'dist/index.js'
