@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.18.0](https://github.com/chanzuckerberg/github-actions/compare/v6.17.0...v6.18.0) (2026-04-07)
+
+
+### Features
+
+* add preserve_files input to release-please-semver ([#521](https://github.com/chanzuckerberg/github-actions/issues/521)) ([5369792](https://github.com/chanzuckerberg/github-actions/commit/536979244f17bed2b7f191d1deb9199ed158d77d))
+
 ## [6.17.0](https://github.com/chanzuckerberg/github-actions/compare/v6.16.0...v6.17.0) (2026-04-07)
 
 
