@@ -10,7 +10,7 @@ inputs:
     required: false
     default: false
   preserve_files:
-    description: 'Comma-separated list of file paths to restore after release-please force-pushes the release branch. Files are restored from the state of the branch immediately before the force push.'
+    description: 'Comma-separated list of file paths to carry forward after release-please force-pushes the release branch. Changes made on the old release branch (relative to its base) are merged into the new branch using a 3-way merge, so that only branch-specific edits (e.g. Argus image SHA tags) are preserved and changes merged into main are not reverted.'
     required: false
     default: ''
 runs:
@@ -65,7 +65,7 @@ runs:
       with:
         ref: ${{ steps.resolve_branch.outputs.branch }}
         token: ${{ inputs.app_token }}
-        fetch-depth: 1
+        fetch-depth: 0
     - name: restore preserved files
       if: ${{ steps.resolve_branch.outputs.should_restore == 'true' }}
       shell: bash
@@ -74,12 +74,15 @@ runs:
         BRANCH: ${{ steps.resolve_branch.outputs.branch }}
         PRESERVE_FILES: ${{ inputs.preserve_files }}
       run: |
-        echo "Restoring files from $OLD_SHA on branch $BRANCH"
+        echo "Merging branch-specific changes from $OLD_SHA onto $BRANCH"
 
         git fetch origin "$OLD_SHA"
 
         git config user.name "czi-github-helper[bot]"
         git config user.email "95879977+czi-github-helper[bot]@users.noreply.github.com"
+
+        OLD_BASE=$(git merge-base "$OLD_SHA" HEAD)
+        echo "Old branch base (merge-base with current HEAD): $OLD_BASE"
 
         RESTORED=0
         IFS=',' read -ra FILES <<< "$PRESERVE_FILES"
@@ -88,23 +91,40 @@ runs:
           if [ -z "$file" ]; then
             continue
           fi
-          if git cat-file -e "${OLD_SHA}:${file}" 2>/dev/null; then
-            mkdir -p "$(dirname "$file")"
-            git show "${OLD_SHA}:${file}" > "$file"
-            git add "$file"
-            echo "Restored $file from $OLD_SHA"
-            RESTORED=$((RESTORED + 1))
-          else
+
+          if ! git cat-file -e "${OLD_SHA}:${file}" 2>/dev/null; then
             echo "File $file did not exist at $OLD_SHA, skipping"
+            continue
           fi
+
+          if git diff --quiet "$OLD_BASE" "$OLD_SHA" -- "$file" 2>/dev/null; then
+            echo "File $file unchanged between old base and old branch tip, nothing to carry forward"
+            continue
+          fi
+
+          git show "${OLD_BASE}:${file}" > "${file}.base" 2>/dev/null || true
+          git show "${OLD_SHA}:${file}" > "${file}.other"
+          cp "$file" "${file}.current"
+
+          if git merge-file "${file}.current" "${file}.base" "${file}.other"; then
+            cp "${file}.current" "$file"
+            echo "3-way merged branch-specific changes for $file"
+          else
+            cp "${file}.current" "$file"
+            echo "WARNING: merge conflict in $file, applied with conflict markers — manual resolution may be needed"
+          fi
+
+          rm -f "${file}.base" "${file}.other" "${file}.current"
+          git add "$file"
+          RESTORED=$((RESTORED + 1))
         done
 
         if [ "$RESTORED" -gt 0 ] && ! git diff --cached --quiet; then
-          git commit -m "release-please-preserve: restore preserved files after release-please update"
+          git commit -m "release-please-preserve: carry forward branch-specific changes after release-please update"
           git push origin "$BRANCH"
-          echo "Pushed $RESTORED restored file(s) to $BRANCH"
+          echo "Pushed $RESTORED file(s) with carried-forward changes to $BRANCH"
         else
-          echo "No files needed restoring"
+          echo "No branch-specific changes needed carrying forward"
         fi
     - uses: actions/checkout@v6
       with:
