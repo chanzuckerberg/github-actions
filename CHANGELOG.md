@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.18.1](https://github.com/chanzuckerberg/github-actions/compare/v6.18.0...v6.18.1) (2026-04-08)
+
+
+### BugFixes
+
+* address Dependabot security alerts ([#523](https://github.com/chanzuckerberg/github-actions/issues/523)) ([8f33494](https://github.com/chanzuckerberg/github-actions/commit/8f334945e269a2c0c9cb73042afcf16e6dfbe32c))
+* **release-please-semvar:** 3-way merge preserve_files instead of ful… ([#529](https://github.com/chanzuckerberg/github-actions/issues/529)) ([ad83d5b](https://github.com/chanzuckerberg/github-actions/commit/ad83d5b20a0ee8bca1e3c8451e9c9dd3c5d2861b))
+
 ## [6.18.0](https://github.com/chanzuckerberg/github-actions/compare/v6.17.0...v6.18.0) (2026-04-07)
 
 
