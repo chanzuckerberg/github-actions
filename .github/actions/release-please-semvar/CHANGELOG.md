@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.3.0...release-please-semvar-v0.3.1) (2026-04-08)
+
+
+### BugFixes
+
+* **release-please-semvar:** 3-way merge preserve_files instead of ful… ([#529](https://github.com/chanzuckerberg/github-actions/issues/529)) ([ad83d5b](https://github.com/chanzuckerberg/github-actions/commit/ad83d5b20a0ee8bca1e3c8451e9c9dd3c5d2861b))
+
 ## [0.3.0](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.2.0...release-please-semvar-v0.3.0) (2026-04-07)
 
 
