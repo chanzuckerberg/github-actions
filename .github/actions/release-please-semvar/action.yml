@@ -154,7 +154,7 @@ runs:
             // restricted to the matched files, then apply it to the current branch.
             // This surgically applies only the automation's edits without touching
             // anything else in the file (env vars, other keys, etc.).
-            const patchArgs = ['diff', oldBase, oldSha, '--', ...files];
+            const patchArgs = ['diff', '-U0', oldBase, oldSha, '--', ...files];
             const patchResult = await git(patchArgs);
             const patch = patchResult.stdout;
 
