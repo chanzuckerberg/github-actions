@@ -162,7 +162,7 @@ runs:
               core.info(`No automation changes to carry forward for ${branch}`);
             } else {
               const applyResult = await exec.getExecOutput(
-                'git', ['apply', '--index', '--whitespace=fix'],
+                'git', ['apply', '--3way', '--index', '--whitespace=fix'],
                 { ignoreReturnCode: true, input: Buffer.from(patch) }
               );
 
@@ -173,7 +173,8 @@ runs:
                 core.info(`Pushed carried-forward changes to ${branch}`);
               } else {
                 core.warning(`Patch did not apply cleanly for ${branch} — skipping to avoid broken state:\n${applyResult.stderr}`);
-                await exec.exec('git', ['apply', '--abort'], { ignoreReturnCode: true });
+                await exec.exec('git', ['checkout', '--', '.'], { ignoreReturnCode: true });
+                await exec.exec('git', ['reset', 'HEAD'], { ignoreReturnCode: true });
               }
             }
           }
