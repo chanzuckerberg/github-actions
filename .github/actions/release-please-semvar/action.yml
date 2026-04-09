@@ -43,63 +43,59 @@ runs:
       with:
         token: ${{ inputs.app_token }}
         include-component-in-tag: ${{ inputs.include_component_in_tag }}
-    - name: resolve release branch
+    - name: resolve release branches
       if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
       id: resolve_restore
       uses: actions/github-script@v8
       env:
         BRANCH_SHAS: ${{ steps.snapshot.outputs.branch_shas }}
-        PR_JSON: ${{ steps.release.outputs.pr }}
+        PRS_JSON: ${{ steps.release.outputs.prs }}
       with:
         script: |
           const branchShas = JSON.parse(process.env.BRANCH_SHAS || '{}');
-          let pr;
+          let prs;
           try {
-            pr = JSON.parse(process.env.PR_JSON);
+            prs = JSON.parse(process.env.PRS_JSON || '[]');
           } catch {
-            core.info('Could not parse PR output, skipping restore');
+            core.info('Could not parse prs output, skipping restore');
             core.setOutput('should_restore', 'false');
+            core.setOutput('restore_targets', '[]');
             return;
           }
 
-          const branch = pr.headBranchName;
-          if (!branch) {
-            core.info('Could not determine release branch name from pr output, skipping');
-            core.setOutput('should_restore', 'false');
-            return;
+          const targets = [];
+          for (const pr of prs) {
+            const branch = pr.headBranchName;
+            if (!branch) {
+              core.info('PR missing headBranchName, skipping');
+              continue;
+            }
+            const oldSha = branchShas[branch];
+            if (!oldSha) {
+              core.info(`No previous SHA found for ${branch} (new branch), skipping`);
+              continue;
+            }
+            core.info(`Queued restore: branch=${branch}, oldSha=${oldSha}`);
+            targets.push({ branch, oldSha });
           }
 
-          const oldSha = branchShas[branch];
-          if (!oldSha) {
-            core.info(`No previous SHA found for ${branch} (new branch), skipping`);
-            core.setOutput('should_restore', 'false');
-            return;
-          }
-
-          core.info(`Branch: ${branch}, Old SHA: ${oldSha}`);
-          core.setOutput('branch', branch);
-          core.setOutput('old_sha', oldSha);
-          core.setOutput('should_restore', 'true');
-    - name: checkout release branch
-      if: ${{ steps.resolve_restore.outputs.should_restore == 'true' }}
-      uses: actions/checkout@v6
+          core.setOutput('restore_targets', JSON.stringify(targets));
+          core.setOutput('should_restore', targets.length > 0 ? 'true' : 'false');
+    - uses: actions/checkout@v6
       with:
-        ref: ${{ steps.resolve_restore.outputs.branch }}
-        token: ${{ inputs.app_token }}
+        persist-credentials: true
         fetch-depth: 0
     - name: restore preserved files
       if: ${{ steps.resolve_restore.outputs.should_restore == 'true' }}
       uses: actions/github-script@v8
       env:
-        OLD_SHA: ${{ steps.resolve_restore.outputs.old_sha }}
-        BRANCH: ${{ steps.resolve_restore.outputs.branch }}
+        RESTORE_TARGETS: ${{ steps.resolve_restore.outputs.restore_targets }}
         PRESERVE_FILES: ${{ inputs.preserve_files }}
       with:
         script: |
           const fs = require('fs');
           const path = require('path');
-          const oldSha = process.env.OLD_SHA;
-          const branch = process.env.BRANCH;
+          const targets = JSON.parse(process.env.RESTORE_TARGETS || '[]');
           const preserveFiles = process.env.PRESERVE_FILES;
 
           function globToRegex(pattern) {
@@ -108,108 +104,106 @@ runs:
           }
 
           async function git(args, opts = {}) {
-            const result = await exec.getExecOutput('git', args, {
+            return exec.getExecOutput('git', args, {
               ignoreReturnCode: opts.ignoreReturnCode || false,
               silent: opts.silent || false,
             });
-            return result;
           }
 
-          core.info(`Merging branch-specific changes from ${oldSha} onto ${branch}`);
-
-          await exec.exec('git', ['fetch', 'origin', oldSha]);
-          await exec.exec('git', ['config', 'user.name', 'czi-github-helper[bot]']);
-          await exec.exec('git', ['config', 'user.email', '95879977+czi-github-helper[bot]@users.noreply.github.com']);
-
-          const mergeBaseResult = await git(['merge-base', oldSha, 'HEAD']);
-          const oldBase = mergeBaseResult.stdout.trim();
-          core.info(`Old branch base (merge-base with current HEAD): ${oldBase}`);
-
-          // Parse patterns: split on commas and newlines, trim
+          // Parse patterns once -- same for all branches
           const patterns = preserveFiles
             .split(/[,\n]/)
             .map(s => s.trim())
             .filter(Boolean);
 
-          // Get file tree at old SHA
-          const treeResult = await git(['ls-tree', '-r', '--name-only', oldSha]);
-          const allOldFiles = treeResult.stdout.trim().split('\n').filter(Boolean);
+          await exec.exec('git', ['config', 'user.name', 'czi-github-helper[bot]']);
+          await exec.exec('git', ['config', 'user.email', '95879977+czi-github-helper[bot]@users.noreply.github.com']);
 
-          // Expand globs and deduplicate
-          const resolvedSet = new Set();
-          for (const pattern of patterns) {
-            const regex = globToRegex(pattern);
-            let matched = false;
-            for (const file of allOldFiles) {
-              if (regex.test(file)) {
-                resolvedSet.add(file);
-                matched = true;
+          for (const { branch, oldSha } of targets) {
+            core.info(`Processing branch ${branch} (old SHA: ${oldSha})`);
+
+            await exec.exec('git', ['fetch', 'origin', oldSha]);
+            await exec.exec('git', ['fetch', 'origin', branch]);
+            await exec.exec('git', ['checkout', branch]);
+
+            const mergeBaseResult = await git(['merge-base', oldSha, 'HEAD']);
+            const oldBase = mergeBaseResult.stdout.trim();
+            core.info(`Old branch base (merge-base with current HEAD): ${oldBase}`);
+
+            // Get file tree at old SHA and expand globs
+            const treeResult = await git(['ls-tree', '-r', '--name-only', oldSha]);
+            const allOldFiles = treeResult.stdout.trim().split('\n').filter(Boolean);
+
+            const resolvedSet = new Set();
+            for (const pattern of patterns) {
+              const regex = globToRegex(pattern);
+              let matched = false;
+              for (const file of allOldFiles) {
+                if (regex.test(file)) {
+                  resolvedSet.add(file);
+                  matched = true;
+                }
+              }
+              if (!matched) {
+                core.info(`Pattern '${pattern}' matched no files at ${oldSha}, skipping`);
               }
             }
-            if (!matched) {
-              core.info(`Pattern '${pattern}' matched no files at ${oldSha}, skipping`);
+
+            const files = [...resolvedSet].sort();
+            core.info(`Resolved ${files.length} file(s) to check: ${files.join(', ')}`);
+
+            let restored = 0;
+            for (const file of files) {
+              const diffResult = await git(
+                ['diff', '--quiet', oldBase, oldSha, '--', file],
+                { ignoreReturnCode: true }
+              );
+              if (diffResult.exitCode === 0) {
+                core.info(`File ${file} unchanged between old base and old branch tip, nothing to carry forward`);
+                continue;
+              }
+
+              const dir = path.dirname(file);
+              if (dir !== '.') fs.mkdirSync(dir, { recursive: true });
+
+              const baseResult = await git(['show', `${oldBase}:${file}`], { ignoreReturnCode: true });
+              fs.writeFileSync(`${file}.base`, baseResult.exitCode === 0 ? baseResult.stdout : '');
+
+              const otherResult = await git(['show', `${oldSha}:${file}`]);
+              fs.writeFileSync(`${file}.other`, otherResult.stdout);
+
+              const currentContent = fs.existsSync(file) ? fs.readFileSync(file) : Buffer.from('');
+              fs.writeFileSync(`${file}.current`, currentContent);
+
+              const mergeResult = await exec.getExecOutput(
+                'git', ['merge-file', `${file}.current`, `${file}.base`, `${file}.other`],
+                { ignoreReturnCode: true }
+              );
+
+              fs.copyFileSync(`${file}.current`, file);
+              if (mergeResult.exitCode === 0) {
+                core.info(`3-way merged branch-specific changes for ${file}`);
+              } else {
+                core.warning(`Merge conflict in ${file}, applied with conflict markers — manual resolution may be needed`);
+              }
+
+              fs.unlinkSync(`${file}.base`);
+              fs.unlinkSync(`${file}.other`);
+              fs.unlinkSync(`${file}.current`);
+
+              await exec.exec('git', ['add', file]);
+              restored++;
             }
-          }
 
-          const files = [...resolvedSet].sort();
-          core.info(`Resolved ${files.length} file(s) to check: ${files.join(', ')}`);
-
-          let restored = 0;
-          for (const file of files) {
-            const diffResult = await git(
-              ['diff', '--quiet', oldBase, oldSha, '--', file],
-              { ignoreReturnCode: true }
-            );
-            if (diffResult.exitCode === 0) {
-              core.info(`File ${file} unchanged between old base and old branch tip, nothing to carry forward`);
-              continue;
-            }
-
-            const dir = path.dirname(file);
-            if (dir !== '.') {
-              fs.mkdirSync(dir, { recursive: true });
-            }
-
-            const baseResult = await git(['show', `${oldBase}:${file}`], { ignoreReturnCode: true });
-            fs.writeFileSync(`${file}.base`, baseResult.exitCode === 0 ? baseResult.stdout : '');
-
-            const otherResult = await git(['show', `${oldSha}:${file}`]);
-            fs.writeFileSync(`${file}.other`, otherResult.stdout);
-
-            const currentContent = fs.existsSync(file) ? fs.readFileSync(file) : Buffer.from('');
-            fs.writeFileSync(`${file}.current`, currentContent);
-
-            const mergeResult = await exec.getExecOutput(
-              'git', ['merge-file', `${file}.current`, `${file}.base`, `${file}.other`],
-              { ignoreReturnCode: true }
-            );
-
-            fs.copyFileSync(`${file}.current`, file);
-            if (mergeResult.exitCode === 0) {
-              core.info(`3-way merged branch-specific changes for ${file}`);
+            const diffCheck = await git(['diff', '--cached', '--quiet'], { ignoreReturnCode: true });
+            if (restored > 0 && diffCheck.exitCode !== 0) {
+              await exec.exec('git', ['commit', '-m', 'release-please-preserve: carry forward branch-specific changes after release-please update']);
+              await exec.exec('git', ['push', 'origin', branch]);
+              core.info(`Pushed ${restored} file(s) with carried-forward changes to ${branch}`);
             } else {
-              core.warning(`Merge conflict in ${file}, applied with conflict markers — manual resolution may be needed`);
+              core.info(`No branch-specific changes needed carrying forward for ${branch}`);
             }
-
-            fs.unlinkSync(`${file}.base`);
-            fs.unlinkSync(`${file}.other`);
-            fs.unlinkSync(`${file}.current`);
-
-            await exec.exec('git', ['add', file]);
-            restored++;
           }
-
-          const diffCheck = await git(['diff', '--cached', '--quiet'], { ignoreReturnCode: true });
-          if (restored > 0 && diffCheck.exitCode !== 0) {
-            await exec.exec('git', ['commit', '-m', 'release-please-preserve: carry forward branch-specific changes after release-please update']);
-            await exec.exec('git', ['push', 'origin', branch]);
-            core.info(`Pushed ${restored} file(s) with carried-forward changes to ${branch}`);
-          } else {
-            core.info('No branch-specific changes needed carrying forward');
-          }
-    - uses: actions/checkout@v6
-      with:
-          persist-credentials: true # used in subsequent action to git push
     - name: tag root major and minor versions
       shell: bash
       run: |
