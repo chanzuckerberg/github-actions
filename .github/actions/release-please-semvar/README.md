@@ -34,8 +34,8 @@ or set the corresponding setting in the release please config file.
 
 `release-please` force-pushes its release branch every time it runs, which overwrites
 any commits added by other automations (e.g., Docker image tag updates). The
-`preserve_files` input lets you specify files that should be restored from the
-pre-force-push state of the branch.
+`preserve_files` input lets you specify files whose automation-made changes should
+be carried forward onto the new release branch.
 
 Comma-separated:
 
@@ -57,15 +57,21 @@ Newline-separated (YAML multiline):
               .infra/staging/values.yaml
 ```
 
-With glob patterns:
+With glob patterns (note: `*` matches a single path segment, not recursive):
 
 ```yaml
-            preserve_files: '.infra/*/values.yaml'
+            preserve_files: '*/.infra/staging/values.yaml'
 ```
 
 `preserve_files` accepts file paths or glob patterns (`*`, `?`, `[]`), separated
 by commas, newlines, or a mix of both. Patterns are expanded against the old
-branch's file tree. After release-please runs, matched files are carried forward
-via 3-way merge so only branch-specific edits are preserved. If a pattern matches
-no files on the old branch (e.g., the automation hasn't run yet), it is silently
-skipped.
+branch's file tree.
+
+After release-please runs, the action computes the diff between the old branch's
+base commit and the old branch tip (i.e., exactly what the automation changed),
+then applies that patch to the new release branch with `git apply`. Only the
+automation's specific edits are replayed -- other changes in the same file (e.g.,
+new env vars merged from main) are never touched. If the patch does not apply
+cleanly, the branch is left as-is and a warning is logged. If a pattern matches
+no files on the old branch (e.g., the automation hasn't run yet on this release
+cycle), it is silently skipped.

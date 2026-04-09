@@ -10,7 +10,7 @@ inputs:
     required: false
     default: false
   preserve_files:
-    description: 'File paths or glob patterns to carry forward after release-please force-pushes the release branch. Accepts comma-separated, newline-separated, or a mix of both. Globs (e.g. .infra/*/values.yaml) are expanded against the old branch tree. Changes are merged via 3-way merge so only branch-specific edits are preserved.'
+    description: 'File paths or glob patterns to carry forward after release-please force-pushes the release branch. Accepts comma-separated, newline-separated, or a mix of both. Globs (e.g. */.infra/values.yaml) are expanded against the old branch tree. Only the exact changes the automation made (diff between the old branch and its base) are applied to the new branch, so unrelated edits in the same file are never touched.'
     required: false
     default: ''
 runs:
@@ -93,8 +93,6 @@ runs:
         PRESERVE_FILES: ${{ inputs.preserve_files }}
       with:
         script: |
-          const fs = require('fs');
-          const path = require('path');
           const targets = JSON.parse(process.env.RESTORE_TARGETS || '[]');
           const preserveFiles = process.env.PRESERVE_FILES;
 
@@ -152,56 +150,31 @@ runs:
             const files = [...resolvedSet].sort();
             core.info(`Resolved ${files.length} file(s) to check: ${files.join(', ')}`);
 
-            let restored = 0;
-            for (const file of files) {
-              const diffResult = await git(
-                ['diff', '--quiet', oldBase, oldSha, '--', file],
-                { ignoreReturnCode: true }
-              );
-              if (diffResult.exitCode === 0) {
-                core.info(`File ${file} unchanged between old base and old branch tip, nothing to carry forward`);
-                continue;
-              }
+            // Build a patch of only what the automation changed (oldBase → oldSha)
+            // restricted to the matched files, then apply it to the current branch.
+            // This surgically applies only the automation's edits without touching
+            // anything else in the file (env vars, other keys, etc.).
+            const patchArgs = ['diff', oldBase, oldSha, '--', ...files];
+            const patchResult = await git(patchArgs);
+            const patch = patchResult.stdout;
 
-              const dir = path.dirname(file);
-              if (dir !== '.') fs.mkdirSync(dir, { recursive: true });
-
-              const baseResult = await git(['show', `${oldBase}:${file}`], { ignoreReturnCode: true });
-              fs.writeFileSync(`${file}.base`, baseResult.exitCode === 0 ? baseResult.stdout : '');
-
-              const otherResult = await git(['show', `${oldSha}:${file}`]);
-              fs.writeFileSync(`${file}.other`, otherResult.stdout);
-
-              const currentContent = fs.existsSync(file) ? fs.readFileSync(file) : Buffer.from('');
-              fs.writeFileSync(`${file}.current`, currentContent);
-
-              const mergeResult = await exec.getExecOutput(
-                'git', ['merge-file', `${file}.current`, `${file}.base`, `${file}.other`],
-                { ignoreReturnCode: true }
-              );
-
-              fs.copyFileSync(`${file}.current`, file);
-              if (mergeResult.exitCode === 0) {
-                core.info(`3-way merged branch-specific changes for ${file}`);
-              } else {
-                core.warning(`Merge conflict in ${file}, applied with conflict markers — manual resolution may be needed`);
-              }
-
-              fs.unlinkSync(`${file}.base`);
-              fs.unlinkSync(`${file}.other`);
-              fs.unlinkSync(`${file}.current`);
-
-              await exec.exec('git', ['add', file]);
-              restored++;
-            }
-
-            const diffCheck = await git(['diff', '--cached', '--quiet'], { ignoreReturnCode: true });
-            if (restored > 0 && diffCheck.exitCode !== 0) {
-              await exec.exec('git', ['commit', '-m', 'release-please-preserve: carry forward branch-specific changes after release-please update']);
-              await exec.exec('git', ['push', 'origin', branch]);
-              core.info(`Pushed ${restored} file(s) with carried-forward changes to ${branch}`);
+            if (!patch.trim()) {
+              core.info(`No automation changes to carry forward for ${branch}`);
             } else {
-              core.info(`No branch-specific changes needed carrying forward for ${branch}`);
+              const applyResult = await exec.getExecOutput(
+                'git', ['apply', '--index', '--whitespace=fix'],
+                { ignoreReturnCode: true, input: Buffer.from(patch) }
+              );
+
+              if (applyResult.exitCode === 0) {
+                core.info(`Patch applied cleanly for ${branch}`);
+                await exec.exec('git', ['commit', '-m', 'release-please-preserve: carry forward branch-specific changes after release-please update']);
+                await exec.exec('git', ['push', 'origin', branch]);
+                core.info(`Pushed carried-forward changes to ${branch}`);
+              } else {
+                core.warning(`Patch did not apply cleanly for ${branch} — skipping to avoid broken state:\n${applyResult.stderr}`);
+                await exec.exec('git', ['apply', '--abort'], { ignoreReturnCode: true });
+              }
             }
           }
     - name: tag root major and minor versions
