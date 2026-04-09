@@ -150,32 +150,97 @@ runs:
             const files = [...resolvedSet].sort();
             core.info(`Resolved ${files.length} file(s) to check: ${files.join(', ')}`);
 
-            // Build a patch of only what the automation changed (oldBase → oldSha)
-            // restricted to the matched files, then apply it to the current branch.
-            // This surgically applies only the automation's edits without touching
-            // anything else in the file (env vars, other keys, etc.).
-            const patchArgs = ['diff', '-U0', oldBase, oldSha, '--', ...files];
-            const patchResult = await git(patchArgs);
-            const patch = patchResult.stdout;
+            // Apply the automation's changes line-by-line onto the new branch file.
+            // This guarantees:
+            //   - Only lines the automation explicitly changed are touched
+            //   - All other content from the new branch (env vars, fields adjacent to
+            //     the changed line, etc.) is preserved unchanged
+            //   - When main also changed the same line, the automation's value wins
+            //     via YAML key-prefix matching
+            const fs = require('fs');
+            let restored = 0;
 
-            if (!patch.trim()) {
-              core.info(`No automation changes to carry forward for ${branch}`);
-            } else {
-              const applyResult = await exec.getExecOutput(
-                'git', ['apply', '--3way', '--index', '--whitespace=fix'],
-                { ignoreReturnCode: true, input: Buffer.from(patch) }
-              );
+            for (const file of files) {
+              const diffResult = await git(['diff', '-U0', oldBase, oldSha, '--', file]);
+              const diffText = diffResult.stdout;
 
-              if (applyResult.exitCode === 0) {
-                core.info(`Patch applied cleanly for ${branch}`);
-                await exec.exec('git', ['commit', '-m', 'release-please-preserve: carry forward branch-specific changes after release-please update']);
-                await exec.exec('git', ['push', 'origin', branch]);
-                core.info(`Pushed carried-forward changes to ${branch}`);
-              } else {
-                core.warning(`Patch did not apply cleanly for ${branch} — skipping to avoid broken state:\n${applyResult.stderr}`);
-                await exec.exec('git', ['checkout', '--', '.'], { ignoreReturnCode: true });
-                await exec.exec('git', ['reset', 'HEAD'], { ignoreReturnCode: true });
+              if (!diffText.trim()) {
+                core.info(`File ${file} unchanged between old base and old branch tip, nothing to carry forward`);
+                continue;
               }
+
+              // Parse the -U0 unified diff into hunks (removed/added line arrays)
+              const hunks = [];
+              let rem = [], add = [];
+              for (const line of diffText.split('\n')) {
+                if (line.startsWith('@@ ')) {
+                  if (rem.length || add.length) hunks.push({ rem: [...rem], add: [...add] });
+                  rem = []; add = [];
+                } else if (line.startsWith('-') && !line.startsWith('---')) {
+                  rem.push(line.slice(1));
+                } else if (line.startsWith('+') && !line.startsWith('+++')) {
+                  add.push(line.slice(1));
+                }
+              }
+              if (rem.length || add.length) hunks.push({ rem, add });
+
+              let content = fs.readFileSync(file, 'utf8');
+              let fileChanged = false;
+
+              for (const { rem, add } of hunks) {
+                if (rem.length !== 1 || add.length !== 1) {
+                  // Skip insertions, deletions, and multi-line rewrites — the automation
+                  // is expected to only update scalar values (e.g. image tag).
+                  const desc = `${rem.length} removed / ${add.length} added`;
+                  core.warning(`${file}: skipping non-scalar hunk (${desc}) — only single-line value replacements are supported`);
+                  continue;
+                }
+
+                const oldLine = rem[0];
+                const newLine = add[0];
+
+                if (content.includes(newLine)) {
+                  core.info(`${file}: already contains "${newLine.trim()}", skipping`);
+                } else if (content.includes(oldLine)) {
+                  // Common case: the line is still at its base value — replace directly.
+                  content = content.replaceAll(oldLine, newLine);
+                  core.info(`${file}: "${oldLine.trim()}" → "${newLine.trim()}"`);
+                  fileChanged = true;
+                } else {
+                  // Main also changed this line. Match by YAML key prefix so the
+                  // automation's value still wins for that specific key.
+                  const colonIdx = oldLine.indexOf(': ');
+                  if (colonIdx !== -1) {
+                    const prefix = oldLine.slice(0, colonIdx + 2);
+                    const esc = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const re = new RegExp(`^${esc}.+$`, 'm');
+                    if (re.test(content)) {
+                      content = content.replace(re, newLine);
+                      core.info(`${file}: key-prefix match "${prefix.trim()}" → "${newLine.trim()}"`);
+                      fileChanged = true;
+                    } else {
+                      core.warning(`${file}: could not locate line for "${oldLine.trim()}" — skipping`);
+                    }
+                  } else {
+                    core.warning(`${file}: no YAML key separator in "${oldLine.trim()}" — skipping`);
+                  }
+                }
+              }
+
+              if (fileChanged) {
+                fs.writeFileSync(file, content);
+                await exec.exec('git', ['add', file]);
+                restored++;
+              }
+            }
+
+            const diffCheck = await git(['diff', '--cached', '--quiet'], { ignoreReturnCode: true });
+            if (restored > 0 && diffCheck.exitCode !== 0) {
+              await exec.exec('git', ['commit', '-m', 'release-please-preserve: carry forward branch-specific changes after release-please update']);
+              await exec.exec('git', ['push', 'origin', branch]);
+              core.info(`Pushed carried-forward changes to ${branch}`);
+            } else {
+              core.info(`No branch-specific changes needed carrying forward for ${branch}`);
             }
           }
     - name: tag root major and minor versions
