@@ -37,6 +37,8 @@ any commits added by other automations (e.g., Docker image tag updates). The
 `preserve_files` input lets you specify files that should be restored from the
 pre-force-push state of the branch.
 
+Comma-separated:
+
 ```yaml
       - uses: chanzuckerberg/github-actions/.github/actions/release-please-semvar@main
         with:
@@ -44,8 +46,26 @@ pre-force-push state of the branch.
             preserve_files: '.infra/prod/values.yaml,.infra/staging/values.yaml'
 ```
 
-`preserve_files` is a comma-separated list of file paths. After release-please
-runs, the action will check out the release branch, restore each listed file from
-the commit that existed before the force push, and push a fixup commit. If a file
-didn't exist on the branch prior to the force push (e.g., the automation hasn't
-run yet), it is silently skipped.
+Newline-separated (YAML multiline):
+
+```yaml
+      - uses: chanzuckerberg/github-actions/.github/actions/release-please-semvar@main
+        with:
+            app_token: ${{ steps.generate_token.outputs.token }}
+            preserve_files: |
+              .infra/prod/values.yaml
+              .infra/staging/values.yaml
+```
+
+With glob patterns:
+
+```yaml
+            preserve_files: '.infra/*/values.yaml'
+```
+
+`preserve_files` accepts file paths or glob patterns (`*`, `?`, `[]`), separated
+by commas, newlines, or a mix of both. Patterns are expanded against the old
+branch's file tree. After release-please runs, matched files are carried forward
+via 3-way merge so only branch-specific edits are preserved. If a pattern matches
+no files on the old branch (e.g., the automation hasn't run yet), it is silently
+skipped.
