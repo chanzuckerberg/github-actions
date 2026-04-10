@@ -69,9 +69,19 @@ branch's file tree.
 
 After release-please runs, the action computes the diff between the old branch's
 base commit and the old branch tip (i.e., exactly what the automation changed),
-then applies that patch to the new release branch with `git apply`. Only the
-automation's specific edits are replayed -- other changes in the same file (e.g.,
-new env vars merged from main) are never touched. If the patch does not apply
-cleanly, the branch is left as-is and a warning is logged. If a pattern matches
-no files on the old branch (e.g., the automation hasn't run yet on this release
-cycle), it is silently skipped.
+then replays those edits onto the new release branch. Only the automation's
+specific scalar-value changes are applied -- other content in the same file (e.g.,
+new env vars merged from main) is never touched. If a pattern matches no files on
+the old branch (e.g., the automation hasn't run yet on this release cycle), it is
+silently skipped.
+
+To avoid double-triggering downstream workflows, release-please internally uses
+`GITHUB_TOKEN` (whose pushes are silent) when `preserve_files` is set. The
+preserved files are then folded into release-please's commit via `git commit
+--amend` and force-pushed with the app token in a single push, so path-filtered
+workflows trigger exactly once with the complete changeset.
+
+> **Note:** Callers must ensure the workflow's `GITHUB_TOKEN` has
+> `contents: write` and `pull-requests: write` permissions. This is the default
+> for most repositories but may need to be declared explicitly if the workflow
+> uses a restrictive `permissions:` block.

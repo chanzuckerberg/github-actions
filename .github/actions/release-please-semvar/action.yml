@@ -41,7 +41,7 @@ runs:
       uses: googleapis/release-please-action@v4
       id: release
       with:
-        token: ${{ inputs.app_token }}
+        token: ${{ inputs.preserve_files != '' && github.token || inputs.app_token }}
         include-component-in-tag: ${{ inputs.include_component_in_tag }}
     - name: resolve release branches
       if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
@@ -83,9 +83,11 @@ runs:
           core.setOutput('should_restore', targets.length > 0 ? 'true' : 'false');
     - uses: actions/checkout@v6
       with:
+        token: ${{ inputs.app_token }}
         persist-credentials: true
         fetch-depth: 0
     - name: restore preserved files
+      id: restore_preserved_files
       if: ${{ steps.resolve_restore.outputs.should_restore == 'true' }}
       uses: actions/github-script@v8
       env:
@@ -117,6 +119,7 @@ runs:
           await exec.exec('git', ['config', 'user.name', 'czi-github-helper[bot]']);
           await exec.exec('git', ['config', 'user.email', '95879977+czi-github-helper[bot]@users.noreply.github.com']);
 
+          const pushedBranches = [];
           for (const { branch, oldSha } of targets) {
             core.info(`Processing branch ${branch} (old SHA: ${oldSha})`);
 
@@ -236,12 +239,48 @@ runs:
 
             const diffCheck = await git(['diff', '--cached', '--quiet'], { ignoreReturnCode: true });
             if (restored > 0 && diffCheck.exitCode !== 0) {
-              await exec.exec('git', ['commit', '-m', 'release-please-preserve: carry forward branch-specific changes after release-please update']);
-              await exec.exec('git', ['push', 'origin', branch]);
+              await exec.exec('git', ['commit', '--amend', '--no-edit']);
+              await exec.exec('git', ['push', '--force-with-lease', 'origin', branch]);
               core.info(`Pushed carried-forward changes to ${branch}`);
+              pushedBranches.push(branch);
             } else {
               core.info(`No branch-specific changes needed carrying forward for ${branch}`);
             }
+          }
+          core.setOutput('pushed_branches', JSON.stringify(pushedBranches));
+    - name: trigger workflows on release branches without restore
+      id: trigger_workflows
+      if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
+      uses: actions/github-script@v8
+      env:
+        PRS_JSON: ${{ steps.release.outputs.prs }}
+        PUSHED_BRANCHES: ${{ steps.restore_preserved_files.outputs.pushed_branches }}
+      with:
+        script: |
+          let prs;
+          try {
+            prs = JSON.parse(process.env.PRS_JSON || '[]');
+          } catch {
+            core.info('Could not parse prs output, skipping trigger');
+            return;
+          }
+          const pushedBranches = new Set(JSON.parse(process.env.PUSHED_BRANCHES || '[]'));
+
+          await exec.exec('git', ['config', 'user.name', 'czi-github-helper[bot]']);
+          await exec.exec('git', ['config', 'user.email', '95879977+czi-github-helper[bot]@users.noreply.github.com']);
+
+          for (const pr of prs) {
+            const branch = pr.headBranchName;
+            if (!branch) continue;
+            if (pushedBranches.has(branch)) {
+              core.info(`Branch ${branch} already pushed by restore step, skipping`);
+              continue;
+            }
+            core.info(`No-op amend + force-push for ${branch} to trigger workflows`);
+            await exec.exec('git', ['fetch', 'origin', branch]);
+            await exec.exec('git', ['checkout', branch]);
+            await exec.exec('git', ['commit', '--amend', '--no-edit']);
+            await exec.exec('git', ['push', '--force-with-lease', 'origin', branch]);
           }
     - name: tag root major and minor versions
       shell: bash
