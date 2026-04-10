@@ -10,7 +10,7 @@ inputs:
     required: false
     default: false
   preserve_files:
-    description: 'Comma-separated list of file paths to carry forward after release-please force-pushes the release branch. Changes made on the old release branch (relative to its base) are merged into the new branch using a 3-way merge, so that only branch-specific edits (e.g. Argus image SHA tags) are preserved and changes merged into main are not reverted.'
+    description: 'File paths or glob patterns to carry forward after release-please force-pushes the release branch. Accepts comma-separated, newline-separated, or a mix of both. Globs (e.g. */.infra/values.yaml) are expanded against the old branch tree. Only the exact changes the automation made (diff between the old branch and its base) are applied to the new branch, so unrelated edits in the same file are never touched.'
     required: false
     default: ''
 runs:
@@ -19,116 +19,269 @@ runs:
     - name: snapshot release branch shas
       if: ${{ inputs.preserve_files != '' }}
       id: snapshot
-      shell: bash
-      env:
-        GH_TOKEN: ${{ inputs.app_token }}
-        REPO: ${{ github.repository }}
-      run: |
-        SHAS=$(gh api "repos/${REPO}/git/matching-refs/heads/release-please--branches--" \
-          --jq '[.[] | {(.ref | sub("refs/heads/"; "")): .object.sha}] | add // {}')
-        echo "branch_shas=${SHAS}" >> "$GITHUB_OUTPUT"
-        echo "Captured release-please branch SHAs: ${SHAS}"
+      uses: actions/github-script@v8
+      with:
+        github-token: ${{ inputs.app_token }}
+        script: |
+          const { owner, repo } = context.repo;
+
+          const refs = await github.rest.git.listMatchingRefs({
+            owner,
+            repo,
+            ref: 'heads/release-please--branches--',
+          });
+          const branchShas = {};
+          for (const ref of refs.data) {
+            const branch = ref.ref.replace('refs/heads/', '');
+            branchShas[branch] = ref.object.sha;
+          }
+          core.info(`Captured release-please branch SHAs: ${JSON.stringify(branchShas)}`);
+          core.setOutput('branch_shas', JSON.stringify(branchShas));
     - name: release please
       uses: googleapis/release-please-action@v4
       id: release
       with:
-        token: ${{ inputs.app_token }}
+        token: ${{ inputs.preserve_files != '' && github.token || inputs.app_token }}
         include-component-in-tag: ${{ inputs.include_component_in_tag }}
-    - name: resolve release branch
+    - name: resolve release branches
       if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
-      id: resolve_branch
-      shell: bash
+      id: resolve_restore
+      uses: actions/github-script@v8
       env:
         BRANCH_SHAS: ${{ steps.snapshot.outputs.branch_shas }}
-        PR_JSON: ${{ steps.release.outputs.pr }}
-      run: |
-        BRANCH=$(echo "$PR_JSON" | jq -r '.headBranchName')
-        if [ -z "$BRANCH" ] || [ "$BRANCH" = "null" ]; then
-          echo "Could not determine release branch name from pr output, skipping"
-          echo "should_restore=false" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
-
-        OLD_SHA=$(echo "$BRANCH_SHAS" | jq -r --arg b "$BRANCH" '.[$b] // empty')
-        if [ -z "$OLD_SHA" ]; then
-          echo "No previous SHA found for $BRANCH (new branch), skipping"
-          echo "should_restore=false" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
-
-        echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
-        echo "old_sha=$OLD_SHA" >> "$GITHUB_OUTPUT"
-        echo "should_restore=true" >> "$GITHUB_OUTPUT"
-    - name: checkout release branch
-      if: ${{ steps.resolve_branch.outputs.should_restore == 'true' }}
-      uses: actions/checkout@v6
+        PRS_JSON: ${{ steps.release.outputs.prs }}
       with:
-        ref: ${{ steps.resolve_branch.outputs.branch }}
-        token: ${{ inputs.app_token }}
-        fetch-depth: 0
-    - name: restore preserved files
-      if: ${{ steps.resolve_branch.outputs.should_restore == 'true' }}
-      shell: bash
-      env:
-        OLD_SHA: ${{ steps.resolve_branch.outputs.old_sha }}
-        BRANCH: ${{ steps.resolve_branch.outputs.branch }}
-        PRESERVE_FILES: ${{ inputs.preserve_files }}
-      run: |
-        echo "Merging branch-specific changes from $OLD_SHA onto $BRANCH"
+        script: |
+          const branchShas = JSON.parse(process.env.BRANCH_SHAS || '{}');
+          let prs;
+          try {
+            prs = JSON.parse(process.env.PRS_JSON || '[]');
+          } catch {
+            core.info('Could not parse prs output, skipping restore');
+            core.setOutput('should_restore', 'false');
+            core.setOutput('restore_targets', '[]');
+            return;
+          }
 
-        git fetch origin "$OLD_SHA"
+          const targets = [];
+          for (const pr of prs) {
+            const branch = pr.headBranchName;
+            if (!branch) {
+              core.info('PR missing headBranchName, skipping');
+              continue;
+            }
+            const oldSha = branchShas[branch];
+            if (!oldSha) {
+              core.info(`No previous SHA found for ${branch} (new branch), skipping`);
+              continue;
+            }
+            core.info(`Queued restore: branch=${branch}, oldSha=${oldSha}`);
+            targets.push({ branch, oldSha });
+          }
 
-        git config user.name "czi-github-helper[bot]"
-        git config user.email "95879977+czi-github-helper[bot]@users.noreply.github.com"
-
-        OLD_BASE=$(git merge-base "$OLD_SHA" HEAD)
-        echo "Old branch base (merge-base with current HEAD): $OLD_BASE"
-
-        RESTORED=0
-        IFS=',' read -ra FILES <<< "$PRESERVE_FILES"
-        for file in "${FILES[@]}"; do
-          file=$(echo "$file" | xargs)
-          if [ -z "$file" ]; then
-            continue
-          fi
-
-          if ! git cat-file -e "${OLD_SHA}:${file}" 2>/dev/null; then
-            echo "File $file did not exist at $OLD_SHA, skipping"
-            continue
-          fi
-
-          if git diff --quiet "$OLD_BASE" "$OLD_SHA" -- "$file" 2>/dev/null; then
-            echo "File $file unchanged between old base and old branch tip, nothing to carry forward"
-            continue
-          fi
-
-          git show "${OLD_BASE}:${file}" > "${file}.base" 2>/dev/null || true
-          git show "${OLD_SHA}:${file}" > "${file}.other"
-          cp "$file" "${file}.current"
-
-          if git merge-file "${file}.current" "${file}.base" "${file}.other"; then
-            cp "${file}.current" "$file"
-            echo "3-way merged branch-specific changes for $file"
-          else
-            cp "${file}.current" "$file"
-            echo "WARNING: merge conflict in $file, applied with conflict markers — manual resolution may be needed"
-          fi
-
-          rm -f "${file}.base" "${file}.other" "${file}.current"
-          git add "$file"
-          RESTORED=$((RESTORED + 1))
-        done
-
-        if [ "$RESTORED" -gt 0 ] && ! git diff --cached --quiet; then
-          git commit -m "release-please-preserve: carry forward branch-specific changes after release-please update"
-          git push origin "$BRANCH"
-          echo "Pushed $RESTORED file(s) with carried-forward changes to $BRANCH"
-        else
-          echo "No branch-specific changes needed carrying forward"
-        fi
+          core.setOutput('restore_targets', JSON.stringify(targets));
+          core.setOutput('should_restore', targets.length > 0 ? 'true' : 'false');
     - uses: actions/checkout@v6
       with:
-          persist-credentials: true # used in subsequent action to git push
+        token: ${{ inputs.app_token }}
+        persist-credentials: true
+        fetch-depth: 0
+    - name: restore preserved files
+      id: restore_preserved_files
+      if: ${{ steps.resolve_restore.outputs.should_restore == 'true' }}
+      uses: actions/github-script@v8
+      env:
+        RESTORE_TARGETS: ${{ steps.resolve_restore.outputs.restore_targets }}
+        PRESERVE_FILES: ${{ inputs.preserve_files }}
+      with:
+        script: |
+          const targets = JSON.parse(process.env.RESTORE_TARGETS || '[]');
+          const preserveFiles = process.env.PRESERVE_FILES;
+
+          function globToRegex(pattern) {
+            const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+            return new RegExp('^' + escaped.replace(/\*/g, '[^/]*').replace(/\?/g, '.') + '$');
+          }
+
+          async function git(args, opts = {}) {
+            return exec.getExecOutput('git', args, {
+              ignoreReturnCode: opts.ignoreReturnCode || false,
+              silent: opts.silent || false,
+            });
+          }
+
+          // Parse patterns once -- same for all branches
+          const patterns = preserveFiles
+            .split(/[,\n]/)
+            .map(s => s.trim())
+            .filter(Boolean);
+
+          await exec.exec('git', ['config', 'user.name', 'czi-github-helper[bot]']);
+          await exec.exec('git', ['config', 'user.email', '95879977+czi-github-helper[bot]@users.noreply.github.com']);
+
+          const pushedBranches = [];
+          for (const { branch, oldSha } of targets) {
+            core.info(`Processing branch ${branch} (old SHA: ${oldSha})`);
+
+            await exec.exec('git', ['fetch', 'origin', oldSha]);
+            await exec.exec('git', ['fetch', 'origin', branch]);
+            await exec.exec('git', ['checkout', branch]);
+
+            const mergeBaseResult = await git(['merge-base', oldSha, 'HEAD']);
+            const oldBase = mergeBaseResult.stdout.trim();
+            core.info(`Old branch base (merge-base with current HEAD): ${oldBase}`);
+
+            // Get file tree at old SHA and expand globs
+            const treeResult = await git(['ls-tree', '-r', '--name-only', oldSha]);
+            const allOldFiles = treeResult.stdout.trim().split('\n').filter(Boolean);
+
+            const resolvedSet = new Set();
+            for (const pattern of patterns) {
+              const regex = globToRegex(pattern);
+              let matched = false;
+              for (const file of allOldFiles) {
+                if (regex.test(file)) {
+                  resolvedSet.add(file);
+                  matched = true;
+                }
+              }
+              if (!matched) {
+                core.info(`Pattern '${pattern}' matched no files at ${oldSha}, skipping`);
+              }
+            }
+
+            const files = [...resolvedSet].sort();
+            core.info(`Resolved ${files.length} file(s) to check: ${files.join(', ')}`);
+
+            // Apply the automation's changes line-by-line onto the new branch file.
+            // This guarantees:
+            //   - Only lines the automation explicitly changed are touched
+            //   - All other content from the new branch (env vars, fields adjacent to
+            //     the changed line, etc.) is preserved unchanged
+            //   - When main also changed the same line, the automation's value wins
+            //     via YAML key-prefix matching
+            const fs = require('fs');
+            let restored = 0;
+
+            for (const file of files) {
+              const diffResult = await git(['diff', '-U0', oldBase, oldSha, '--', file]);
+              const diffText = diffResult.stdout;
+
+              if (!diffText.trim()) {
+                core.info(`File ${file} unchanged between old base and old branch tip, nothing to carry forward`);
+                continue;
+              }
+
+              // Parse the -U0 unified diff into hunks (removed/added line arrays)
+              const hunks = [];
+              let rem = [], add = [];
+              for (const line of diffText.split('\n')) {
+                if (line.startsWith('@@ ')) {
+                  if (rem.length || add.length) hunks.push({ rem: [...rem], add: [...add] });
+                  rem = []; add = [];
+                } else if (line.startsWith('-') && !line.startsWith('---')) {
+                  rem.push(line.slice(1));
+                } else if (line.startsWith('+') && !line.startsWith('+++')) {
+                  add.push(line.slice(1));
+                }
+              }
+              if (rem.length || add.length) hunks.push({ rem, add });
+
+              let content = fs.readFileSync(file, 'utf8');
+              let fileChanged = false;
+
+              for (const { rem, add } of hunks) {
+                if (rem.length !== 1 || add.length !== 1) {
+                  // Skip insertions, deletions, and multi-line rewrites — the automation
+                  // is expected to only update scalar values (e.g. image tag).
+                  const desc = `${rem.length} removed / ${add.length} added`;
+                  core.warning(`${file}: skipping non-scalar hunk (${desc}) — only single-line value replacements are supported`);
+                  continue;
+                }
+
+                const oldLine = rem[0];
+                const newLine = add[0];
+
+                if (content.includes(newLine)) {
+                  core.info(`${file}: already contains "${newLine.trim()}", skipping`);
+                } else if (content.includes(oldLine)) {
+                  // Common case: the line is still at its base value — replace directly.
+                  content = content.replaceAll(oldLine, newLine);
+                  core.info(`${file}: "${oldLine.trim()}" → "${newLine.trim()}"`);
+                  fileChanged = true;
+                } else {
+                  // Main also changed this line. Match by YAML key prefix so the
+                  // automation's value still wins for that specific key.
+                  const colonIdx = oldLine.indexOf(': ');
+                  if (colonIdx !== -1) {
+                    const prefix = oldLine.slice(0, colonIdx + 2);
+                    const esc = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const re = new RegExp(`^${esc}.+$`, 'm');
+                    if (re.test(content)) {
+                      content = content.replace(re, newLine);
+                      core.info(`${file}: key-prefix match "${prefix.trim()}" → "${newLine.trim()}"`);
+                      fileChanged = true;
+                    } else {
+                      core.warning(`${file}: could not locate line for "${oldLine.trim()}" — skipping`);
+                    }
+                  } else {
+                    core.warning(`${file}: no YAML key separator in "${oldLine.trim()}" — skipping`);
+                  }
+                }
+              }
+
+              if (fileChanged) {
+                fs.writeFileSync(file, content);
+                await exec.exec('git', ['add', file]);
+                restored++;
+              }
+            }
+
+            const diffCheck = await git(['diff', '--cached', '--quiet'], { ignoreReturnCode: true });
+            if (restored > 0 && diffCheck.exitCode !== 0) {
+              await exec.exec('git', ['commit', '--amend', '--no-edit']);
+              await exec.exec('git', ['push', '--force-with-lease', 'origin', branch]);
+              core.info(`Pushed carried-forward changes to ${branch}`);
+              pushedBranches.push(branch);
+            } else {
+              core.info(`No branch-specific changes needed carrying forward for ${branch}`);
+            }
+          }
+          core.setOutput('pushed_branches', JSON.stringify(pushedBranches));
+    - name: trigger workflows on release branches without restore
+      id: trigger_workflows
+      if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
+      uses: actions/github-script@v8
+      env:
+        PRS_JSON: ${{ steps.release.outputs.prs }}
+        PUSHED_BRANCHES: ${{ steps.restore_preserved_files.outputs.pushed_branches }}
+      with:
+        script: |
+          let prs;
+          try {
+            prs = JSON.parse(process.env.PRS_JSON || '[]');
+          } catch {
+            core.info('Could not parse prs output, skipping trigger');
+            return;
+          }
+          const pushedBranches = new Set(JSON.parse(process.env.PUSHED_BRANCHES || '[]'));
+
+          await exec.exec('git', ['config', 'user.name', 'czi-github-helper[bot]']);
+          await exec.exec('git', ['config', 'user.email', '95879977+czi-github-helper[bot]@users.noreply.github.com']);
+
+          for (const pr of prs) {
+            const branch = pr.headBranchName;
+            if (!branch) continue;
+            if (pushedBranches.has(branch)) {
+              core.info(`Branch ${branch} already pushed by restore step, skipping`);
+              continue;
+            }
+            core.info(`No-op amend + force-push for ${branch} to trigger workflows`);
+            await exec.exec('git', ['fetch', 'origin', branch]);
+            await exec.exec('git', ['checkout', branch]);
+            await exec.exec('git', ['commit', '--amend', '--no-edit']);
+            await exec.exec('git', ['push', '--force-with-lease', 'origin', branch]);
+          }
     - name: tag root major and minor versions
       shell: bash
       run: |
