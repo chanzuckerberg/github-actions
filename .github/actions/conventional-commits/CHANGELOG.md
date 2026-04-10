@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.8.0...conventional-commits-v1.9.0) (2026-04-10)
+
+
+### Features
+
+* add a way to make conventional commit scopes required ([#531](https://github.com/chanzuckerberg/github-actions/issues/531)) ([5da2306](https://github.com/chanzuckerberg/github-actions/commit/5da2306f57833fad980146223f02fce1c02a1d8b))
+
 ## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/conventional-commits-v1.7.0...conventional-commits-v1.8.0) (2026-04-06)
 
 
