@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.19.0](https://github.com/chanzuckerberg/github-actions/compare/v6.18.1...v6.19.0) (2026-04-10)
+
+
+### Features
+
+* release-please preserve_files enhancements ([#530](https://github.com/chanzuckerberg/github-actions/issues/530)) ([52ae315](https://github.com/chanzuckerberg/github-actions/commit/52ae31510e2bcab4bd97b39829dfa2a0b90e9a51))
+
 ## [6.18.1](https://github.com/chanzuckerberg/github-actions/compare/v6.18.0...v6.18.1) (2026-04-08)
 
 
