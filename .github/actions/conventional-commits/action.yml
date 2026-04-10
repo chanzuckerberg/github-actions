@@ -5,6 +5,14 @@ inputs:
     description: "Comma-separated list of additional scope patterns to allow. Use * as a wildcard (e.g. 'INFRA-*,my-team' allows 'feat(INFRA-123): ...' and 'fix(my-team): ...')."
     required: false
     default: ""
+  require-scope:
+    description: "If true, a scope is required in the PR title."
+    required: false
+    default: "false"
+  allowed-scopes:
+    description: "Comma-separated list of allowed scopes. When set, only these scopes (plus Jira patterns and extra-scopes) are valid — the default catch-all pattern is disabled."
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -40,22 +48,36 @@ runs:
             .filter(Boolean)
             .map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace('\\*', '.+'))
 
+          const allowedScopes = `${{ inputs.allowed-scopes }}`
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+            .map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+
           const scopeAlternatives = [
             `(?:${jiraProjects.join('|')})-[0-9]+`,
-            '[a-z][a-z0-9-]*',
+            // Only include the catch-all when no explicit allowlist was provided
+            ...(allowedScopes.length === 0 ? ['[a-z][a-z0-9-]*'] : allowedScopes),
             ...extraScopes,
           ]
 
+          const requireScope = `${{ inputs.require-scope }}` === 'true'
           const typePattern = types.join('|')
           const scopePattern = `(\\((${scopeAlternatives.join('|')})\\))`
-          const validator = new RegExp(`^(${typePattern})${scopePattern}?(!)?: .+$`)
+          const scopeGroup = requireScope ? scopePattern : `${scopePattern}?`
+          const validator = new RegExp(`^(${typePattern})${scopeGroup}(!)?: .+$`)
 
           const title = context.payload.pull_request.title
           if (!validator.test(title)) {
+            const scopeHint = allowedScopes.length > 0
+              ? `Valid scopes: ${allowedScopes.join(', ')}\n`
+              : ''
+            const scopeRequirement = requireScope ? 'required' : 'optional'
             core.setFailed(
               `PR title doesn't follow conventional commits.\n` +
-              `Expected format: <type>(<optional scope>): <description>\n` +
+              `Expected format: <type>(<scope ${scopeRequirement}>): <description>\n` +
               `Valid types: ${types.join(', ')}\n` +
+              scopeHint +
               `Example: feat(auth): add SSO login support`
             )
           }
