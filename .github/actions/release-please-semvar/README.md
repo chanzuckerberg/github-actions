@@ -34,8 +34,10 @@ or set the corresponding setting in the release please config file.
 
 `release-please` force-pushes its release branch every time it runs, which overwrites
 any commits added by other automations (e.g., Docker image tag updates). The
-`preserve_files` input lets you specify files that should be restored from the
-pre-force-push state of the branch.
+`preserve_files` input lets you specify files whose automation-made changes should
+be carried forward onto the new release branch.
+
+Comma-separated:
 
 ```yaml
       - uses: chanzuckerberg/github-actions/.github/actions/release-please-semvar@main
@@ -44,8 +46,42 @@ pre-force-push state of the branch.
             preserve_files: '.infra/prod/values.yaml,.infra/staging/values.yaml'
 ```
 
-`preserve_files` is a comma-separated list of file paths. After release-please
-runs, the action will check out the release branch, restore each listed file from
-the commit that existed before the force push, and push a fixup commit. If a file
-didn't exist on the branch prior to the force push (e.g., the automation hasn't
-run yet), it is silently skipped.
+Newline-separated (YAML multiline):
+
+```yaml
+      - uses: chanzuckerberg/github-actions/.github/actions/release-please-semvar@main
+        with:
+            app_token: ${{ steps.generate_token.outputs.token }}
+            preserve_files: |
+              .infra/prod/values.yaml
+              .infra/staging/values.yaml
+```
+
+With glob patterns (note: `*` matches a single path segment, not recursive):
+
+```yaml
+            preserve_files: '*/.infra/staging/values.yaml'
+```
+
+`preserve_files` accepts file paths or glob patterns (`*`, `?`, `[]`), separated
+by commas, newlines, or a mix of both. Patterns are expanded against the old
+branch's file tree.
+
+After release-please runs, the action computes the diff between the old branch's
+base commit and the old branch tip (i.e., exactly what the automation changed),
+then replays those edits onto the new release branch. Only the automation's
+specific scalar-value changes are applied -- other content in the same file (e.g.,
+new env vars merged from main) is never touched. If a pattern matches no files on
+the old branch (e.g., the automation hasn't run yet on this release cycle), it is
+silently skipped.
+
+To avoid double-triggering downstream workflows, release-please internally uses
+`GITHUB_TOKEN` (whose pushes are silent) when `preserve_files` is set. The
+preserved files are then folded into release-please's commit via `git commit
+--amend` and force-pushed with the app token in a single push, so path-filtered
+workflows trigger exactly once with the complete changeset.
+
+> **Note:** Callers must ensure the workflow's `GITHUB_TOKEN` has
+> `contents: write` and `pull-requests: write` permissions. This is the default
+> for most repositories but may need to be declared explicitly if the workflow
+> uses a restrictive `permissions:` block.
