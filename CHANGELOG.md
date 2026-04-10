@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.20.0](https://github.com/chanzuckerberg/github-actions/compare/v6.19.0...v6.20.0) (2026-04-10)
+
+
+### Features
+
+* add a way to make conventional commit scopes required ([#531](https://github.com/chanzuckerberg/github-actions/issues/531)) ([5da2306](https://github.com/chanzuckerberg/github-actions/commit/5da2306f57833fad980146223f02fce1c02a1d8b))
+
 ## [6.19.0](https://github.com/chanzuckerberg/github-actions/compare/v6.18.1...v6.19.0) (2026-04-10)
 
 
