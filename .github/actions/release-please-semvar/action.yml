@@ -37,19 +37,27 @@ runs:
           }
           core.info(`Captured release-please branch SHAs: ${JSON.stringify(branchShas)}`);
           core.setOutput('branch_shas', JSON.stringify(branchShas));
-    - name: release please
+    - name: release please (PR)
       uses: googleapis/release-please-action@v4
-      id: release
+      id: release_pr
       with:
         token: ${{ inputs.preserve_files != '' && github.token || inputs.app_token }}
         include-component-in-tag: ${{ inputs.include_component_in_tag }}
+        skip-github-release: true
+    - name: release please (release)
+      uses: googleapis/release-please-action@v4
+      id: release
+      with:
+        token: ${{ inputs.app_token }}
+        include-component-in-tag: ${{ inputs.include_component_in_tag }}
+        skip-github-pull-request: true
     - name: resolve release branches
-      if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
+      if: ${{ steps.release_pr.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
       id: resolve_restore
       uses: actions/github-script@v8
       env:
         BRANCH_SHAS: ${{ steps.snapshot.outputs.branch_shas }}
-        PRS_JSON: ${{ steps.release.outputs.prs }}
+        PRS_JSON: ${{ steps.release_pr.outputs.prs }}
       with:
         script: |
           const branchShas = JSON.parse(process.env.BRANCH_SHAS || '{}');
@@ -250,10 +258,10 @@ runs:
           core.setOutput('pushed_branches', JSON.stringify(pushedBranches));
     - name: trigger workflows on release branches without restore
       id: trigger_workflows
-      if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
+      if: ${{ steps.release_pr.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
       uses: actions/github-script@v8
       env:
-        PRS_JSON: ${{ steps.release.outputs.prs }}
+        PRS_JSON: ${{ steps.release_pr.outputs.prs }}
         PUSHED_BRANCHES: ${{ steps.restore_preserved_files.outputs.pushed_branches }}
       with:
         script: |
