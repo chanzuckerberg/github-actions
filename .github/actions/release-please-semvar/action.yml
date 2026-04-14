@@ -37,6 +37,11 @@ runs:
           }
           core.info(`Captured release-please branch SHAs: ${JSON.stringify(branchShas)}`);
           core.setOutput('branch_shas', JSON.stringify(branchShas));
+    # Creates/updates the release PR branch only. Uses GITHUB_TOKEN when preserve_files
+    # is set so this push is silent (GITHUB_TOKEN pushes never trigger workflow runs).
+    # The restore/trigger steps below re-push with app_token so path-filtered workflows
+    # fire exactly once with the complete changeset. When preserve_files is not set,
+    # app_token is used directly and no re-push is needed.
     - name: release please (PR)
       uses: googleapis/release-please-action@v4
       id: release_pr
@@ -44,6 +49,8 @@ runs:
         token: ${{ inputs.preserve_files != '' && github.token || inputs.app_token }}
         include-component-in-tag: ${{ inputs.include_component_in_tag }}
         skip-github-release: true
+    # Creates the GitHub release and tags when the release PR is merged. Always uses
+    # app_token so the resulting release event triggers downstream on:release workflows.
     - name: release please (release)
       uses: googleapis/release-please-action@v4
       id: release
