@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.20.1](https://github.com/chanzuckerberg/github-actions/compare/v6.20.0...v6.20.1) (2026-04-16)
+
+
+### BugFixes
+
+* allow release creation to trigger workflows ([#534](https://github.com/chanzuckerberg/github-actions/issues/534)) ([643fad5](https://github.com/chanzuckerberg/github-actions/commit/643fad5b079b9ab888173f42684c65d079627ced))
+
 ## [6.20.0](https://github.com/chanzuckerberg/github-actions/compare/v6.19.0...v6.20.0) (2026-04-10)
 
 
