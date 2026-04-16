@@ -37,19 +37,34 @@ runs:
           }
           core.info(`Captured release-please branch SHAs: ${JSON.stringify(branchShas)}`);
           core.setOutput('branch_shas', JSON.stringify(branchShas));
-    - name: release please
+    # Creates/updates the release PR branch only. Uses GITHUB_TOKEN when preserve_files
+    # is set so this push is silent (GITHUB_TOKEN pushes never trigger workflow runs).
+    # The restore/trigger steps below re-push with app_token so path-filtered workflows
+    # fire exactly once with the complete changeset. When preserve_files is not set,
+    # app_token is used directly and no re-push is needed.
+    - name: release please (PR)
       uses: googleapis/release-please-action@v4
-      id: release
+      id: release_pr
       with:
         token: ${{ inputs.preserve_files != '' && github.token || inputs.app_token }}
         include-component-in-tag: ${{ inputs.include_component_in_tag }}
+        skip-github-release: true
+    # Creates the GitHub release and tags when the release PR is merged. Always uses
+    # app_token so the resulting release event triggers downstream on:release workflows.
+    - name: release please (release)
+      uses: googleapis/release-please-action@v4
+      id: release
+      with:
+        token: ${{ inputs.app_token }}
+        include-component-in-tag: ${{ inputs.include_component_in_tag }}
+        skip-github-pull-request: true
     - name: resolve release branches
-      if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
+      if: ${{ steps.release_pr.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
       id: resolve_restore
       uses: actions/github-script@v8
       env:
         BRANCH_SHAS: ${{ steps.snapshot.outputs.branch_shas }}
-        PRS_JSON: ${{ steps.release.outputs.prs }}
+        PRS_JSON: ${{ steps.release_pr.outputs.prs }}
       with:
         script: |
           const branchShas = JSON.parse(process.env.BRANCH_SHAS || '{}');
@@ -250,10 +265,10 @@ runs:
           core.setOutput('pushed_branches', JSON.stringify(pushedBranches));
     - name: trigger workflows on release branches without restore
       id: trigger_workflows
-      if: ${{ steps.release.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
+      if: ${{ steps.release_pr.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
       uses: actions/github-script@v8
       env:
-        PRS_JSON: ${{ steps.release.outputs.prs }}
+        PRS_JSON: ${{ steps.release_pr.outputs.prs }}
         PUSHED_BRANCHES: ${{ steps.restore_preserved_files.outputs.pushed_branches }}
       with:
         script: |
