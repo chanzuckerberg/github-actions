@@ -172,7 +172,7 @@ jobs:
           repo_name: ${{ github.event.repository.name }}
 
       - id: docker_build
-        uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@v6
+        uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@CCIE-6501-implement-new-reusable-argus-docker-builder-in-github-actions
         with:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
@@ -202,8 +202,8 @@ jobs:
                 ],
                 [
                   process.env.IMAGE_NAME,
-                  `\`${process.env.IMAGE_TAG}\``,
-                  `\`${process.env.IMAGE_URI}\``,
+                  process.env.IMAGE_TAG,
+                  process.env.IMAGE_URI,
                 ],
               ])
               .addRaw('\nTo deploy manually, edit `.infra/{env}/values.yaml` with this tag and open a PR.')
