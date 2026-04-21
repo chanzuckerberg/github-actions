@@ -103,26 +103,28 @@ jobs:
 
       - name: Resolve build matrix
         id: resolve
-        shell: bash
+        uses: actions/github-script@v9
         env:
           IMAGE_TAG: ${{ steps.build_tag.outputs.image_tag }}
           INPUT_APP: ${{ inputs.app }}
           INPUT_IMAGES: ${{ inputs.images }}
           INPUT_CONFIG: ${{ inputs.config_path }}
-        run: |
-          set -euo pipefail
+        with:
+          script: |
+            const { execFileSync } = require('child_process');
 
-          echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-          echo "> Image tag: $IMAGE_TAG"
+            const tag = process.env.IMAGE_TAG;
+            core.info(`> Image tag: ${tag}`);
+            core.setOutput('tag', tag);
 
-          args=(ci resolve-matrix --app "$INPUT_APP" --config "$INPUT_CONFIG")
-          if [ -n "$INPUT_IMAGES" ]; then
-            args+=(--images "$INPUT_IMAGES")
-          fi
+            const args = ['ci', 'resolve-matrix', '--app', process.env.INPUT_APP, '--config', process.env.INPUT_CONFIG];
+            if (process.env.INPUT_IMAGES) {
+              args.push('--images', process.env.INPUT_IMAGES);
+            }
 
-          matrix=$(argus "${args[@]}")
-          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
-          echo "> Resolved matrix: $matrix"
+            const matrix = execFileSync('argus', args, { encoding: 'utf8' }).trim();
+            core.info(`> Resolved matrix: ${JSON.stringify(JSON.parse(matrix), null, 2)}`);
+            core.setOutput('matrix', matrix);
 
   build:
     name: "Build ${{ matrix.image.name }}"
