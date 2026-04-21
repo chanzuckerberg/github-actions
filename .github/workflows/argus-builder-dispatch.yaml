@@ -48,6 +48,10 @@ jobs:
       matrix: ${{ steps.resolve.outputs.matrix }}
       tag: ${{ steps.resolve.outputs.tag }}
     steps:
+      - name: Log inputs
+        shell: bash
+        run: echo '${{ toJSON(inputs) }}'
+
       - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.sha }}
