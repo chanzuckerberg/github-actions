@@ -83,7 +83,7 @@ jobs:
           path: _argus
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: _argus/core/go.mod
           cache-dependency-path: _argus/core/go.sum
