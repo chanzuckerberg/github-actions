@@ -165,7 +165,7 @@ jobs:
       - name: Materialize secret files
         id: secrets
         if: matrix.image.secret_files_spec != '[]'
-        uses: chanzuckerberg/github-actions/.github/actions/argus-builder/materialize-secret-files@v6
+        uses: chanzuckerberg/github-actions/.github/actions/argus-builder/materialize-secret-files@CCIE-6501-implement-new-reusable-argus-docker-builder-in-github-actions
         with:
           secret_files_spec: ${{ matrix.image.secret_files_spec }}
           image_name: ${{ matrix.image.name }}
