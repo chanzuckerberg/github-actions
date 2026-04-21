@@ -182,29 +182,3 @@ jobs:
           image_tag: ${{ needs.resolve.outputs.tag }}
           github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
-
-      - name: Job summary
-        if: always()
-        uses: actions/github-script@v9
-        env:
-          IMAGE_NAME: ${{ matrix.image.name }}
-          IMAGE_TAG: ${{ needs.resolve.outputs.tag }}
-          IMAGE_URI: ${{ steps.docker_build.outputs.image_uri }}
-        with:
-          script: |
-            await core.summary
-              .addHeading('Image Built', 2)
-              .addTable([
-                [
-                  { data: 'Image Name', header: true },
-                  { data: 'Image Tag', header: true },
-                  { data: 'Image Repository', header: true },
-                ],
-                [
-                  process.env.IMAGE_NAME,
-                  process.env.IMAGE_TAG,
-                  process.env.IMAGE_URI,
-                ],
-              ])
-              .addRaw('\nTo deploy manually, edit `.infra/{env}/values.yaml` with this tag and open a PR.')
-              .write();
