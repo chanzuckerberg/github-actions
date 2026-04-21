@@ -115,7 +115,7 @@ jobs:
           INPUT_CONFIG: ${{ inputs.config_path }}
         with:
           script: |
-            const { execFileSync } = require('child_process');
+            const { spawnSync } = require('child_process');
 
             const tag = process.env.IMAGE_TAG;
             core.info(`> Image tag: ${tag}`);
@@ -126,7 +126,16 @@ jobs:
               args.push('--images', process.env.INPUT_IMAGES);
             }
 
-            const matrix = execFileSync('argus', args, { encoding: 'utf8' }).trim();
+            const result = spawnSync('argus', args, { encoding: 'utf8' });
+            if (result.stderr) {
+              core.info(result.stderr.trim());
+            }
+            if (result.status !== 0) {
+              core.setFailed(`argus ci resolve-matrix exited with code ${result.status}`);
+              return;
+            }
+
+            const matrix = result.stdout.trim();
             core.info(`> Resolved matrix: ${JSON.stringify(JSON.parse(matrix), null, 2)}`);
             core.setOutput('matrix', matrix);
 
