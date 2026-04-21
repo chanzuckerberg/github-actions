@@ -1,0 +1,30 @@
+name: argus-builder/materialize-secret-files
+description: >
+  Materializes argus-ci secret_files specs onto the runner as temp files and
+  returns a newline-separated id=path string suitable for docker-build's
+  secret_files input.
+
+inputs:
+  secret_files_spec:
+    description: >
+      JSON-serialized array of SecretFileMatrixSpec objects as produced by
+      `argus ci resolve-matrix` (the secret_files_spec matrix field).
+    required: true
+  image_name:
+    description: Image name (used to namespace temp file paths under /tmp/argus-secrets).
+    required: true
+  repo_name:
+    description: >
+      GitHub repository name without owner (used to locate literal path
+      secrets relative to the docker-build checkout root).
+    required: true
+
+outputs:
+  secret_files:
+    description: >
+      Newline-separated id=path pairs for every materialized secret file,
+      ready to pass as the secret_files input to docker-build.
+
+runs:
+  using: 'node24'
+  main: 'dist/index.js'
