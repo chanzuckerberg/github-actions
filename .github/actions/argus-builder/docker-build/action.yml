@@ -26,6 +26,10 @@ inputs:
   image_tag:
     description: "Additional tag to apply to the image this is built"
     required: true
+  commit_sha:
+    description: "Full commit SHA passed as COMMIT_SHA build arg"
+    required: false
+    default: ""
   github_app_id:
     description: "GitHub App ID"
     required: true
@@ -130,6 +134,7 @@ runs:
         platforms: ${{ inputs.platform }}
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
+          COMMIT_SHA=${{ inputs.commit_sha }}
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret_files }}
         load: "false"
