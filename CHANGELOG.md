@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.21.0](https://github.com/chanzuckerberg/github-actions/compare/v6.20.1...v6.21.0) (2026-04-23)
+
+
+### Features
+
+* upgrade release-please-action to node24 ([#537](https://github.com/chanzuckerberg/github-actions/issues/537)) ([f48f22f](https://github.com/chanzuckerberg/github-actions/commit/f48f22f190a1c52907b565b6f233963747b8d92e))
+
 ## [6.20.1](https://github.com/chanzuckerberg/github-actions/compare/v6.20.0...v6.20.1) (2026-04-16)
 
 

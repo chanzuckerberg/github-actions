@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.4.1...release-please-semvar-v0.5.0) (2026-04-23)
+
+
+### Features
+
+* upgrade release-please-action to node24 ([#537](https://github.com/chanzuckerberg/github-actions/issues/537)) ([f48f22f](https://github.com/chanzuckerberg/github-actions/commit/f48f22f190a1c52907b565b6f233963747b8d92e))
+
 ## [0.4.1](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.4.0...release-please-semvar-v0.4.1) (2026-04-16)
 
 
