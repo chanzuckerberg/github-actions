@@ -49,10 +49,6 @@ jobs:
       tag: ${{ steps.resolve.outputs.tag }}
       trigger_sha: ${{ steps.build_tag.outputs.trigger_sha }}
     steps:
-      - name: Log inputs
-        shell: bash
-        run: echo '${{ toJSON(inputs) }}'
-
       - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.sha }}
