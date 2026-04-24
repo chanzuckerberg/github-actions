@@ -58,43 +58,11 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
-      # TODO: may need to install the CLI via argus-artifacts instead, in which case this generate_token step can be removed
-      - name: Generate token for private repo access
-        id: generate_token
-        uses: actions/create-github-app-token@v3
+      - name: Install Argus CLI
+        uses: jaxxstorm/action-install-gh-release@v3
         with:
-          client-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
-          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
-          repositories: ${{ github.event.repository.name }},argus
-
-      # - name: Install Argus CLI
-      #   uses: jaxxstorm/action-install-gh-release@v3
-      #   with:
-      #     repo: chanzuckerberg/argus
-      #     token: ${{ steps.generate_token.outputs.token }}
-      #     cache: enable
-
-      # TODO: remove this block and re-enable Install Argus CLI above once the new ci commands are released
-      - name: Check out argus repo
-        uses: actions/checkout@v6
-        with:
-          repository: chanzuckerberg/argus
-          ref: CCIE-6499-define-config-yaml-schema-and-implement-shared-pkg-cli-cmd-to-validate-a-file
-          token: ${{ steps.generate_token.outputs.token }}
-          path: _argus
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: _argus/core/go.mod
-          cache-dependency-path: _argus/core/go.sum
-
-      - name: Build Argus CLI
-        shell: bash
-        run: |
-          cd _argus/core
-          go build -o "$RUNNER_TOOL_CACHE/argus" ./cli
-          echo "$RUNNER_TOOL_CACHE" >> "$GITHUB_PATH"
+          repo: chanzuckerberg/argus-artifacts
+          cache: enable
 
       - name: Validate .argus-ci.yaml
         shell: bash
