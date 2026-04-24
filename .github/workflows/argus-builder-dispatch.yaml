@@ -59,7 +59,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Argus CLI
-        uses: jaxxstorm/action-install-gh-release@v3
+        uses: jaxxstorm/action-install-gh-release@v3.0.0
         with:
           repo: chanzuckerberg/argus-artifacts
           cache: enable
