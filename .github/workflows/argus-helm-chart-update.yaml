@@ -85,7 +85,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup updatecli
-        uses: updatecli/updatecli-action@v3.0.0
+        uses: updatecli/updatecli-action@v3.1.3
       - name: Generate token
         id: generate_token
         uses: actions/create-github-app-token@v3
