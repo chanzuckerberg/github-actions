@@ -15,7 +15,7 @@ on:
         required: false
         type: string
         description: Git ref to check out (defaults to github.sha)
-      runner_labels:
+      default_runner_labels:
         required: false
         type: string
         default: '["arm64-privileged"]'
@@ -29,7 +29,7 @@ on:
 jobs:
   resolve:
     name: Resolve build matrix
-    runs-on: ${{ fromJson(inputs.runner_labels) }}
+    runs-on: ${{ fromJson(inputs.default_runner_labels) }}
     permissions:
       contents: read
       packages: read
@@ -108,7 +108,7 @@ jobs:
     name: "Build ${{ matrix.image.name }}"
     needs: resolve
     if: needs.resolve.result == 'success'
-    runs-on: ${{ fromJson(inputs.runner_labels) }}
+    runs-on: ${{ fromJson(inputs.default_runner_labels) }}
     permissions:
       id-token: write
       contents: read
