@@ -153,7 +153,7 @@ runs:
               [
                 { data: 'Image Name', header: true },
                 { data: 'Image Tag', header: true },
-                { data: 'Image Repository', header: true },
+                { data: 'Image URI', header: true },
               ],
               [
                 process.env.IMAGE_NAME,
