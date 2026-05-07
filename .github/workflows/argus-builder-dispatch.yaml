@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: chanzuckerberg/argus
-          ref: CCIE-6560-implement-update-manifests-task
+          ref: CCIE-6563-implement-path-filters-to-prevent-unnecessary-build-dispatching
           token: ${{ steps.generate_token.outputs.token }}
           path: _argus
 
