@@ -26,6 +26,10 @@ inputs:
   image_tag:
     description: "Additional tag to apply to the image this is built"
     required: true
+  commit_sha:
+    description: "Full commit SHA passed as COMMIT_SHA build arg"
+    required: false
+    default: ""
   github_app_id:
     description: "GitHub App ID"
     required: true
@@ -120,7 +124,7 @@ runs:
         RELEASE_PLEASE_BRANCHES=$(git ls-remote --heads origin 'release-please*' | awk -F'/' '{print $NF}' | tr '\n' ',' || true)
         echo "RELEASE_PLEASE_BRANCHES=${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
     - name: Build And Push
-      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@v6
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@CCIE-6501-implement-new-reusable-argus-docker-builder-in-github-actions
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
@@ -130,15 +134,32 @@ runs:
         platforms: ${{ inputs.platform }}
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
+          COMMIT_SHA=${{ inputs.commit_sha }}
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret_files }}
         load: "false"
         extra_cache_branches: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
-    - name: Write job summary
-      shell: bash
-      run: |
-        echo "| Key | Value |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| **Image** | \`${{ inputs.image_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| **Tag** | \`${{ steps.ecr_metadata.outputs.IMAGE_TAG }}\` |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| **URI** | \`${{ steps.ecr_metadata.outputs.IMAGE_URI }}\` |" >> "$GITHUB_STEP_SUMMARY"
+    - name: Job summary
+      uses: actions/github-script@v9
+      env:
+        IMAGE_NAME: ${{ inputs.image_name }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        IMAGE_URI: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
+      with:
+        script: |
+          await core.summary
+            .addHeading('Image Built', 2)
+            .addTable([
+              [
+                { data: 'Image Name', header: true },
+                { data: 'Image Tag', header: true },
+                { data: 'Image URI', header: true },
+              ],
+              [
+                process.env.IMAGE_NAME,
+                process.env.IMAGE_TAG,
+                process.env.IMAGE_URI,
+              ],
+            ])
+            .addRaw('\nTo deploy manually, edit `.infra/{env}/values.yaml` with this tag and open a PR.')
+            .write();
