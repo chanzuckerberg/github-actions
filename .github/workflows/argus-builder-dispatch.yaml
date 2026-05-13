@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: chanzuckerberg/argus
-          ref: CCIE-6581-refactor-schema-for-more-clear-build-image-update-tags-upsert-stack-triggers
+          ref: CCIE-6498-argus-ci-orchestrator
           token: ${{ steps.generate_token.outputs.token }}
           path: _argus
 
