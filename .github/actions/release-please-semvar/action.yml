@@ -59,7 +59,7 @@ runs:
         include-component-in-tag: ${{ inputs.include_component_in_tag }}
         skip-github-pull-request: true
     - name: resolve release branches
-      if: ${{ steps.release_pr.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
+      if: ${{ inputs.preserve_files != '' }}
       id: resolve_restore
       uses: actions/github-script@v9
       env:
@@ -265,7 +265,7 @@ runs:
           core.setOutput('pushed_branches', JSON.stringify(pushedBranches));
     - name: trigger workflows on release branches without restore
       id: trigger_workflows
-      if: ${{ steps.release_pr.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
+      if: ${{ inputs.preserve_files != '' }}
       uses: actions/github-script@v9
       env:
         PRS_JSON: ${{ steps.release_pr.outputs.prs }}
