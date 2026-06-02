@@ -118,7 +118,7 @@ jobs:
             core.info(`> Image tag: ${tag}`);
             core.setOutput('tag', tag);
 
-            const args = ['ci', 'resolve-matrix', '--app', process.env.INPUT_APP, '--config', process.env.INPUT_CONFIG];
+            const args = ['ci', 'resolve-matrix', '--app', process.env.INPUT_APP, '--tag', tag, '--config', process.env.INPUT_CONFIG];
             if (process.env.INPUT_IMAGES) {
               args.push('--images', process.env.INPUT_IMAGES);
             }
@@ -137,7 +137,7 @@ jobs:
             core.setOutput('matrix', matrix);
 
   build:
-    name: "Build ${{ matrix.image.name }}"
+    name: "Build ${{ matrix.image.name }}${{ matrix.image.env && format(' ({0})', matrix.image.env) || '' }}"
     needs: resolve
     if: needs.resolve.result == 'success'
     runs-on: ${{ fromJson(inputs.default_runner_labels) }}
@@ -173,7 +173,7 @@ jobs:
           context: ${{ matrix.image.context }}
           build_args: ${{ matrix.image.build_args }}
           secret_files: ${{ steps.secrets.outputs.secret_files }}
-          image_tag: ${{ needs.resolve.outputs.tag }}
+          image_tag: ${{ matrix.image.tag }}
           commit_sha: ${{ needs.resolve.outputs.trigger_sha }}
           github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
