@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: chanzuckerberg/argus
-          ref: CCIE-6498-argus-ci-orchestrator
+          ref: CCIE-6709-allow-build-arg-overrides-for-different-envs
           token: ${{ steps.generate_token.outputs.token }}
           path: _argus
 
