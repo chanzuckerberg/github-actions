@@ -164,8 +164,7 @@ runs:
             rows.push([tag, env || '-', `${process.env.IMAGE_URI.replace(':' + baseTag, ':' + tag)}`]);
           }
 
-          const s = core.summary.addHeading('Image Built', 2);
-          s.addHeading('Image Name: ' + process.env.IMAGE_NAME, 3);
+          const s = core.summary.addHeading('Image Built: ' + process.env.IMAGE_NAME, 2);
           s.addTable([
             [
               { data: 'Tag', header: true },
