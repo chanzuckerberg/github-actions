@@ -28,7 +28,7 @@ on:
 
 jobs:
   resolve:
-    name: Resolve build matrix
+    name: '${{ inputs.app }}: Resolve build matrix'
     runs-on: ${{ fromJson(inputs.default_runner_labels) }}
     permissions:
       contents: read
@@ -137,7 +137,7 @@ jobs:
             core.setOutput('matrix', matrix);
 
   build:
-    name: "Build ${{ matrix.image.name }}${{ matrix.image.env && format(' ({0})', matrix.image.env) || '' }}"
+    name: "${{ inputs.app }}: Build ${{ matrix.image.name }}${{ matrix.image.env && format(' ({0})', matrix.image.env) || '' }}"
     needs: resolve
     if: needs.resolve.result == 'success'
     runs-on: ${{ fromJson(inputs.default_runner_labels) }}
