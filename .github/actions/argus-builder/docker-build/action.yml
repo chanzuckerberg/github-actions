@@ -165,7 +165,7 @@ runs:
           }
 
           const s = core.summary.addHeading('Image Built', 2);
-          s.addRaw(`**${process.env.IMAGE_NAME}**\n\n`);
+          s.addHeading(process.env.IMAGE_NAME, 3);
           s.addTable([
             [
               { data: 'Tag', header: true },
