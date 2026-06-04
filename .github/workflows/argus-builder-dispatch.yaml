@@ -110,6 +110,7 @@ jobs:
           INPUT_APP: ${{ inputs.app }}
           INPUT_IMAGES: ${{ inputs.images }}
           INPUT_CONFIG: ${{ inputs.config_path }}
+          INPUT_BRANCH: ${{ github.ref_name }}
         with:
           script: |
             const { spawnSync } = require('child_process');
@@ -121,6 +122,9 @@ jobs:
             const args = ['ci', 'resolve-matrix', '--app', process.env.INPUT_APP, '--tag', tag, '--config', process.env.INPUT_CONFIG];
             if (process.env.INPUT_IMAGES) {
               args.push('--images', process.env.INPUT_IMAGES);
+            }
+            if (process.env.INPUT_BRANCH) {
+              args.push('--branch', process.env.INPUT_BRANCH);
             }
 
             const result = spawnSync('argus', args, { encoding: 'utf8' });
