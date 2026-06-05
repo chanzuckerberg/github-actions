@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: chanzuckerberg/argus
-          ref: CCIE-6725-refine-filtering-mechanism
+          ref: CCIE-6498-argus-ci-orchestrator
           token: ${{ steps.generate_token.outputs.token }}
           path: _argus
 
