@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.7.0...get-github-ref-names-v1.8.0) (2026-06-10)
+
+
+### Features
+
+* implement new config-driven reusable argus docker builder in GitHub actions ([#536](https://github.com/chanzuckerberg/github-actions/issues/536)) ([9afbfe6](https://github.com/chanzuckerberg/github-actions/commit/9afbfe6b5ef681b84a4055619b1cb3df9680bcb8))
+
 ## [1.7.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.6.0...get-github-ref-names-v1.7.0) (2026-04-06)
 
 

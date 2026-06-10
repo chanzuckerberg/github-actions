@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.22.0](https://github.com/chanzuckerberg/github-actions/compare/v6.21.0...v6.22.0) (2026-06-10)
+
+
+### Features
+
+* implement new config-driven reusable argus docker builder in GitHub actions ([#536](https://github.com/chanzuckerberg/github-actions/issues/536)) ([9afbfe6](https://github.com/chanzuckerberg/github-actions/commit/9afbfe6b5ef681b84a4055619b1cb3df9680bcb8))
+
 ## [6.21.0](https://github.com/chanzuckerberg/github-actions/compare/v6.20.1...v6.21.0) (2026-04-23)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.12.0...docker-build-push-v1.13.0) (2026-06-10)
+
+
+### Features
+
+* implement new config-driven reusable argus docker builder in GitHub actions ([#536](https://github.com/chanzuckerberg/github-actions/issues/536)) ([9afbfe6](https://github.com/chanzuckerberg/github-actions/commit/9afbfe6b5ef681b84a4055619b1cb3df9680bcb8))
+
 ## [1.12.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.11.0...docker-build-push-v1.12.0) (2026-04-06)
 
 
