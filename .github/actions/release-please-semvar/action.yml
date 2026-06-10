@@ -19,7 +19,7 @@ runs:
     - name: snapshot release branch shas
       if: ${{ inputs.preserve_files != '' }}
       id: snapshot
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
         github-token: ${{ inputs.app_token }}
         script: |
@@ -43,7 +43,7 @@ runs:
     # fire exactly once with the complete changeset. When preserve_files is not set,
     # app_token is used directly and no re-push is needed.
     - name: release please (PR)
-      uses: googleapis/release-please-action@v4
+      uses: googleapis/release-please-action@v5
       id: release_pr
       with:
         token: ${{ inputs.preserve_files != '' && github.token || inputs.app_token }}
@@ -52,7 +52,7 @@ runs:
     # Creates the GitHub release and tags when the release PR is merged. Always uses
     # app_token so the resulting release event triggers downstream on:release workflows.
     - name: release please (release)
-      uses: googleapis/release-please-action@v4
+      uses: googleapis/release-please-action@v5
       id: release
       with:
         token: ${{ inputs.app_token }}
@@ -61,7 +61,7 @@ runs:
     - name: resolve release branches
       if: ${{ steps.release_pr.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
       id: resolve_restore
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         BRANCH_SHAS: ${{ steps.snapshot.outputs.branch_shas }}
         PRS_JSON: ${{ steps.release_pr.outputs.prs }}
@@ -104,7 +104,7 @@ runs:
     - name: restore preserved files
       id: restore_preserved_files
       if: ${{ steps.resolve_restore.outputs.should_restore == 'true' }}
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         RESTORE_TARGETS: ${{ steps.resolve_restore.outputs.restore_targets }}
         PRESERVE_FILES: ${{ inputs.preserve_files }}
@@ -266,7 +266,7 @@ runs:
     - name: trigger workflows on release branches without restore
       id: trigger_workflows
       if: ${{ steps.release_pr.outputs.prs_created == 'true' && inputs.preserve_files != '' }}
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         PRS_JSON: ${{ steps.release_pr.outputs.prs }}
         PUSHED_BRANCHES: ${{ steps.restore_preserved_files.outputs.pushed_branches }}
@@ -313,7 +313,7 @@ runs:
       if: ${{ steps.release.outputs.release_created }}
     - name: tag component major and minor versions
       if: ${{ steps.release.outputs.release_created }}
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         release_output: ${{ toJSON(steps.release.outputs) }}
       with:
