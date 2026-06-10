@@ -1,0 +1,190 @@
+name: Argus Builder Dispatch
+
+on:
+  workflow_call:
+    inputs:
+      app:
+        required: true
+        type: string
+        description: App name from .argus-ci.yaml
+      images:
+        required: false
+        type: string
+        description: Comma-separated image names (empty = all images in the app)
+      ref:
+        required: false
+        type: string
+        description: Git ref to check out (defaults to github.sha)
+      default_runner_labels:
+        required: false
+        type: string
+        default: '["arm64-privileged"]'
+        description: JSON array of self-hosted runner labels
+      config_path:
+        required: false
+        type: string
+        default: .argus-ci.yaml
+        description: Path to the Argus CI config file (relative to repo root)
+
+jobs:
+  resolve:
+    name: '${{ inputs.app }}: resolve build matrix'
+    runs-on: ${{ fromJson(inputs.default_runner_labels) }}
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
+      pull-requests: read
+    # Upstream allowlist of secret names that .argus-ci.yaml can reference via
+    # from_secret: under secret_files. GITHUB_TOKEN is always available (scoped
+    # by permissions: above). Unset repo secrets evaluate to empty strings --
+    # harmless unless the config explicitly references the name.
+    env:
+      SECRET_GITHUB_TOKEN: ${{ github.token }}
+    outputs:
+      matrix: ${{ steps.resolve.outputs.matrix }}
+      tag: ${{ steps.resolve.outputs.tag }}
+      trigger_sha: ${{ steps.build_tag.outputs.trigger_sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+
+      - name: Install Argus CLI
+        uses: jaxxstorm/action-install-gh-release@v3.0.0
+        with:
+          repo: chanzuckerberg/argus-artifacts
+          cache: enable
+
+      # NOTE(feature testing): To exercise unreleased changes to the Argus CLI in this
+      #   action, comment out the "Install Argus CLI" step above (which installs a released
+      #   argus-artifacts binary) and uncomment everything between this NOTE and the
+      #   ENDNOTE marker below. That block checks out the argus repo and builds the CLI
+      #   from source, so the workflow runs against the unreleased version instead of a
+      #   published release. Revert both changes (re-enable the install step, re-comment
+      #   this block) once the CLI change has been released.
+      # - name: Generate token for private repo access
+      #   id: generate_token
+      #   uses: actions/create-github-app-token@v3
+      #   with:
+      #     client-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+      #     private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+      #     repositories: ${{ github.event.repository.name }},argus
+
+      # - name: Check out argus repo
+      #   uses: actions/checkout@v6
+      #   with:
+      #     repository: chanzuckerberg/argus
+      #     ref: CCIE-6498-argus-ci-orchestrator
+      #     token: ${{ steps.generate_token.outputs.token }}
+      #     path: _argus
+
+      # - name: Set up Go
+      #   uses: actions/setup-go@v6
+      #   with:
+      #     go-version-file: _argus/core/go.mod
+      #     cache-dependency-path: _argus/core/go.sum
+
+      # - name: Build Argus CLI
+      #   shell: bash
+      #   run: |
+      #     cd _argus/core
+      #     go build -o "$RUNNER_TOOL_CACHE/argus" ./cli
+      #     echo "$RUNNER_TOOL_CACHE" >> "$GITHUB_PATH"
+      # ENDNOTE(feature testing)
+
+      - name: Validate .argus-ci.yaml
+        shell: bash
+        env:
+          INPUT_CONFIG: ${{ inputs.config_path }}
+        run: argus ci validate "$INPUT_CONFIG"
+
+      - name: Resolve build tag
+        id: build_tag
+        shell: bash
+        run: |
+          sha=$(git rev-parse HEAD)
+          echo "trigger_sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "tag=$(argus ci resolve-tag --sha "$sha")" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve build matrix
+        id: resolve
+        uses: actions/github-script@v9
+        env:
+          IMAGE_TAG: ${{ steps.build_tag.outputs.tag }}
+          INPUT_APP: ${{ inputs.app }}
+          INPUT_IMAGES: ${{ inputs.images }}
+          INPUT_CONFIG: ${{ inputs.config_path }}
+          INPUT_BRANCH: ${{ github.ref_name }}
+        with:
+          script: |
+            const { spawnSync } = require('child_process');
+
+            const tag = process.env.IMAGE_TAG;
+            core.info(`> Image tag: ${tag}`);
+            core.setOutput('tag', tag);
+
+            const args = ['ci', 'resolve-matrix', '--app', process.env.INPUT_APP, '--tag', tag, '--config', process.env.INPUT_CONFIG];
+            if (process.env.INPUT_IMAGES) {
+              args.push('--images', process.env.INPUT_IMAGES);
+            }
+            if (process.env.INPUT_BRANCH) {
+              args.push('--branch', process.env.INPUT_BRANCH);
+            }
+
+            const result = spawnSync('argus', args, { encoding: 'utf8' });
+            if (result.stderr) {
+              core.info(result.stderr.trim());
+            }
+            if (result.status !== 0) {
+              core.setFailed(`argus ci resolve-matrix exited with code ${result.status}`);
+              return;
+            }
+
+            const matrix = result.stdout.trim();
+            core.info(`> Resolved matrix: ${JSON.stringify(JSON.parse(matrix), null, 2)}`);
+            core.setOutput('matrix', matrix);
+
+  build:
+    name: "${{ inputs.app }}: build ${{ matrix.image.name }}${{ matrix.image.env && format(' ({0})', matrix.image.env) || '' }}"
+    needs: resolve
+    if: needs.resolve.result == 'success'
+    runs-on: ${{ fromJson(inputs.default_runner_labels) }}
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+      pull-requests: write
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.resolve.outputs.matrix) }}
+    # Same allowlist as the resolve job -- needed here to materialize secret
+    # values into temp files on the build runner.
+    env:
+      SECRET_GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Materialize secret files
+        id: secrets
+        if: matrix.image.secret_files_spec != '[]'
+        uses: chanzuckerberg/github-actions/.github/actions/argus-builder/materialize-secret-files@v6
+        with:
+          secret_files_spec: ${{ matrix.image.secret_files_spec }}
+          image_name: ${{ matrix.image.name }}
+          repo_name: ${{ github.event.repository.name }}
+
+      - id: docker_build
+        uses: chanzuckerberg/github-actions/.github/actions/argus-builder/docker-build@v6
+        with:
+          image_name: ${{ matrix.image.name }}
+          dockerfile: ${{ matrix.image.dockerfile }}
+          context: ${{ matrix.image.context }}
+          build_args: ${{ matrix.image.build_args }}
+          secret_files: ${{ steps.secrets.outputs.secret_files }}
+          image_tag: ${{ matrix.image.tag }}
+          additional_tags: ${{ matrix.image.additional_tags }}
+          commit_sha: ${{ needs.resolve.outputs.trigger_sha }}
+          github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}

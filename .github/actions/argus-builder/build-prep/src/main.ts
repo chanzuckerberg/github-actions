@@ -7,8 +7,11 @@ import { escapeRegExp } from 'lodash';
 import { findChangedFiles } from '../../../find-changed-files/src/findChangedFiles';
 // eslint-disable-next-line import/no-relative-packages
 import { validateJsonSchema } from '../../../validate-json-schema/src/validateJsonSchema';
-// eslint-disable-next-line import/no-relative-packages
-import { getCommaDelimitedArrayInput, ProcessedImage } from '../../common';
+import {
+  getCommaDelimitedArrayInput, ProcessedImage,
+  getBuildTag,
+  getTriggerSha,
+} from '../../common'; // eslint-disable-line import/no-relative-packages
 
 // eslint-disable-next-line import/no-relative-packages
 export { ProcessedImage } from '../../common';
@@ -171,30 +174,6 @@ export function isMatchingBranch(
     core.info(`> Current branch "${branch}" does NOT match the branch filters`);
   }
   return shouldRun;
-}
-
-function getBuildTag(): string {
-  const imageTag = `sha-${getTriggerSha().slice(0, 7)}`;
-  if (imageTag === 'sha-') {
-    const msg = `The image tag [${imageTag}] is invalid.`;
-    core.setFailed(msg);
-    throw new Error(msg);
-  }
-
-  core.info(`> Image tag: ${imageTag}`);
-  return imageTag;
-}
-
-function getTriggerSha(): string {
-  const { eventName } = github.context;
-  if (eventName === 'pull_request') {
-    return github.context.payload.pull_request?.head.sha;
-  } if (eventName === 'push') {
-    return github.context.sha;
-  }
-  const errMsg = `EventName ${eventName} not supported`;
-  core.setFailed(errMsg);
-  throw new Error(errMsg);
 }
 
 export function processImagesInput(images: Record<string, ImageInput>, changedFiles: string[], currentBranch: string): ProcessedImage[] {

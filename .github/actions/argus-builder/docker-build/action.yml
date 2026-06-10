@@ -24,8 +24,16 @@ inputs:
     required: false
     default: ""
   image_tag:
-    description: "Additional tag to apply to the image this is built"
+    description: "Primary tag to apply to the built image"
     required: true
+  additional_tags:
+    description: "Extra tags (newline-delimited) to push on this image in addition to image_tag"
+    required: false
+    default: ""
+  commit_sha:
+    description: "Full commit SHA passed as COMMIT_SHA build arg"
+    required: false
+    default: ""
   github_app_id:
     description: "GitHub App ID"
     required: true
@@ -126,19 +134,48 @@ runs:
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
         name: ${{ steps.ecr_metadata.outputs.ECR_REPO_NAME }}
         registry: ${{ steps.ecr_metadata.outputs.ECR_REGISTRY }}
-        custom_tag: ${{ inputs.image_tag }}
+        custom_tag: |
+          ${{ inputs.image_tag }}
+          ${{ inputs.additional_tags }}
         platforms: ${{ inputs.platform }}
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
+          COMMIT_SHA=${{ inputs.commit_sha }}
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret_files }}
         load: "false"
         extra_cache_branches: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
-    - name: Write job summary
-      shell: bash
-      run: |
-        echo "| Key | Value |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| **Image** | \`${{ inputs.image_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| **Tag** | \`${{ steps.ecr_metadata.outputs.IMAGE_TAG }}\` |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| **URI** | \`${{ steps.ecr_metadata.outputs.IMAGE_URI }}\` |" >> "$GITHUB_STEP_SUMMARY"
+    - name: Job summary
+      uses: actions/github-script@v9
+      env:
+        IMAGE_NAME: ${{ inputs.image_name }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        IMAGE_URI: ${{ steps.ecr_metadata.outputs.IMAGE_URI }}
+        ADDITIONAL_TAGS: ${{ inputs.additional_tags }}
+      with:
+        script: |
+          const baseTag = process.env.IMAGE_TAG;
+          const additionalTags = (process.env.ADDITIONAL_TAGS || '')
+            .split('\n').map(t => t.trim()).filter(Boolean);
+
+          const rows = [[baseTag, 'default', process.env.IMAGE_URI]];
+          for (const tag of additionalTags) {
+            const env = tag.startsWith(baseTag + '-') ? tag.slice(baseTag.length + 1) : '';
+            rows.push([tag, env || '-', `${process.env.IMAGE_URI.replace(':' + baseTag, ':' + tag)}`]);
+          }
+
+          const s = core.summary.addHeading('Image Built: ' + process.env.IMAGE_NAME, 2);
+          s.addTable([
+            [
+              { data: 'Tag', header: true },
+              { data: 'Target', header: true },
+              { data: 'Image URI', header: true },
+            ],
+            ...rows.map(r => [r[0], r[1], r[2]]),
+          ]);
+          if (additionalTags.length > 0) {
+            s.addRaw('\nTo deploy manually, edit `.infra/{env}/values.yaml` with the matching env-specific tag and open a PR.');
+          } else {
+            s.addRaw('\nTo deploy manually, edit `.infra/{env}/values.yaml` with this tag and open a PR.');
+          }
+          await s.write();
