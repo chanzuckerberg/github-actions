@@ -110,7 +110,7 @@ jobs:
     runs-on: ${{ inputs.runner }}
     outputs:
       allChanges: ${{ steps.set-output.outputs.allChanges }}
-    timeout-minutes: 120
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
       - name: Enumerate all stacks
