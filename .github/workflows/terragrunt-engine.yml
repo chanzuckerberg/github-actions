@@ -145,6 +145,11 @@ jobs:
         with:
           ref: ${{ steps.ref.outputs.headRef || 'refs/heads/main' }}
           token: ${{ steps.generate_token.outputs.token || github.token }}
+      # OIDC entry point: establishes CI-role credentials in the environment.
+      # The cache-role step below uses role-chaining to assume the cache role
+      # FROM these credentials (the cache role is not assumable via OIDC
+      # directly), so this step is required even though the CI role is
+      # re-assumed again after the provider-cache steps for the Terragrunt run.
       - name: Configure AWS credentials (CI base role)
         uses: aws-actions/configure-aws-credentials@v6
         with:
