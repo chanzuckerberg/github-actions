@@ -1,0 +1,8 @@
+name: Install AWS CLI
+description: >
+  Install the official AWS CLI self-contained Linux bundle using @actions/cache (restore/save)
+  and @actions/tool-cache (download/extract). Sets PLATFORM in the environment for legacy callers.
+
+runs:
+  using: node24
+  main: dist/index.js

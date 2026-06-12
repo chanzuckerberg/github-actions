@@ -1,0 +1,15 @@
+name: Release Terraform S3 state locks
+description: >
+  Find Terraform components under a stack root, read the S3 backend DynamoDB lock table
+  for each (no terraform plan — avoids taking new locks). Deletes any existing lock row
+  for that state, matching terraform force-unlock for this backend type.
+  Expects the runner to already be configured for DynamoDB access (e.g. tfe-si via aws-actions/configure-aws-credentials).
+
+inputs:
+  stack-root:
+    description: Path to the terragrunt stack (e.g. terraform/envs/dev-central)
+    required: true
+
+runs:
+  using: node24
+  main: dist/index.js
