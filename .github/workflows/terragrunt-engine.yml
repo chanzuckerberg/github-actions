@@ -66,11 +66,6 @@ on:
         default: |
           terraform/envs
           terraform/accounts
-      create_module_symlinks:
-        description: "Create per-component `modules` symlinks (fogg + Terragrunt 1.0 workaround). Off for non-fogg repos."
-        required: false
-        type: boolean
-        default: false
       use_ssh_agent:
         description: "Load ssh_private_key into an ssh-agent (for private module sources)."
         required: false
@@ -252,13 +247,17 @@ jobs:
       - name: Install AWS CLI
         uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@main
       - name: Create local module symlinks
-        if: ${{ inputs.create_module_symlinks }}
         run: |
           # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
           # local-only units, which breaks relative module paths like ../../../modules.
           # Creating a `modules` symlink at each component dir makes ../../../modules resolve
           # correctly from within the cache (cache/../../../modules -> component/modules -> terraform/modules).
+          # No-op for repos without a terraform/modules directory.
           MODULES_ABS="$(pwd)/terraform/modules"
+          if [ ! -d "$MODULES_ABS" ]; then
+            echo "No terraform/modules directory; skipping module symlinks."
+            exit 0
+          fi
           while IFS= read -r -d '' comp; do
             if [ ! -d "$comp/modules" ] || [ -L "$comp/modules" ]; then
               ln -sfn "$MODULES_ABS" "$comp/modules"
