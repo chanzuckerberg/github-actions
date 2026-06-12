@@ -144,12 +144,6 @@ jobs:
               [ -z "$p" ] && continue
               echo "  - added|modified: '${p}/**'"
             done <<< "$STACK_PATHS"
-            echo 'added_makefiles:'
-            while IFS= read -r p; do
-              p="$(echo "$p" | xargs)"
-              [ -z "$p" ] && continue
-              echo "  - added: '${p}/**/Makefile'"
-            done <<< "$STACK_PATHS"
             echo 'FILTERS_EOF'
           } >> "$GITHUB_OUTPUT"
       - uses: dorny/paths-filter@v4
@@ -164,7 +158,6 @@ jobs:
         if: ${{ inputs.all_stacks != true }}
         env:
           CHANGED_FILES: ${{ steps.filter.outputs.changed_files }}
-          ADDED_MAKEFILES: ${{ steps.filter.outputs.added_makefiles_files }}
           STACK_PATHS: ${{ inputs.stack_paths }}
         with:
           script: |
@@ -182,11 +175,7 @@ jobs:
               return null
             }
             const changedFiles = JSON.parse(process.env.CHANGED_FILES)
-            const addedMakefiles = JSON.parse(process.env.ADDED_MAKEFILES)
-            const addedStacks = new Set(addedMakefiles.map(stackFor).filter(Boolean))
-            const changedStacks = [...new Set(changedFiles.map(stackFor).filter(Boolean))]
-            // Skip brand-new stacks (Makefile just added); they are bootstrapped separately.
-            const allChanges = changedStacks.filter(d => !addedStacks.has(d))
+            const allChanges = [...new Set(changedFiles.map(stackFor).filter(Boolean))]
             console.log(`allChanges: ${JSON.stringify(allChanges)}`)
             core.setOutput("allChanges", allChanges)
       - name: Set output for allChanges
