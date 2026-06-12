@@ -67,7 +67,7 @@ on:
     # optional; the related step is skipped when its secret is absent:
     #   GH_ACTIONS_HELPER_APP_ID / GH_ACTIONS_HELPER_PK - GitHub App token for checkout
     #   TERRAGRUNT_SSH_PRIVATE_KEY                       - ssh-agent key for private modules
-    #   TGENV_<NAME>                                     - exported as env <NAME> for the run (provider creds)
+    #   TF_ENV_<NAME>                                    - exported as env <NAME> for the run (provider creds)
     #   TF_VAR_<name>                                    - exported as-is (Terraform input variable)
 
 permissions:
@@ -221,7 +221,7 @@ jobs:
           ALL_SECRETS: ${{ toJSON(secrets) }}
         run: |
           # Convention-based provider credentials, sourced from inherited secrets:
-          #   TGENV_<NAME>  -> exported as env <NAME> (e.g. TGENV_OKTA_API_TOKEN -> OKTA_API_TOKEN),
+          #   TF_ENV_<NAME> -> exported as env <NAME> (e.g. TF_ENV_OKTA_API_TOKEN -> OKTA_API_TOKEN),
           #                    for provider SDKs that read credentials from the environment.
           #   TF_VAR_<name> -> exported as-is, i.e. a Terraform input variable.
           # Each value is masked. No-op when no matching secrets are set.
@@ -231,11 +231,11 @@ jobs:
             const out = [];
             const add = (name, value) => {
               console.log("::add-mask::" + value);
-              out.push(`${name}<<__TGENV_EOF__\n${value}\n__TGENV_EOF__`);
+              out.push(`${name}<<__TF_ENV_EOF__\n${value}\n__TF_ENV_EOF__`);
             };
             for (const [k, v] of Object.entries(s)) {
               if (k === "github_token" || k === "GITHUB_TOKEN") continue;
-              if (k.startsWith("TGENV_")) add(k.slice("TGENV_".length), v);
+              if (k.startsWith("TF_ENV_")) add(k.slice("TF_ENV_".length), v);
               else if (k.startsWith("TF_VAR_")) add(k, v);
             }
             if (out.length) fs.appendFileSync(process.env.GITHUB_ENV, out.join("\n") + "\n");
