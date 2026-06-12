@@ -1,0 +1,22 @@
+name: Terragrunt provider cache (S3)
+description: >
+  Restore a shared Terraform provider directory from S3, or tar and upload it.
+  Uses a content fingerprint to skip upload when the tree matches the post-restore baseline.
+
+inputs:
+  operation:
+    description: restore (download + extract + baseline) or upload (maybe skip, then tar + cp)
+    required: true
+  provider-cache-bucket:
+    description: S3 bucket containing the shared provider cache tarball
+    required: true
+  provider-cache-key:
+    description: S3 object key for the provider cache tarball
+    required: true
+  cache-dir:
+    description: Absolute path to the Terragrunt provider cache directory on the runner
+    required: true
+
+runs:
+  using: node24
+  main: dist/index.js
