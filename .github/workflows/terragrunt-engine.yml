@@ -1,0 +1,325 @@
+name: Terragrunt Engine
+
+# Reusable Terragrunt plan/apply engine. Repos call this with a thin caller
+# workflow (see chanzuckerberg/argus-infra-stacks for the reference).
+#
+# This is the parity port of the argus-infra-stacks terragrunt.yml: same
+# plan/apply behavior, with the previously hardcoded values exposed as inputs.
+# Authority/locking and the merge gate are added in later PRs.
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        description: 'Passed to `terragrunt run --all -- <action>` (e.g. "plan -lock=false" or "apply").'
+        required: true
+        type: string
+      all_stacks:
+        description: "Run on every stack rather than only the changed ones."
+        required: false
+        type: boolean
+        default: false
+      runner:
+        description: "runs-on label for the jobs."
+        required: false
+        type: string
+        default: amd64
+      aws_region:
+        description: "AWS region for credential configuration."
+        required: false
+        type: string
+        default: us-west-2
+      ci_role_arn:
+        description: "IAM role the engine assumes to run Terragrunt (OIDC)."
+        required: true
+        type: string
+      cache_role_arn:
+        description: "IAM role (assumed via role chaining) for the provider-cache S3 bucket and lock cleanup."
+        required: true
+        type: string
+      provider_cache_bucket:
+        description: "S3 bucket holding the shared Terraform provider cache tarball."
+        required: true
+        type: string
+      provider_cache_key:
+        description: "S3 object key for the provider cache tarball."
+        required: true
+        type: string
+      terraform_version:
+        required: false
+        type: string
+        default: 1.9.8
+      terragrunt_version:
+        description: "Terragrunt release tag (gruntwork-io/terragrunt)."
+        required: false
+        type: string
+        default: v1.0.0
+      tf_envs_path:
+        description: "Base path for per-environment stacks."
+        required: false
+        type: string
+        default: terraform/envs
+      tf_accounts_path:
+        description: "Base path for per-account stacks."
+        required: false
+        type: string
+        default: terraform/accounts
+      create_module_symlinks:
+        description: "Create per-component `modules` symlinks (fogg + Terragrunt 1.0 workaround). Off for non-fogg repos."
+        required: false
+        type: boolean
+        default: false
+      use_ssh_agent:
+        description: "Load ssh_private_key into an ssh-agent (for private module sources)."
+        required: false
+        type: boolean
+        default: false
+      use_github_app_token:
+        description: "Generate a GitHub App token (gh_app_id + gh_app_private_key) for checkout."
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      ssh_private_key:
+        required: false
+      gh_app_id:
+        required: false
+      gh_app_private_key:
+        required: false
+      # Argus-specific Okta provider credentials. Declared optional here for
+      # parity; generalize to a provider-agnostic mechanism in a follow-up.
+      okta_base_url:
+        required: false
+      okta_org_name:
+        required: false
+      okta_api_token:
+        required: false
+
+permissions:
+  actions: write
+  contents: write
+  id-token: write
+  # Required for dorny/paths-filter listing PR files on pull_request (read-only).
+  pull-requests: read
+
+jobs:
+  find-changed-dirs:
+    runs-on: ${{ inputs.runner }}
+    outputs:
+      allChanges: ${{ steps.set-output.outputs.allChanges }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v6
+      - name: Enumerate all stacks
+        if: ${{ inputs.all_stacks == true }}
+        id: override
+        uses: actions/github-script@v9
+        env:
+          ENVS_PATH: ${{ inputs.tf_envs_path }}
+          ACCOUNTS_PATH: ${{ inputs.tf_accounts_path }}
+        with:
+          script: |
+            const fs = require("fs")
+            const read = (base) => fs.existsSync(base)
+              ? fs.readdirSync(base).map(f => `${base}/${f}`)
+              : []
+            const allChanges = [
+              ...new Set(read(process.env.ENVS_PATH)),
+              ...new Set(read(process.env.ACCOUNTS_PATH)),
+            ]
+            console.log(`allChanges: ${JSON.stringify(allChanges)}`)
+            core.setOutput("allChanges", allChanges)
+      - uses: dorny/paths-filter@v4
+        id: filter
+        if: ${{ inputs.all_stacks != true }}
+        with:
+          initial-fetch-depth: "1"
+          list-files: json
+          filters: |
+            changed:
+              - added|modified: '${{ inputs.tf_envs_path }}/**'
+              - added|modified: '${{ inputs.tf_accounts_path }}/**'
+            added_makefiles:
+              - added: '${{ inputs.tf_envs_path }}/**/Makefile'
+              - added: '${{ inputs.tf_accounts_path }}/**/Makefile'
+      - uses: actions/github-script@v9
+        id: changedDirs
+        if: ${{ inputs.all_stacks != true }}
+        env:
+          CHANGED_FILES: ${{ steps.filter.outputs.changed_files }}
+          ADDED_MAKEFILES: ${{ steps.filter.outputs.added_makefiles_files }}
+          ENVS_PATH: ${{ inputs.tf_envs_path }}
+          ACCOUNTS_PATH: ${{ inputs.tf_accounts_path }}
+        with:
+          script: |
+            // A stack is the first (baseDepth + 1) path segments under a base
+            // path. This matches the argus layout: env stacks aggregate their
+            // component subdirs, account stacks sit directly under the base.
+            const bases = [process.env.ENVS_PATH, process.env.ACCOUNTS_PATH]
+            const stackFor = (file) => {
+              for (const base of bases) {
+                if (file === base || file.startsWith(`${base}/`)) {
+                  const depth = base.split("/").length + 1
+                  return file.split("/").slice(0, depth).join("/")
+                }
+              }
+              return null
+            }
+            const changedFiles = JSON.parse(process.env.CHANGED_FILES)
+            const addedMakefiles = JSON.parse(process.env.ADDED_MAKEFILES)
+            const addedStacks = new Set(addedMakefiles.map(stackFor).filter(Boolean))
+            const changedStacks = [...new Set(changedFiles.map(stackFor).filter(Boolean))]
+            // Skip brand-new stacks (Makefile just added); they are bootstrapped separately.
+            const allChanges = changedStacks.filter(d => !addedStacks.has(d))
+            console.log(`allChanges: ${JSON.stringify(allChanges)}`)
+            core.setOutput("allChanges", allChanges)
+      - name: Set output for allChanges
+        id: set-output
+        run: |
+          if [[ "${{ inputs.all_stacks }}" == "true" ]]; then
+            echo 'allChanges=${{ steps.override.outputs.allChanges }}' >> "$GITHUB_OUTPUT";
+          else
+            echo 'allChanges=${{ steps.changedDirs.outputs.allChanges }}' >> "$GITHUB_OUTPUT";
+          fi
+
+  run-all:
+    runs-on: ${{ inputs.runner }}
+    needs: find-changed-dirs
+    strategy:
+      fail-fast: false
+      matrix:
+        tfmodule: ${{ fromJson(needs.find-changed-dirs.outputs.allChanges) }}
+    if: ${{ needs.find-changed-dirs.outputs.allChanges != '[]' }}
+    env:
+      TG_PROVIDER_CACHE: "1"
+      TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
+    steps:
+      - name: Github SSH known hosts
+        run: |
+          mkdir -p ~/.ssh/
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+      - name: Install SSH key
+        if: ${{ inputs.use_ssh_agent }}
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.ssh_private_key }}
+      - name: Generate token
+        id: generate_token
+        if: ${{ inputs.use_github_app_token }}
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.gh_app_id }}
+          private-key: ${{ secrets.gh_app_private_key }}
+      - name: Get Base Git Ref
+        id: ref
+        if: ${{ inputs.all_stacks != true }}
+        uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1.6.0
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.ref.outputs.headRef || 'refs/heads/main' }}
+          token: ${{ steps.generate_token.outputs.token || github.token }}
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngine
+      - name: Install Terragrunt
+        uses: jaxxstorm/action-install-gh-release@v3.0.0
+        with:
+          repo: gruntwork-io/terragrunt
+          tag: ${{ inputs.terragrunt_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          extension-matching: disable
+          rename-to: terragrunt
+          chmod: 0755
+          cache: enable
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+          terraform_version: ${{ inputs.terraform_version }}
+      - name: Install AWS CLI
+        uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@main
+      - name: Create local module symlinks
+        if: ${{ inputs.create_module_symlinks }}
+        run: |
+          # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
+          # local-only units, which breaks relative module paths like ../../../modules.
+          # Creating a `modules` symlink at each component dir makes ../../../modules resolve
+          # correctly from within the cache (cache/../../../modules -> component/modules -> terraform/modules).
+          MODULES_ABS="$(pwd)/terraform/modules"
+          while IFS= read -r -d '' comp; do
+            if [ ! -d "$comp/modules" ] || [ -L "$comp/modules" ]; then
+              ln -sfn "$MODULES_ABS" "$comp/modules"
+            fi
+          done < <(find "${{ matrix.tfmodule }}" -mindepth 1 -maxdepth 1 -type d -print0)
+      - name: Configure AWS credentials (cache role, role chaining)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.cache_role_arn }}
+          role-chaining: true
+          role-session-name: TerragruntEngineCache
+      - name: Restore Provider Cache from S3
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@main
+        with:
+          operation: restore
+          provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
+          provider-cache-key: ${{ inputs.provider_cache_key }}
+          cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngine
+          unset-current-credentials: true
+      - name: Terragrunt ${{ inputs.action }}
+        working-directory: ${{ matrix.tfmodule }}
+        env:
+          OKTA_BASE_URL: ${{ secrets.okta_base_url }}
+          OKTA_ORG_NAME: ${{ secrets.okta_org_name }}
+          OKTA_API_TOKEN: ${{ secrets.okta_api_token }}
+        id: tgaction
+        timeout-minutes: 90
+        run: |
+          # Pipefail ensures that a terragrunt failure is reported by the Github Action.
+          # Without it, the `tee` exit code always succeeds and the action looks green.
+          set -eo pipefail
+          echo "current_env=$(echo '${{ matrix.tfmodule }}' | cut -d '/' -f '3')" >> "$GITHUB_OUTPUT"
+          echo "action_trimmed=$(echo '${{ inputs.action }}' | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+
+          # '2> >(tee err.txt >&2)' captures stderr, writes it to err.txt AND pipes it back to stderr for the gha console.
+          terragrunt run --all --non-interactive -- ${{ inputs.action }} -no-color 2> >(tee err.txt >&2) | tee out.txt
+          cat out.txt && cat err.txt
+      - name: Store Outputs
+        uses: actions/upload-artifact@v7
+        id: store
+        if: (success() || failure())
+        with:
+          name: ${{ steps.tgaction.outputs.current_env }}-${{ steps.tgaction.outputs.action_trimmed }}-${{ github.sha }}
+          path: |
+            ${{ matrix.tfmodule }}/*.txt
+      - name: Configure AWS credentials (cache role, cleanup, role chaining)
+        if: always()
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.cache_role_arn }}
+          role-chaining: true
+          role-session-name: TerragruntEngineCleanup
+      - name: Upload Provider Cache to S3
+        if: always()
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@main
+        with:
+          operation: upload
+          provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
+          provider-cache-key: ${{ inputs.provider_cache_key }}
+          cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
+      - name: Release Terragrunt Locks (Cleanup)
+        if: always()
+        uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@main
+        with:
+          stack-root: ${{ matrix.tfmodule }}
