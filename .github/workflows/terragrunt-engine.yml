@@ -35,21 +35,15 @@ on:
         type: string
         default: arn:aws:iam::416703108729:role/argus-infra-stacks-ci
       cache_role_arn:
-        description: "IAM role (assumed via role chaining) for the provider-cache S3 bucket and lock cleanup."
-        required: true
+        description: "IAM role (assumed via role chaining) for the provider-cache S3 bucket and lock cleanup. Defaults to the fleet-wide argus tfe-si role."
+        required: false
         type: string
+        default: arn:aws:iam::533267185808:role/tfe-si
       provider_cache_bucket:
         description: "S3 bucket holding the shared Terraform provider cache tarball. Defaults to the fleet-wide argus bucket."
         required: false
         type: string
         default: core-platform-infra-prod-prod-argus-infra-stacks-state
-      provider_cache_key:
-        description: |
-          S3 object key for the provider cache tarball. Defaults to
-          terraform/<owner>/<repo>/provider-cache/providers.tar.gz, inferred from the calling repo.
-        required: false
-        type: string
-        default: ""
       terraform_version:
         required: false
         type: string
@@ -187,8 +181,8 @@ jobs:
     env:
       TG_PROVIDER_CACHE: "1"
       TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
-      # Default the cache key to terraform/<owner>/<repo>/... when the caller does not set one.
-      PROVIDER_CACHE_KEY: ${{ inputs.provider_cache_key != '' && inputs.provider_cache_key || format('terraform/{0}/provider-cache/providers.tar.gz', github.repository) }}
+      # Cache key is always derived from the calling repo: terraform/<owner>/<repo>/...
+      PROVIDER_CACHE_KEY: ${{ format('terraform/{0}/provider-cache/providers.tar.gz', github.repository) }}
     steps:
       - name: Github SSH known hosts
         run: |
