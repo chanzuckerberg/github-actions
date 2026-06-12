@@ -62,20 +62,12 @@ on:
         default: |
           terraform/envs
           terraform/accounts
-    secrets:
-      ssh_private_key:
-        required: false
-      gh_app_id:
-        required: false
-      gh_app_private_key:
-        required: false
-      provider_env:
-        description: >
-          Provider credentials as a newline-separated list of NAME=value pairs,
-          exported as environment variables for the Terragrunt run. Lets a caller
-          supply provider-specific secrets (e.g. Okta) without the engine knowing
-          about any specific provider.
-        required: false
+    # Secrets are passed with `secrets: inherit`. The engine reads these org-wide
+    # secrets by naming convention, so callers need no per-secret mapping. Each is
+    # optional; the related step is skipped when its secret is absent:
+    #   GH_ACTIONS_HELPER_APP_ID / GH_ACTIONS_HELPER_PK - GitHub App token for checkout
+    #   TERRAGRUNT_SSH_PRIVATE_KEY                       - ssh-agent key for private modules
+    #   TERRAGRUNT_PROVIDER_ENV                          - newline NAME=value provider credentials
 
 permissions:
   actions: write
@@ -120,9 +112,9 @@ jobs:
       - name: Detect optional credentials
         id: creds
         env:
-          SSH_KEY: ${{ secrets.ssh_private_key }}
-          APP_ID: ${{ secrets.gh_app_id }}
-          APP_KEY: ${{ secrets.gh_app_private_key }}
+          SSH_KEY: ${{ secrets.TERRAGRUNT_SSH_PRIVATE_KEY }}
+          APP_ID: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          APP_KEY: ${{ secrets.GH_ACTIONS_HELPER_PK }}
         run: |
           # Auto-enable the SSH agent and GitHub App token only when their
           # secrets are supplied, so callers do not need to toggle them.
@@ -140,14 +132,14 @@ jobs:
         if: ${{ steps.creds.outputs.ssh == 'true' }}
         uses: webfactory/ssh-agent@v0.10.0
         with:
-          ssh-private-key: ${{ secrets.ssh_private_key }}
+          ssh-private-key: ${{ secrets.TERRAGRUNT_SSH_PRIVATE_KEY }}
       - name: Generate token
         id: generate_token
         if: ${{ steps.creds.outputs.app == 'true' }}
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.gh_app_id }}
-          private-key: ${{ secrets.gh_app_private_key }}
+          client-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
       - name: Get Base Git Ref
         id: ref
         if: ${{ inputs.all_stacks != true }}
@@ -225,7 +217,7 @@ jobs:
           unset-current-credentials: true
       - name: Export provider env
         env:
-          PROVIDER_ENV: ${{ secrets.provider_env }}
+          PROVIDER_ENV: ${{ secrets.TERRAGRUNT_PROVIDER_ENV }}
         run: |
           # Export caller-supplied provider credentials (newline-separated NAME=value
           # pairs) as env for the Terragrunt run. No-op when none are supplied.
