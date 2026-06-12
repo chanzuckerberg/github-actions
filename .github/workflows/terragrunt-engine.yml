@@ -44,10 +44,12 @@ on:
         type: string
         default: core-platform-infra-prod-prod-argus-infra-stacks-state
       provider_cache_key:
-        description: "S3 object key for the provider cache tarball. Defaults to the fleet-wide argus key."
+        description: |
+          S3 object key for the provider cache tarball. Defaults to
+          terraform/<owner>/<repo>/provider-cache/providers.tar.gz, inferred from the calling repo.
         required: false
         type: string
-        default: terraform/argus-infra-stacks/provider-cache/providers.tar.gz
+        default: ""
       terraform_version:
         required: false
         type: string
@@ -82,14 +84,6 @@ on:
       gh_app_id:
         required: false
       gh_app_private_key:
-        required: false
-      # Argus-specific Okta provider credentials. Declared optional here for
-      # parity; generalize to a provider-agnostic mechanism in a follow-up.
-      okta_base_url:
-        required: false
-      okta_org_name:
-        required: false
-      okta_api_token:
         required: false
 
 permissions:
@@ -193,6 +187,8 @@ jobs:
     env:
       TG_PROVIDER_CACHE: "1"
       TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
+      # Default the cache key to terraform/<owner>/<repo>/... when the caller does not set one.
+      PROVIDER_CACHE_KEY: ${{ inputs.provider_cache_key != '' && inputs.provider_cache_key || format('terraform/{0}/provider-cache/providers.tar.gz', github.repository) }}
     steps:
       - name: Github SSH known hosts
         run: |
@@ -275,7 +271,7 @@ jobs:
         with:
           operation: restore
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
-          provider-cache-key: ${{ inputs.provider_cache_key }}
+          provider-cache-key: ${{ env.PROVIDER_CACHE_KEY }}
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
       - name: Configure AWS credentials (CI base role)
         uses: aws-actions/configure-aws-credentials@v6
@@ -286,10 +282,6 @@ jobs:
           unset-current-credentials: true
       - name: Terragrunt ${{ inputs.action }}
         working-directory: ${{ matrix.tfmodule }}
-        env:
-          OKTA_BASE_URL: ${{ secrets.okta_base_url }}
-          OKTA_ORG_NAME: ${{ secrets.okta_org_name }}
-          OKTA_API_TOKEN: ${{ secrets.okta_api_token }}
         id: tgaction
         timeout-minutes: 90
         run: |
@@ -324,7 +316,7 @@ jobs:
         with:
           operation: upload
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
-          provider-cache-key: ${{ inputs.provider_cache_key }}
+          provider-cache-key: ${{ env.PROVIDER_CACHE_KEY }}
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
       - name: Release Terragrunt Locks (Cleanup)
         if: always()
