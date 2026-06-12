@@ -8,18 +8,17 @@ exports.modules = {
 
 
 
-var sharedIniFileLoader = __webpack_require__(3434);
-var propertyProvider = __webpack_require__(8844);
+var config = __webpack_require__(7497);
 var client = __webpack_require__(9946);
 var credentialProviderLogin = __webpack_require__(2018);
 
 const resolveCredentialSource = (credentialSource, profileName, logger) => {
     const sourceProvidersMap = {
         EcsContainer: async (options) => {
-            const { fromHttp } = await __webpack_require__.e(/* import() */ 999).then(__webpack_require__.bind(__webpack_require__, 7999));
+            const { fromHttp } = await __webpack_require__.e(/* import() */ 999).then(__webpack_require__.t.bind(__webpack_require__, 7999, 19));
             const { fromContainerMetadata } = await __webpack_require__.e(/* import() */ 732).then(__webpack_require__.t.bind(__webpack_require__, 8732, 19));
             logger?.debug("@aws-sdk/credential-provider-ini - credential_source is EcsContainer");
-            return async () => propertyProvider.chain(fromHttp(options ?? {}), fromContainerMetadata(options))().then(setNamedProvider);
+            return async () => config.chain(fromHttp(options ?? {}), fromContainerMetadata(options))().then(setNamedProvider);
         },
         Ec2InstanceMetadata: async (options) => {
             logger?.debug("@aws-sdk/credential-provider-ini - credential_source is Ec2InstanceMetadata");
@@ -36,7 +35,7 @@ const resolveCredentialSource = (credentialSource, profileName, logger) => {
         return sourceProvidersMap[credentialSource];
     }
     else {
-        throw new propertyProvider.CredentialsProviderError(`Unsupported credential source in profile ${profileName}. Got ${credentialSource}, ` +
+        throw new config.CredentialsProviderError(`Unsupported credential source in profile ${profileName}. Got ${credentialSource}, ` +
             `expected EcsContainer or Ec2InstanceMetadata or Environment.`, { logger });
     }
 };
@@ -70,7 +69,7 @@ const resolveAssumeRoleCredentials = async (profileName, profiles, options, call
     const profileData = profiles[profileName];
     const { source_profile, region } = profileData;
     if (!options.roleAssumer) {
-        const { getDefaultRoleAssumer } = await __webpack_require__.e(/* import() */ 286).then(__webpack_require__.t.bind(__webpack_require__, 4286, 23));
+        const { getDefaultRoleAssumer } = await __webpack_require__.e(/* import() */ 286).then(__webpack_require__.t.bind(__webpack_require__, 4286, 19));
         options.roleAssumer = getDefaultRoleAssumer({
             ...options.clientConfig,
             credentialProviderLogger: options.logger,
@@ -82,8 +81,8 @@ const resolveAssumeRoleCredentials = async (profileName, profiles, options, call
         }, options.clientPlugins);
     }
     if (source_profile && source_profile in visitedProfiles) {
-        throw new propertyProvider.CredentialsProviderError(`Detected a cycle attempting to resolve credentials for profile` +
-            ` ${sharedIniFileLoader.getProfileName(options)}. Profiles visited: ` +
+        throw new config.CredentialsProviderError(`Detected a cycle attempting to resolve credentials for profile` +
+            ` ${config.getProfileName(options)}. Profiles visited: ` +
             Object.keys(visitedProfiles).join(", "), { logger: options.logger });
     }
     options.logger?.debug(`@aws-sdk/credential-provider-ini - finding credential resolver using ${source_profile ? `source_profile=[${source_profile}]` : `profile=[${profileName}]`}`);
@@ -106,7 +105,7 @@ const resolveAssumeRoleCredentials = async (profileName, profiles, options, call
         const { mfa_serial } = profileData;
         if (mfa_serial) {
             if (!options.mfaCodeProvider) {
-                throw new propertyProvider.CredentialsProviderError(`Profile ${profileName} requires multi-factor authentication, but no MFA code callback was provided.`, { logger: options.logger, tryNextLink: false });
+                throw new config.CredentialsProviderError(`Profile ${profileName} requires multi-factor authentication, but no MFA code callback was provided.`, { logger: options.logger, tryNextLink: false });
             }
             params.SerialNumber = mfa_serial;
             params.TokenCode = await options.mfaCodeProvider(mfa_serial);
@@ -184,7 +183,7 @@ const isWebIdentityProfile = (arg) => Boolean(arg) &&
     typeof arg.web_identity_token_file === "string" &&
     typeof arg.role_arn === "string" &&
     ["undefined", "string"].indexOf(typeof arg.role_session_name) > -1;
-const resolveWebIdentityCredentials = async (profile, options, callerClientConfig) => Promise.all(/* import() */[__webpack_require__.e(286), __webpack_require__.e(642)]).then(__webpack_require__.t.bind(__webpack_require__, 9642, 23)).then(({ fromTokenFile }) => fromTokenFile({
+const resolveWebIdentityCredentials = async (profile, options, callerClientConfig) => __webpack_require__.e(/* import() */ 642).then(__webpack_require__.t.bind(__webpack_require__, 9642, 23)).then(({ fromTokenFile }) => fromTokenFile({
     webIdentityTokenFile: profile.web_identity_token_file,
     roleArn: profile.role_arn,
     roleSessionName: profile.role_session_name,
@@ -218,13 +217,13 @@ const resolveProfileData = async (profileName, profiles, options, callerClientCo
     if (isLoginProfile(data)) {
         return resolveLoginCredentials(profileName, options, callerClientConfig);
     }
-    throw new propertyProvider.CredentialsProviderError(`Could not resolve credentials using profile: [${profileName}] in configuration/credentials file(s).`, { logger: options.logger });
+    throw new config.CredentialsProviderError(`Could not resolve credentials using profile: [${profileName}] in configuration/credentials file(s).`, { logger: options.logger });
 };
 
 const fromIni = (init = {}) => async ({ callerClientConfig } = {}) => {
     init.logger?.debug("@aws-sdk/credential-provider-ini - fromIni");
-    const profiles = await sharedIniFileLoader.parseKnownFiles(init);
-    return resolveProfileData(sharedIniFileLoader.getProfileName({
+    const profiles = await config.parseKnownFiles(init);
+    return resolveProfileData(config.getProfileName({
         profile: init.profile ?? callerClientConfig?.profile,
     }), profiles, init, callerClientConfig);
 };
@@ -240,9 +239,8 @@ exports.fromIni = fromIni;
 
 
 var client = __webpack_require__(9946);
-var propertyProvider = __webpack_require__(8844);
-var sharedIniFileLoader = __webpack_require__(3434);
-var protocolHttp = __webpack_require__(2082);
+var config = __webpack_require__(7497);
+var protocols = __webpack_require__(4108);
 var node_crypto = __webpack_require__(7598);
 var node_fs = __webpack_require__(3024);
 var node_os = __webpack_require__(8161);
@@ -261,7 +259,7 @@ class LoginCredentialsFetcher {
     async loadCredentials() {
         const token = await this.loadToken();
         if (!token) {
-            throw new propertyProvider.CredentialsProviderError(`Failed to load a token for session ${this.loginSession}, please re-authenticate using aws login`, { tryNextLink: false, logger: this.logger });
+            throw new config.CredentialsProviderError(`Failed to load a token for session ${this.loginSession}, please re-authenticate using aws login`, { tryNextLink: false, logger: this.logger });
         }
         const accessToken = token.accessToken;
         const now = Date.now();
@@ -285,7 +283,7 @@ class LoginCredentialsFetcher {
         return this.profileData.login_session;
     }
     async refresh(token) {
-        const { SigninClient, CreateOAuth2TokenCommand } = await __webpack_require__.e(/* import() */ 612).then(__webpack_require__.t.bind(__webpack_require__, 3612, 23));
+        const { SigninClient, CreateOAuth2TokenCommand } = await __webpack_require__.e(/* import() */ 612).then(__webpack_require__.t.bind(__webpack_require__, 3612, 19));
         const { logger, userAgentAppId } = this.callerClientConfig ?? {};
         const isH2 = (requestHandler) => {
             return requestHandler?.metadata?.handlerProtocol === "h2";
@@ -318,7 +316,7 @@ class LoginCredentialsFetcher {
             const { accessKeyId, secretAccessKey, sessionToken } = response.tokenOutput?.accessToken ?? {};
             const { refreshToken, expiresIn } = response.tokenOutput ?? {};
             if (!accessKeyId || !secretAccessKey || !sessionToken || !refreshToken) {
-                throw new propertyProvider.CredentialsProviderError("Token refresh response missing required fields", {
+                throw new config.CredentialsProviderError("Token refresh response missing required fields", {
                     logger: this.logger,
                     tryNextLink: false,
                 });
@@ -365,9 +363,9 @@ class LoginCredentialsFetcher {
                     default:
                         message = `Failed to refresh token: ${String(error)}. Please re-authenticate using \`aws login\``;
                 }
-                throw new propertyProvider.CredentialsProviderError(message, { logger: this.logger, tryNextLink: false });
+                throw new config.CredentialsProviderError(message, { logger: this.logger, tryNextLink: false });
             }
-            throw new propertyProvider.CredentialsProviderError(`Failed to refresh token: ${String(error)}. Please re-authenticate using aws login`, { logger: this.logger });
+            throw new config.CredentialsProviderError(`Failed to refresh token: ${String(error)}. Please re-authenticate using aws login`, { logger: this.logger });
         }
     }
     async loadToken() {
@@ -375,7 +373,7 @@ class LoginCredentialsFetcher {
         try {
             let tokenData;
             try {
-                tokenData = await sharedIniFileLoader.readFile(tokenFilePath, { ignoreCache: this.init?.ignoreCache });
+                tokenData = await config.readFile(tokenFilePath, { ignoreCache: this.init?.ignoreCache });
             }
             catch {
                 tokenData = await node_fs.promises.readFile(tokenFilePath, "utf8");
@@ -386,7 +384,7 @@ class LoginCredentialsFetcher {
                 missingFields.push("accountId");
             }
             if (missingFields.length > 0) {
-                throw new propertyProvider.CredentialsProviderError(`Token validation failed, missing fields: ${missingFields.join(", ")}`, {
+                throw new config.CredentialsProviderError(`Token validation failed, missing fields: ${missingFields.join(", ")}`, {
                     logger: this.logger,
                     tryNextLink: false,
                 });
@@ -394,7 +392,7 @@ class LoginCredentialsFetcher {
             return token;
         }
         catch (error) {
-            throw new propertyProvider.CredentialsProviderError(`Failed to load token from ${tokenFilePath}: ${String(error)}`, {
+            throw new config.CredentialsProviderError(`Failed to load token from ${tokenFilePath}: ${String(error)}`, {
                 logger: this.logger,
                 tryNextLink: false,
             });
@@ -439,7 +437,7 @@ class LoginCredentialsFetcher {
     }
     createDPoPInterceptor(middlewareStack) {
         middlewareStack.add((next) => async (args) => {
-            if (protocolHttp.HttpRequest.isInstance(args.request)) {
+            if (protocols.HttpRequest.isInstance(args.request)) {
                 const request = args.request;
                 const actualEndpoint = `${request.protocol}//${request.hostname}${request.port ? `:${request.port}` : ""}${request.path}`;
                 const dpop = await this.generateDpop(request.method, actualEndpoint);
@@ -499,20 +497,20 @@ class LoginCredentialsFetcher {
             return `${message}.${signatureB64}`;
         }
         catch (error) {
-            throw new propertyProvider.CredentialsProviderError(`Failed to generate Dpop proof: ${error instanceof Error ? error.message : String(error)}`, { logger: this.logger, tryNextLink: false });
+            throw new config.CredentialsProviderError(`Failed to generate Dpop proof: ${error instanceof Error ? error.message : String(error)}`, { logger: this.logger, tryNextLink: false });
         }
     }
 }
 
 const fromLoginCredentials = (init) => async ({ callerClientConfig } = {}) => {
     init?.logger?.debug?.("@aws-sdk/credential-providers - fromLoginCredentials");
-    const profiles = await sharedIniFileLoader.parseKnownFiles(init || {});
-    const profileName = sharedIniFileLoader.getProfileName({
+    const profiles = await config.parseKnownFiles(init || {});
+    const profileName = config.getProfileName({
         profile: init?.profile ?? callerClientConfig?.profile,
     });
     const profile = profiles[profileName];
     if (!profile?.login_session) {
-        throw new propertyProvider.CredentialsProviderError(`Profile ${profileName} does not contain login_session.`, {
+        throw new config.CredentialsProviderError(`Profile ${profileName} does not contain login_session.`, {
             tryNextLink: true,
             logger: init?.logger,
         });
