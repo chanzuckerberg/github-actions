@@ -92,6 +92,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
+      # TODO: pin the chanzuckerberg/github-actions action references in this
+      # workflow (find-changed-stacks, install-aws-cli, terragrunt-provider-cache,
+      # release-terraform-locks) to a released major tag once this is merged,
+      # instead of @main.
       - name: Resolve stacks
         id: stacks
         uses: chanzuckerberg/github-actions/.github/actions/find-changed-stacks@main
