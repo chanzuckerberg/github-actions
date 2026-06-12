@@ -62,16 +62,6 @@ on:
         default: |
           terraform/envs
           terraform/accounts
-      use_ssh_agent:
-        description: "Load ssh_private_key into an ssh-agent (for private module sources)."
-        required: false
-        type: boolean
-        default: false
-      use_github_app_token:
-        description: "Generate a GitHub App token (gh_app_id + gh_app_private_key) for checkout."
-        required: false
-        type: boolean
-        default: false
     secrets:
       ssh_private_key:
         required: false
@@ -123,6 +113,17 @@ jobs:
       # Cache key is always derived from the calling repo: terraform/<owner>/<repo>/...
       PROVIDER_CACHE_KEY: ${{ format('terraform/{0}/provider-cache/providers.tar.gz', github.repository) }}
     steps:
+      - name: Detect optional credentials
+        id: creds
+        env:
+          SSH_KEY: ${{ secrets.ssh_private_key }}
+          APP_ID: ${{ secrets.gh_app_id }}
+          APP_KEY: ${{ secrets.gh_app_private_key }}
+        run: |
+          # Auto-enable the SSH agent and GitHub App token only when their
+          # secrets are supplied, so callers do not need to toggle them.
+          if [ -n "$SSH_KEY" ]; then echo "ssh=true" >> "$GITHUB_OUTPUT"; else echo "ssh=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -n "$APP_ID" ] && [ -n "$APP_KEY" ]; then echo "app=true" >> "$GITHUB_OUTPUT"; else echo "app=false" >> "$GITHUB_OUTPUT"; fi
       - name: Github SSH known hosts
         run: |
           mkdir -p ~/.ssh/
@@ -132,13 +133,13 @@ jobs:
       # better mechanism (e.g. a GitHub App token scoped to read the module repos,
       # or a shared modules source) so onboarding does not need per-repo SSH keys.
       - name: Install SSH key
-        if: ${{ inputs.use_ssh_agent }}
+        if: ${{ steps.creds.outputs.ssh == 'true' }}
         uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.ssh_private_key }}
       - name: Generate token
         id: generate_token
-        if: ${{ inputs.use_github_app_token }}
+        if: ${{ steps.creds.outputs.app == 'true' }}
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ secrets.gh_app_id }}
