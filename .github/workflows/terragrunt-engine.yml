@@ -91,84 +91,16 @@ jobs:
   find-changed-dirs:
     runs-on: ${{ inputs.runner }}
     outputs:
-      allChanges: ${{ steps.set-output.outputs.allChanges }}
+      allChanges: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
-      - name: Enumerate all stacks
-        if: ${{ inputs.all_stacks == true }}
-        id: override
-        uses: actions/github-script@v9
-        env:
-          STACK_PATHS: ${{ inputs.stack_paths }}
+      - name: Resolve stacks
+        id: stacks
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-stacks@main
         with:
-          script: |
-            const fs = require("fs")
-            const bases = process.env.STACK_PATHS.split("\n").map(s => s.trim()).filter(Boolean)
-            const allChanges = []
-            for (const base of bases) {
-              if (!fs.existsSync(base)) continue
-              for (const f of fs.readdirSync(base)) allChanges.push(`${base}/${f}`)
-            }
-            const unique = [...new Set(allChanges)]
-            console.log(`allChanges: ${JSON.stringify(unique)}`)
-            core.setOutput("allChanges", unique)
-      - name: Build path filters
-        id: filters
-        if: ${{ inputs.all_stacks != true }}
-        env:
-          STACK_PATHS: ${{ inputs.stack_paths }}
-        run: |
-          {
-            echo 'value<<FILTERS_EOF'
-            echo 'changed:'
-            while IFS= read -r p; do
-              p="$(echo "$p" | xargs)"
-              [ -z "$p" ] && continue
-              echo "  - added|modified: '${p}/**'"
-            done <<< "$STACK_PATHS"
-            echo 'FILTERS_EOF'
-          } >> "$GITHUB_OUTPUT"
-      - uses: dorny/paths-filter@v4
-        id: filter
-        if: ${{ inputs.all_stacks != true }}
-        with:
-          initial-fetch-depth: "1"
-          list-files: json
-          filters: ${{ steps.filters.outputs.value }}
-      - uses: actions/github-script@v9
-        id: changedDirs
-        if: ${{ inputs.all_stacks != true }}
-        env:
-          CHANGED_FILES: ${{ steps.filter.outputs.changed_files }}
-          STACK_PATHS: ${{ inputs.stack_paths }}
-        with:
-          script: |
-            // A stack is the first (baseDepth + 1) path segments under a base
-            // path. For the fogg layout this means env stacks aggregate their
-            // component subdirs, while account stacks sit directly under the base.
-            const bases = process.env.STACK_PATHS.split("\n").map(s => s.trim()).filter(Boolean)
-            const stackFor = (file) => {
-              for (const base of bases) {
-                if (file === base || file.startsWith(`${base}/`)) {
-                  const depth = base.split("/").length + 1
-                  return file.split("/").slice(0, depth).join("/")
-                }
-              }
-              return null
-            }
-            const changedFiles = JSON.parse(process.env.CHANGED_FILES)
-            const allChanges = [...new Set(changedFiles.map(stackFor).filter(Boolean))]
-            console.log(`allChanges: ${JSON.stringify(allChanges)}`)
-            core.setOutput("allChanges", allChanges)
-      - name: Set output for allChanges
-        id: set-output
-        run: |
-          if [[ "${{ inputs.all_stacks }}" == "true" ]]; then
-            echo 'allChanges=${{ steps.override.outputs.allChanges }}' >> "$GITHUB_OUTPUT";
-          else
-            echo 'allChanges=${{ steps.changedDirs.outputs.allChanges }}' >> "$GITHUB_OUTPUT";
-          fi
+          stack_paths: ${{ inputs.stack_paths }}
+          all_stacks: ${{ inputs.all_stacks }}
 
   run-all:
     runs-on: ${{ inputs.runner }}
