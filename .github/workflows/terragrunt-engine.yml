@@ -57,16 +57,15 @@ on:
         required: false
         type: string
         default: v1.0.0
-      tf_envs_path:
-        description: "Base path for per-environment stacks."
+      stack_paths:
+        description: |
+          Newline-separated list of base paths to discover stacks under. A stack is one
+          directory below each base path. Defaults to the fogg layout.
         required: false
         type: string
-        default: terraform/envs
-      tf_accounts_path:
-        description: "Base path for per-account stacks."
-        required: false
-        type: string
-        default: terraform/accounts
+        default: |
+          terraform/envs
+          terraform/accounts
       create_module_symlinks:
         description: "Create per-component `modules` symlinks (fogg + Terragrunt 1.0 workaround). Off for non-fogg repos."
         required: false
@@ -118,47 +117,61 @@ jobs:
         id: override
         uses: actions/github-script@v9
         env:
-          ENVS_PATH: ${{ inputs.tf_envs_path }}
-          ACCOUNTS_PATH: ${{ inputs.tf_accounts_path }}
+          STACK_PATHS: ${{ inputs.stack_paths }}
         with:
           script: |
             const fs = require("fs")
-            const read = (base) => fs.existsSync(base)
-              ? fs.readdirSync(base).map(f => `${base}/${f}`)
-              : []
-            const allChanges = [
-              ...new Set(read(process.env.ENVS_PATH)),
-              ...new Set(read(process.env.ACCOUNTS_PATH)),
-            ]
-            console.log(`allChanges: ${JSON.stringify(allChanges)}`)
-            core.setOutput("allChanges", allChanges)
+            const bases = process.env.STACK_PATHS.split("\n").map(s => s.trim()).filter(Boolean)
+            const allChanges = []
+            for (const base of bases) {
+              if (!fs.existsSync(base)) continue
+              for (const f of fs.readdirSync(base)) allChanges.push(`${base}/${f}`)
+            }
+            const unique = [...new Set(allChanges)]
+            console.log(`allChanges: ${JSON.stringify(unique)}`)
+            core.setOutput("allChanges", unique)
+      - name: Build path filters
+        id: filters
+        if: ${{ inputs.all_stacks != true }}
+        env:
+          STACK_PATHS: ${{ inputs.stack_paths }}
+        run: |
+          {
+            echo 'value<<FILTERS_EOF'
+            echo 'changed:'
+            while IFS= read -r p; do
+              p="$(echo "$p" | xargs)"
+              [ -z "$p" ] && continue
+              echo "  - added|modified: '${p}/**'"
+            done <<< "$STACK_PATHS"
+            echo 'added_makefiles:'
+            while IFS= read -r p; do
+              p="$(echo "$p" | xargs)"
+              [ -z "$p" ] && continue
+              echo "  - added: '${p}/**/Makefile'"
+            done <<< "$STACK_PATHS"
+            echo 'FILTERS_EOF'
+          } >> "$GITHUB_OUTPUT"
       - uses: dorny/paths-filter@v4
         id: filter
         if: ${{ inputs.all_stacks != true }}
         with:
           initial-fetch-depth: "1"
           list-files: json
-          filters: |
-            changed:
-              - added|modified: '${{ inputs.tf_envs_path }}/**'
-              - added|modified: '${{ inputs.tf_accounts_path }}/**'
-            added_makefiles:
-              - added: '${{ inputs.tf_envs_path }}/**/Makefile'
-              - added: '${{ inputs.tf_accounts_path }}/**/Makefile'
+          filters: ${{ steps.filters.outputs.value }}
       - uses: actions/github-script@v9
         id: changedDirs
         if: ${{ inputs.all_stacks != true }}
         env:
           CHANGED_FILES: ${{ steps.filter.outputs.changed_files }}
           ADDED_MAKEFILES: ${{ steps.filter.outputs.added_makefiles_files }}
-          ENVS_PATH: ${{ inputs.tf_envs_path }}
-          ACCOUNTS_PATH: ${{ inputs.tf_accounts_path }}
+          STACK_PATHS: ${{ inputs.stack_paths }}
         with:
           script: |
             // A stack is the first (baseDepth + 1) path segments under a base
-            // path. This matches the argus layout: env stacks aggregate their
-            // component subdirs, account stacks sit directly under the base.
-            const bases = [process.env.ENVS_PATH, process.env.ACCOUNTS_PATH]
+            // path. For the fogg layout this means env stacks aggregate their
+            // component subdirs, while account stacks sit directly under the base.
+            const bases = process.env.STACK_PATHS.split("\n").map(s => s.trim()).filter(Boolean)
             const stackFor = (file) => {
               for (const base of bases) {
                 if (file === base || file.startsWith(`${base}/`)) {
@@ -291,7 +304,7 @@ jobs:
           # Pipefail ensures that a terragrunt failure is reported by the Github Action.
           # Without it, the `tee` exit code always succeeds and the action looks green.
           set -eo pipefail
-          echo "current_env=$(echo '${{ matrix.tfmodule }}' | cut -d '/' -f '3')" >> "$GITHUB_OUTPUT"
+          echo "current_env=$(basename '${{ matrix.tfmodule }}')" >> "$GITHUB_OUTPUT"
           echo "action_trimmed=$(echo '${{ inputs.action }}' | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
 
           # '2> >(tee err.txt >&2)' captures stderr, writes it to err.txt AND pipes it back to stderr for the gha console.
