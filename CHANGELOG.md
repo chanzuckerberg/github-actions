@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.22.1](https://github.com/chanzuckerberg/github-actions/compare/v6.22.0...v6.22.1) (2026-06-12)
+
+
+### Misc
+
+* make it easier to test argus ci changes ([#551](https://github.com/chanzuckerberg/github-actions/issues/551)) ([6db6e70](https://github.com/chanzuckerberg/github-actions/commit/6db6e703ac470f93474a4905937f893f733f3269))
+
 ## [6.22.0](https://github.com/chanzuckerberg/github-actions/compare/v6.21.0...v6.22.0) (2026-06-10)
 
 
