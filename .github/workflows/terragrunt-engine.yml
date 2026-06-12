@@ -79,6 +79,13 @@ on:
         required: false
       gh_app_private_key:
         required: false
+      provider_env:
+        description: >
+          Provider credentials as a newline-separated list of NAME=value pairs,
+          exported as environment variables for the Terragrunt run. Lets a caller
+          supply provider-specific secrets (e.g. Okta) without the engine knowing
+          about any specific provider.
+        required: false
 
 permissions:
   actions: write
@@ -211,6 +218,24 @@ jobs:
           role-to-assume: ${{ inputs.ci_role_arn }}
           role-session-name: TerragruntEngine
           unset-current-credentials: true
+      - name: Export provider env
+        env:
+          PROVIDER_ENV: ${{ secrets.provider_env }}
+        run: |
+          # Export caller-supplied provider credentials (newline-separated NAME=value
+          # pairs) as env for the Terragrunt run. No-op when none are supplied.
+          if [ -z "$PROVIDER_ENV" ]; then
+            echo "No provider_env supplied."
+            exit 0
+          fi
+          while IFS= read -r line; do
+            # Skip blank or whitespace-only lines.
+            [ -z "${line//[[:space:]]/}" ] && continue
+            name="$(echo -n "${line%%=*}" | tr -d '[:space:]')"
+            value="${line#*=}"
+            echo "::add-mask::${value}"
+            echo "${name}=${value}" >> "$GITHUB_ENV"
+          done <<< "$PROVIDER_ENV"
       - name: Terragrunt ${{ inputs.action }}
         working-directory: ${{ matrix.tfmodule }}
         id: tgaction
