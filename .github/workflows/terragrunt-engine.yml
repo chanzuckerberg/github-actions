@@ -30,9 +30,10 @@ on:
         type: string
         default: us-west-2
       ci_role_arn:
-        description: "IAM role the engine assumes to run Terragrunt (OIDC)."
-        required: true
+        description: "IAM role the engine assumes to run Terragrunt (OIDC). Defaults to the fleet-wide argus-infra-stacks CI role."
+        required: false
         type: string
+        default: arn:aws:iam::416703108729:role/argus-infra-stacks-ci
       cache_role_arn:
         description: "IAM role (assumed via role chaining) for the provider-cache S3 bucket and lock cleanup."
         required: true
