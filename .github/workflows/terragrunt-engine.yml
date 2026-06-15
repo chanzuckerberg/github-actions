@@ -108,10 +108,10 @@ jobs:
       # TODO: pin the chanzuckerberg/github-actions action references in this
       # workflow (find-changed-stacks, install-aws-cli, terragrunt-provider-cache,
       # release-terraform-locks) to a released major tag once this is merged,
-      # instead of @main.
+      # instead of @heathj/terragrunt-engine-workflow.
       - name: Resolve stacks
         id: stacks
-        uses: chanzuckerberg/github-actions/.github/actions/find-changed-stacks@main
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-stacks@heathj/terragrunt-engine-workflow
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
@@ -203,7 +203,7 @@ jobs:
           terraform_wrapper: false
           terraform_version: ${{ inputs.terraform_version }}
       - name: Install AWS CLI
-        uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@main
+        uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@heathj/terragrunt-engine-workflow
       - name: Create local module symlinks
         run: |
           # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
@@ -229,7 +229,7 @@ jobs:
           role-chaining: true
           role-session-name: TerragruntEngineCache
       - name: Restore Provider Cache from S3
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@main
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@heathj/terragrunt-engine-workflow
         with:
           operation: restore
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
@@ -298,7 +298,7 @@ jobs:
           role-session-name: TerragruntEngineCleanup
       - name: Upload Provider Cache to S3
         if: always()
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@main
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@heathj/terragrunt-engine-workflow
         with:
           operation: upload
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
@@ -306,6 +306,6 @@ jobs:
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
       - name: Release Terragrunt Locks (Cleanup)
         if: always()
-        uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@main
+        uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@heathj/terragrunt-engine-workflow
         with:
           stack-root: ${{ matrix.tfmodule }}
