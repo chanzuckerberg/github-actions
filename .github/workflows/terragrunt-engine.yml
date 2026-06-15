@@ -66,7 +66,9 @@ on:
     # secrets by naming convention, so callers need no per-secret mapping. Each is
     # optional; the related step is skipped when its secret is absent:
     #   GH_ACTIONS_HELPER_APP_ID / GH_ACTIONS_HELPER_PK - GitHub App token for checkout
-    #   TERRAGRUNT_SSH_PRIVATE_KEY                       - ssh-agent key for private modules
+    #   SHARED_INFRA_DEPLOY_KEY                          - ssh-agent key for private modules
+    #   EXTRA_DEPLOY_KEYS                                - additional ssh-agent keys (newline-separated PEMs)
+    #                                                      for repos needing more than the shared key
     #   TF_ENV_<NAME>                                    - exported as env <NAME> for the run (provider creds)
     #   TF_VAR_<name>                                    - exported as-is (Terraform input variable)
 
@@ -113,13 +115,14 @@ jobs:
       - name: Detect optional credentials
         id: creds
         env:
-          SSH_KEY: ${{ secrets.TERRAGRUNT_SSH_PRIVATE_KEY }}
+          SSH_KEY: ${{ secrets.SHARED_INFRA_DEPLOY_KEY }}
+          EXTRA_SSH_KEYS: ${{ secrets.EXTRA_DEPLOY_KEYS }}
           APP_ID: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           APP_KEY: ${{ secrets.GH_ACTIONS_HELPER_PK }}
         run: |
           # Auto-enable the SSH agent and GitHub App token only when their
           # secrets are supplied, so callers do not need to toggle them.
-          if [ -n "$SSH_KEY" ]; then echo "ssh=true" >> "$GITHUB_OUTPUT"; else echo "ssh=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -n "$SSH_KEY" ] || [ -n "$EXTRA_SSH_KEYS" ]; then echo "ssh=true" >> "$GITHUB_OUTPUT"; else echo "ssh=false" >> "$GITHUB_OUTPUT"; fi
           if [ -n "$APP_ID" ] && [ -n "$APP_KEY" ]; then echo "app=true" >> "$GITHUB_OUTPUT"; else echo "app=false" >> "$GITHUB_OUTPUT"; fi
       - name: Github SSH known hosts
         run: |
@@ -133,7 +136,12 @@ jobs:
         if: ${{ steps.creds.outputs.ssh == 'true' }}
         uses: webfactory/ssh-agent@v0.10.0
         with:
-          ssh-private-key: ${{ secrets.TERRAGRUNT_SSH_PRIVATE_KEY }}
+          # ssh-agent loads newline-separated keys: the shared deploy key plus
+          # any extra per-repo keys. An absent secret expands to an empty line,
+          # which the action ignores.
+          ssh-private-key: |
+            ${{ secrets.SHARED_INFRA_DEPLOY_KEY }}
+            ${{ secrets.EXTRA_DEPLOY_KEYS }}
       - name: Generate token
         id: generate_token
         if: ${{ steps.creds.outputs.app == 'true' }}
