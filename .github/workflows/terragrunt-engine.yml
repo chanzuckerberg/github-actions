@@ -202,8 +202,6 @@ jobs:
         with:
           terraform_wrapper: false
           terraform_version: ${{ inputs.terraform_version }}
-      - name: Install AWS CLI
-        uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@heathj/terragrunt-engine-workflow
       - name: Create local module symlinks
         run: |
           # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
