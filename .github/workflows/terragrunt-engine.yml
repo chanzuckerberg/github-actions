@@ -62,15 +62,33 @@ on:
         default: |
           terraform/envs
           terraform/accounts
-    # Secrets are passed with `secrets: inherit`. The engine reads these org-wide
-    # secrets by naming convention, so callers need no per-secret mapping. Each is
-    # optional; the related step is skipped when its secret is absent:
-    #   GH_ACTIONS_HELPER_APP_ID / GH_ACTIONS_HELPER_PK - GitHub App token for checkout
-    #   SHARED_INFRA_DEPLOY_KEY                          - ssh-agent key for private modules
-    #   EXTRA_DEPLOY_KEYS                                - additional ssh-agent keys (newline-separated PEMs)
-    #                                                      for repos needing more than the shared key
-    #   TF_ENV_<NAME>                                    - exported as env <NAME> for the run (provider creds)
-    #   TF_VAR_<name>                                    - exported as-is (Terraform input variable)
+    # Secrets can be supplied two ways:
+    #
+    # 1. `secrets: inherit` - the engine reads org-wide secrets by naming
+    #    convention, so callers need no per-secret mapping. The convention secrets
+    #    below are picked up automatically, and TF_ENV_<NAME> / TF_VAR_<name>
+    #    secrets are discovered by prefix:
+    #      TF_ENV_<NAME> - exported as env <NAME> for the run (provider creds)
+    #      TF_VAR_<name> - exported as-is (Terraform input variable)
+    #
+    # 2. Explicit `secrets:` - pass the declared secrets below by name. Use this to
+    #    map a differently-named repo secret into one of these inputs, e.g.
+    #    `EXTRA_DEPLOY_KEYS: ${{ secrets.CORE_PLATFORM_INFRA_DEPLOY_KEY }}`.
+    #
+    # Each declared secret is optional; the related step is skipped when absent.
+    secrets:
+      GH_ACTIONS_HELPER_APP_ID:
+        description: "GitHub App ID for the checkout token."
+        required: false
+      GH_ACTIONS_HELPER_PK:
+        description: "GitHub App private key for the checkout token."
+        required: false
+      SHARED_INFRA_DEPLOY_KEY:
+        description: "ssh-agent key for fetching private Terraform modules."
+        required: false
+      EXTRA_DEPLOY_KEYS:
+        description: "Additional ssh-agent keys (newline-separated PEMs) for repos needing more than the shared key."
+        required: false
 
 permissions:
   actions: write
