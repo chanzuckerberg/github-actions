@@ -14,8 +14,9 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': 0,
 
     // enforce that dependencies are listed in the ci/package.json (not in the package.json of the package itself)
-    "import/no-extraneous-dependencies": ["error", {"packageDir": ['./../../..', './']}],
+    "import/no-extraneous-dependencies": ["error", { "packageDir": ['./../../..', './'] }],
     '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
     'no-await-in-loop': 0,
+    'no-continue': 0,
   },
 };

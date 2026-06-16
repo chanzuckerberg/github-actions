@@ -3,11 +3,11 @@ import * as fs from 'fs';
 
 /**
  * Exports provider credentials from convention-based secrets.
- * 
+ *
  * Convention:
  *   TF_ENV_<NAME> -> exported as env <NAME> (e.g. TF_ENV_OKTA_API_TOKEN -> OKTA_API_TOKEN)
  *   TF_VAR_<name> -> exported as-is (Terraform input variable)
- * 
+ *
  * Each value is masked. Ignores github_token/GITHUB_TOKEN.
  */
 export async function run(): Promise<void> {
@@ -27,20 +27,20 @@ export async function run(): Promise<void> {
   const envVars: string[] = [];
   let exportedCount = 0;
 
-  for (const [key, value] of Object.entries(secrets)) {
+  Object.entries(secrets).forEach(([key, value]) => {
     if (key === 'github_token' || key === 'GITHUB_TOKEN') {
-      continue;
+      return;
     }
 
     let envName: string | null = null;
 
     if (key.startsWith('TF_ENV_')) {
       envName = key.slice('TF_ENV_'.length);
-      exportedCount++;
+      exportedCount += 1;
       core.info(`Exporting TF_ENV_${envName} as ${envName}`);
     } else if (key.startsWith('TF_VAR_')) {
       envName = key;
-      exportedCount++;
+      exportedCount += 1;
       core.info(`Exporting ${key} as Terraform variable`);
     }
 
@@ -48,14 +48,14 @@ export async function run(): Promise<void> {
       core.setSecret(value);
       envVars.push(`${envName}<<__TF_ENV_EOF__\n${value}\n__TF_ENV_EOF__`);
     }
-  }
+  });
 
   if (envVars.length > 0) {
     const githubEnv = process.env.GITHUB_ENV;
     if (!githubEnv) {
       throw new Error('GITHUB_ENV environment variable not set');
     }
-    fs.appendFileSync(githubEnv, envVars.join('\n') + '\n');
+    fs.appendFileSync(githubEnv, `${envVars.join('\n')}\n`);
     core.info(`Exported ${exportedCount} provider credential(s)`);
   } else {
     core.info('No TF_ENV_ or TF_VAR_ secrets found');
