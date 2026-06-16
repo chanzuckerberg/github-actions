@@ -168,7 +168,6 @@ jobs:
           private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
       - name: Get Base Git Ref
         id: ref
-        if: ${{ inputs.all_stacks != true }}
         uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1.6.0
       - name: Checkout repository
         uses: actions/checkout@v6
