@@ -45,6 +45,7 @@ on:
         type: string
         default: core-platform-infra-prod-prod-argus-infra-stacks-state
       terraform_version:
+        description: "Default Terraform version (used when stack has no .terraform-version file)."
         required: false
         type: string
         default: 1.9.8
@@ -175,11 +176,24 @@ jobs:
           rename-to: terragrunt
           chmod: 0755
           cache: enable
+      - name: Detect Terraform version
+        id: tf_version
+        working-directory: ${{ matrix.stack }}
+        run: |
+          # Check for .terraform-version file in the stack directory, otherwise use the input default
+          if [ -f .terraform-version ]; then
+            version=$(cat .terraform-version)
+            echo "Using Terraform version from .terraform-version: $version"
+          else
+            version="${{ inputs.terraform_version }}"
+            echo "Using default Terraform version from input: $version"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v4
         with:
           terraform_wrapper: false
-          terraform_version: ${{ inputs.terraform_version }}
+          terraform_version: ${{ steps.tf_version.outputs.version }}
       - name: Install AWS CLI
         uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@heathj/terragrunt-engine-workflow
       - name: Create local module symlinks
