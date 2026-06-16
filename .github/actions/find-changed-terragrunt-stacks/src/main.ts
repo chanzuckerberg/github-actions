@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
 import * as path from 'path';
+// eslint-disable-next-line import/no-relative-packages
 import { findChangedFiles } from '../../find-changed-files/src/findChangedFiles';
 import {
   enumerateStacks,
