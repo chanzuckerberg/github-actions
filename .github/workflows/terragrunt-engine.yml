@@ -240,7 +240,7 @@ jobs:
           role-to-assume: ${{ inputs.ci_role_arn }}
           role-session-name: TerragruntEngine
           unset-current-credentials: true
-      - name: Export provider env
+      - name: export terraform provider secrets
         uses: chanzuckerberg/github-actions/.github/actions/export-provider-env@heathj/terragrunt-engine-workflow
         env:
           ALL_SECRETS: ${{ toJSON(secrets) }}

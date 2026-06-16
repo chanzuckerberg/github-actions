@@ -1,4 +1,4 @@
-name: Export Provider Environment Variables
+name: Export terraform provider secrets
 description: >
   Exports provider credentials from convention-based secrets. TF_ENV_<NAME>
   secrets are exported as env <NAME> (for provider SDKs that read the
