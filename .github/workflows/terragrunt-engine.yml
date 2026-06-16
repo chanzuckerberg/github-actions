@@ -64,21 +64,20 @@ on:
           terraform/accounts
     # Callers should use `secrets: inherit` to pass org/repo secrets by convention.
     # The engine discovers secrets by naming convention:
-    #   - SHARED_INFRA_DEPLOY_KEY, EXTRA_DEPLOY_KEYS - ssh-agent keys
-    #   - GH_ACTIONS_HELPER_APP_ID, GH_ACTIONS_HELPER_PK - GitHub App token
+    #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required)
+    #   - EXTRA_DEPLOY_KEYS - additional per-repo deploy keys (optional)
+    #   - GH_ACTIONS_HELPER_APP_ID, GH_ACTIONS_HELPER_PK - org-wide GitHub App (required)
     #   - TF_ENV_<NAME> - exported as env <NAME> (provider SDK credentials)
     #   - TF_VAR_<name> - exported as-is (Terraform input variables)
-    #
-    # Each secret is optional; related steps are skipped when absent.
     secrets:
       GH_ACTIONS_HELPER_APP_ID:
-        description: "GitHub App ID for the checkout token."
+        description: "GitHub App ID for the checkout token (org-wide secret)."
         required: false
       GH_ACTIONS_HELPER_PK:
-        description: "GitHub App private key for the checkout token."
+        description: "GitHub App private key for the checkout token (org-wide secret)."
         required: false
       SHARED_INFRA_DEPLOY_KEY:
-        description: "ssh-agent key for fetching private Terraform modules."
+        description: "ssh-agent key for fetching private Terraform modules (org-wide secret)."
         required: false
       EXTRA_DEPLOY_KEYS:
         description: "Additional ssh-agent keys (newline-separated PEMs) for repos needing more than the shared key."
@@ -124,18 +123,6 @@ jobs:
       # Cache key is always derived from the calling repo: terraform/<owner>/<repo>/...
       PROVIDER_CACHE_KEY: ${{ format('terraform/{0}/provider-cache/providers.tar.gz', github.repository) }}
     steps:
-      - name: Detect optional credentials
-        id: creds
-        env:
-          SSH_KEY: ${{ secrets.SHARED_INFRA_DEPLOY_KEY }}
-          EXTRA_SSH_KEYS: ${{ secrets.EXTRA_DEPLOY_KEYS }}
-          APP_ID: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
-          APP_KEY: ${{ secrets.GH_ACTIONS_HELPER_PK }}
-        run: |
-          # Auto-enable the SSH agent and GitHub App token only when their
-          # secrets are supplied, so callers do not need to toggle them.
-          if [ -n "$SSH_KEY" ] || [ -n "$EXTRA_SSH_KEYS" ]; then echo "ssh=true" >> "$GITHUB_OUTPUT"; else echo "ssh=false" >> "$GITHUB_OUTPUT"; fi
-          if [ -n "$APP_ID" ] && [ -n "$APP_KEY" ]; then echo "app=true" >> "$GITHUB_OUTPUT"; else echo "app=false" >> "$GITHUB_OUTPUT"; fi
       - name: Github SSH known hosts
         run: |
           mkdir -p ~/.ssh/
@@ -145,7 +132,6 @@ jobs:
       # better mechanism (e.g. a GitHub App token scoped to read the module repos,
       # or a shared modules source) so onboarding does not need per-repo SSH keys.
       - name: Install SSH key
-        if: ${{ steps.creds.outputs.ssh == 'true' }}
         uses: webfactory/ssh-agent@v0.10.0
         with:
           # ssh-agent loads newline-separated keys: the shared deploy key plus
@@ -156,7 +142,6 @@ jobs:
             ${{ secrets.EXTRA_DEPLOY_KEYS }}
       - name: Generate token
         id: generate_token
-        if: ${{ steps.creds.outputs.app == 'true' }}
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
