@@ -45,7 +45,7 @@ on:
         type: string
         default: core-platform-infra-prod-prod-argus-infra-stacks-state
       terraform_version:
-        description: "Default Terraform version (used only as fallback if stack has no required_version)."
+        description: "Terraform version to install."
         required: false
         type: string
         default: 1.9.8
@@ -176,30 +176,11 @@ jobs:
           rename-to: terragrunt
           chmod: 0755
           cache: enable
-      - name: Detect Terraform version
-        id: tf_version
-        working-directory: ${{ matrix.stack }}
-        run: |
-          # Try to extract required_version from Terraform configuration
-          default_version="${{ inputs.terraform_version }}"
-          
-          # Search for required_version in all .tf files
-          if version=$(grep -r "required_version" . -A 1 | grep -oP '(?<=")\d+\.\d+\.\d+(?=")' | head -1); then
-            echo "Found Terraform version in configuration: $version"
-            echo "version=$version" >> "$GITHUB_OUTPUT"
-          elif version=$(grep -r "required_version" . | grep -oP '(?<=~>|>=|=)\s*\d+\.\d+' | head -1 | xargs); then
-            # Handle constraint like ">= 1.9" or "~> 1.9" - use latest patch of that version
-            echo "Found Terraform version constraint in configuration: $version"
-            echo "version=${version}.0" >> "$GITHUB_OUTPUT"
-          else
-            echo "No required_version found, using default: $default_version"
-            echo "version=$default_version" >> "$GITHUB_OUTPUT"
-          fi
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v4
         with:
           terraform_wrapper: false
-          terraform_version: ${{ steps.tf_version.outputs.version }}
+          terraform_version: ${{ inputs.terraform_version }}
       - name: Install AWS CLI
         uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@heathj/terragrunt-engine-workflow
       - name: Create local module symlinks
