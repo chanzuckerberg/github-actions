@@ -93,7 +93,7 @@ jobs:
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
     outputs:
-      allChanges: ${{ steps.stacks.outputs.stacks }}
+      stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
@@ -115,8 +115,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        stack: ${{ fromJson(needs.find-changed-stacks.outputs.allChanges) }}
-    if: ${{ needs.find-changed-stacks.outputs.allChanges != '[]' }}
+        stack: ${{ fromJson(needs.find-changed-stacks.outputs.stacks) }}
+    if: ${{ needs.find-changed-stacks.outputs.stacks != '[]' }}
     env:
       TG_PROVIDER_CACHE: "1"
       TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
