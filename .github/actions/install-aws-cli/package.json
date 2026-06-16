@@ -9,7 +9,7 @@
     "lint:fix": "eslint --fix src/"
   },
   "dependencies": {
-    "@actions/cache": "^6.0.0",
+    "@actions/cache": "^5.0.0",
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "@actions/io": "^1.1.3",
