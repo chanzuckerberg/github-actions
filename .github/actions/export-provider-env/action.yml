@@ -1,0 +1,10 @@
+name: Export Provider Environment Variables
+description: >
+  Exports provider credentials from convention-based secrets. TF_ENV_<NAME>
+  secrets are exported as env <NAME> (for provider SDKs that read the
+  environment), and TF_VAR_<name> secrets are exported as-is (Terraform input
+  variables). Each value is masked.
+
+runs:
+  using: node24
+  main: dist/index.js

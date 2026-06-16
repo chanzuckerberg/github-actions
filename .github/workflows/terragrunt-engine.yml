@@ -241,29 +241,9 @@ jobs:
           role-session-name: TerragruntEngine
           unset-current-credentials: true
       - name: Export provider env
+        uses: chanzuckerberg/github-actions/.github/actions/export-provider-env@heathj/terragrunt-engine-workflow
         env:
           ALL_SECRETS: ${{ toJSON(secrets) }}
-        run: |
-          # Convention-based provider credentials, sourced from inherited secrets:
-          #   TF_ENV_<NAME> -> exported as env <NAME> (e.g. TF_ENV_OKTA_API_TOKEN -> OKTA_API_TOKEN),
-          #                    for provider SDKs that read credentials from the environment.
-          #   TF_VAR_<name> -> exported as-is, i.e. a Terraform input variable.
-          # Each value is masked. No-op when no matching secrets are set.
-          node -e '
-            const s = JSON.parse(process.env.ALL_SECRETS || "{}");
-            const fs = require("fs");
-            const out = [];
-            const add = (name, value) => {
-              console.log("::add-mask::" + value);
-              out.push(`${name}<<__TF_ENV_EOF__\n${value}\n__TF_ENV_EOF__`);
-            };
-            for (const [k, v] of Object.entries(s)) {
-              if (k === "github_token" || k === "GITHUB_TOKEN") continue;
-              if (k.startsWith("TF_ENV_")) add(k.slice("TF_ENV_".length), v);
-              else if (k.startsWith("TF_VAR_")) add(k, v);
-            }
-            if (out.length) fs.appendFileSync(process.env.GITHUB_ENV, out.join("\n") + "\n");
-          '
       - name: Terragrunt ${{ inputs.action }}
         working-directory: ${{ matrix.stack }}
         id: tgaction

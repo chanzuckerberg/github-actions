@@ -1,0 +1,21 @@
+{
+  "name": "@chanzuckerberg/export-provider-env-action",
+  "version": "0.0.1",
+  "description": "Export provider credentials from convention-based secrets",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "ncc build src/main.ts --source-map --minify",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@vercel/ncc": "^0.38.4",
+    "typescript": "^5.7.2"
+  }
+}
