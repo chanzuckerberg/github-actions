@@ -94,7 +94,6 @@ permissions:
   actions: write
   contents: write
   id-token: write
-  # Required for dorny/paths-filter listing PR files on pull_request (read-only).
   pull-requests: read
 
 jobs:
@@ -106,12 +105,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       # TODO: pin the chanzuckerberg/github-actions action references in this
-      # workflow (find-changed-stacks, install-aws-cli, terragrunt-provider-cache,
-      # release-terraform-locks) to a released major tag once this is merged,
-      # instead of @heathj/terragrunt-engine-workflow.
+      # workflow (find-changed-terragrunt-stacks, install-aws-cli,
+      # terragrunt-provider-cache, release-terraform-locks) to a released major
+      # tag once this is merged, instead of @heathj/terragrunt-engine-workflow.
       - name: Resolve stacks
         id: stacks
-        uses: chanzuckerberg/github-actions/.github/actions/find-changed-stacks@heathj/terragrunt-engine-workflow
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-terragrunt-stacks@heathj/terragrunt-engine-workflow
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
@@ -122,7 +121,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tfmodule: ${{ fromJson(needs.find-changed-dirs.outputs.allChanges) }}
+        stack: ${{ fromJson(needs.find-changed-dirs.outputs.allChanges) }}
     if: ${{ needs.find-changed-dirs.outputs.allChanges != '[]' }}
     env:
       TG_PROVIDER_CACHE: "1"
@@ -202,6 +201,8 @@ jobs:
         with:
           terraform_wrapper: false
           terraform_version: ${{ inputs.terraform_version }}
+      - name: Install AWS CLI
+        uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@heathj/terragrunt-engine-workflow
       - name: Create local module symlinks
         run: |
           # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
@@ -218,7 +219,7 @@ jobs:
             if [ ! -d "$comp/modules" ] || [ -L "$comp/modules" ]; then
               ln -sfn "$MODULES_ABS" "$comp/modules"
             fi
-          done < <(find "${{ matrix.tfmodule }}" -mindepth 1 -maxdepth 1 -type d -print0)
+          done < <(find "${{ matrix.stack }}" -mindepth 1 -maxdepth 1 -type d -print0)
       - name: Configure AWS credentials (cache role, role chaining)
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -265,14 +266,14 @@ jobs:
             if (out.length) fs.appendFileSync(process.env.GITHUB_ENV, out.join("\n") + "\n");
           '
       - name: Terragrunt ${{ inputs.action }}
-        working-directory: ${{ matrix.tfmodule }}
+        working-directory: ${{ matrix.stack }}
         id: tgaction
         timeout-minutes: 90
         run: |
           # Pipefail ensures that a terragrunt failure is reported by the Github Action.
           # Without it, the `tee` exit code always succeeds and the action looks green.
           set -eo pipefail
-          echo "current_env=$(basename '${{ matrix.tfmodule }}')" >> "$GITHUB_OUTPUT"
+          echo "current_env=$(basename '${{ matrix.stack }}')" >> "$GITHUB_OUTPUT"
           echo "action_trimmed=$(echo '${{ inputs.action }}' | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
 
           # '2> >(tee err.txt >&2)' captures stderr, writes it to err.txt AND pipes it back to stderr for the gha console.
@@ -285,7 +286,7 @@ jobs:
         with:
           name: ${{ steps.tgaction.outputs.current_env }}-${{ steps.tgaction.outputs.action_trimmed }}-${{ github.sha }}
           path: |
-            ${{ matrix.tfmodule }}/*.txt
+            ${{ matrix.stack }}/*.txt
       - name: Configure AWS credentials (cache role, cleanup, role chaining)
         if: always()
         uses: aws-actions/configure-aws-credentials@v6
@@ -306,4 +307,4 @@ jobs:
         if: always()
         uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@heathj/terragrunt-engine-workflow
         with:
-          stack-root: ${{ matrix.tfmodule }}
+          stack-root: ${{ matrix.stack }}
