@@ -1,0 +1,289 @@
+name: Terragrunt Engine
+
+# Reusable Terragrunt plan/apply engine. Repos call this with a thin caller
+# workflow (see chanzuckerberg/argus-infra-stacks for the reference).
+#
+# This is the parity port of the argus-infra-stacks terragrunt.yml: same
+# plan/apply behavior, with the previously hardcoded values exposed as inputs.
+# Authority/locking and the merge gate are added in later PRs.
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        description: 'Passed to `terragrunt run --all -- <action>` (e.g. "plan -lock=false" or "apply").'
+        required: true
+        type: string
+      all_stacks:
+        description: "Run on every stack rather than only the changed ones."
+        required: false
+        type: boolean
+        default: false
+      runner:
+        description: "runs-on label for the jobs."
+        required: false
+        type: string
+        default: amd64
+      aws_region:
+        description: "AWS region for credential configuration."
+        required: false
+        type: string
+        default: us-west-2
+      ci_role_arn:
+        description: "IAM role the engine assumes to run Terragrunt (OIDC). Defaults to the fleet-wide argus-infra-stacks CI role."
+        required: false
+        type: string
+        default: arn:aws:iam::416703108729:role/argus-infra-stacks-ci
+      cache_role_arn:
+        description: "IAM role (assumed via role chaining) for the provider-cache S3 bucket and lock cleanup. Defaults to the fleet-wide argus tfe-si role."
+        required: false
+        type: string
+        default: arn:aws:iam::533267185808:role/tfe-si
+      provider_cache_bucket:
+        description: "S3 bucket holding the shared Terraform provider cache tarball. Defaults to the fleet-wide argus bucket."
+        required: false
+        type: string
+        default: core-platform-infra-prod-prod-argus-infra-stacks-state
+      terraform_version:
+        description: "Default Terraform version (used only as fallback if stack has no required_version)."
+        required: false
+        type: string
+        default: 1.9.8
+      terragrunt_version:
+        description: "Terragrunt release tag (gruntwork-io/terragrunt)."
+        required: false
+        type: string
+        default: v1.0.0
+      stack_paths:
+        description: |
+          Newline-separated list of base paths to discover stacks under. A stack is one
+          directory below each base path. Defaults to the fogg layout.
+        required: false
+        type: string
+        default: |
+          terraform/envs
+          terraform/accounts
+    # Callers should use `secrets: inherit` to pass org/repo secrets by convention.
+    # The engine discovers secrets by naming convention:
+    #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required)
+    #   - EXTRA_DEPLOY_KEYS - additional per-repo deploy keys (optional)
+    #   - GH_ACTIONS_HELPER_APP_ID, GH_ACTIONS_HELPER_PK - org-wide GitHub App (required)
+    #   - TF_ENV_<NAME> - exported as env <NAME> (provider SDK credentials)
+    #   - TF_VAR_<name> - exported as-is (Terraform input variables)
+    secrets:
+      GH_ACTIONS_HELPER_APP_ID:
+        description: "GitHub App ID for the checkout token (org-wide secret)."
+        required: false
+      GH_ACTIONS_HELPER_PK:
+        description: "GitHub App private key for the checkout token (org-wide secret)."
+        required: false
+      SHARED_INFRA_DEPLOY_KEY:
+        description: "ssh-agent key for fetching private Terraform modules (org-wide secret)."
+        required: false
+      EXTRA_DEPLOY_KEYS:
+        description: "Additional ssh-agent keys (newline-separated PEMs) for repos needing more than the shared key."
+        required: false
+
+permissions:
+  actions: write
+  contents: write
+  id-token: write
+  pull-requests: read
+
+jobs:
+  find-changed-stacks:
+    runs-on: ${{ inputs.runner }}
+    outputs:
+      stacks: ${{ steps.stacks.outputs.stacks }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      # TODO: pin the chanzuckerberg/github-actions action references in this
+      # workflow (find-changed-terragrunt-stacks, install-aws-cli,
+      # terragrunt-provider-cache, export-provider-env, release-terraform-locks)
+      # to a released major tag once this is merged, instead of
+      # @heathj/terragrunt-engine-workflow.
+      - name: Resolve stacks
+        id: stacks
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-terragrunt-stacks@heathj/terragrunt-engine-workflow
+        with:
+          stack_paths: ${{ inputs.stack_paths }}
+          all_stacks: ${{ inputs.all_stacks }}
+
+  run-all:
+    runs-on: ${{ inputs.runner }}
+    needs: find-changed-stacks
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJson(needs.find-changed-stacks.outputs.stacks) }}
+    if: ${{ needs.find-changed-stacks.outputs.stacks != '[]' }}
+    env:
+      TG_PROVIDER_CACHE: "1"
+      TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
+      # Cache key is always derived from the calling repo: terraform/<owner>/<repo>/...
+      PROVIDER_CACHE_KEY: ${{ format('terraform/{0}/provider-cache/providers.tar.gz', github.repository) }}
+    steps:
+      - name: Github SSH known hosts
+        run: |
+          mkdir -p ~/.ssh/
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+      # TODO: requiring a per-repo SSH deploy key just to fetch private Terraform
+      # modules is painful to set up for every adopting repo. Replace this with a
+      # better mechanism (e.g. a GitHub App token scoped to read the module repos,
+      # or a shared modules source) so onboarding does not need per-repo SSH keys.
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          # ssh-agent loads newline-separated keys: the shared deploy key plus
+          # any extra per-repo keys. An absent secret expands to an empty line,
+          # which the action ignores.
+          ssh-private-key: |
+            ${{ secrets.SHARED_INFRA_DEPLOY_KEY }}
+            ${{ secrets.EXTRA_DEPLOY_KEYS }}
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+      - name: Get Base Git Ref
+        id: ref
+        uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1.6.0
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.ref.outputs.headRef || 'refs/heads/main' }}
+          token: ${{ steps.generate_token.outputs.token || github.token }}
+      # OIDC entry point: establishes CI-role credentials in the environment.
+      # The cache-role step below uses role-chaining to assume the cache role
+      # FROM these credentials (the cache role is not assumable via OIDC
+      # directly), so this step is required even though the CI role is
+      # re-assumed again after the provider-cache steps for the Terragrunt run.
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngine
+      - name: Install Terragrunt
+        uses: jaxxstorm/action-install-gh-release@v3.0.0
+        with:
+          repo: gruntwork-io/terragrunt
+          tag: ${{ inputs.terragrunt_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          extension-matching: disable
+          rename-to: terragrunt
+          chmod: 0755
+          cache: enable
+      - name: Detect Terraform version
+        id: tf_version
+        working-directory: ${{ matrix.stack }}
+        run: |
+          # Try to extract required_version from Terraform configuration
+          default_version="${{ inputs.terraform_version }}"
+          
+          # Search for required_version in all .tf files
+          if version=$(grep -r "required_version" . -A 1 | grep -oP '(?<=")\d+\.\d+\.\d+(?=")' | head -1); then
+            echo "Found Terraform version in configuration: $version"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          elif version=$(grep -r "required_version" . | grep -oP '(?<=~>|>=|=)\s*\d+\.\d+' | head -1 | xargs); then
+            # Handle constraint like ">= 1.9" or "~> 1.9" - use latest patch of that version
+            echo "Found Terraform version constraint in configuration: $version"
+            echo "version=${version}.0" >> "$GITHUB_OUTPUT"
+          else
+            echo "No required_version found, using default: $default_version"
+            echo "version=$default_version" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+          terraform_version: ${{ steps.tf_version.outputs.version }}
+      - name: Install AWS CLI
+        uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@heathj/terragrunt-engine-workflow
+      - name: Create local module symlinks
+        run: |
+          # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
+          # local-only units, which breaks relative module paths like ../../../modules.
+          # Creating a `modules` symlink at each component dir makes ../../../modules resolve
+          # correctly from within the cache (cache/../../../modules -> component/modules -> terraform/modules).
+          # No-op for repos without a terraform/modules directory.
+          MODULES_ABS="$(pwd)/terraform/modules"
+          if [ ! -d "$MODULES_ABS" ]; then
+            echo "No terraform/modules directory; skipping module symlinks."
+            exit 0
+          fi
+          while IFS= read -r -d '' comp; do
+            if [ ! -d "$comp/modules" ] || [ -L "$comp/modules" ]; then
+              ln -sfn "$MODULES_ABS" "$comp/modules"
+            fi
+          done < <(find "${{ matrix.stack }}" -mindepth 1 -maxdepth 1 -type d -print0)
+      - name: Configure AWS credentials (cache role, role chaining)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.cache_role_arn }}
+          role-chaining: true
+          role-session-name: TerragruntEngineCache
+      - name: Restore Provider Cache from S3
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@heathj/terragrunt-engine-workflow
+        with:
+          operation: restore
+          provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
+          provider-cache-key: ${{ env.PROVIDER_CACHE_KEY }}
+          cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngine
+          unset-current-credentials: true
+      - name: Export provider env
+        uses: chanzuckerberg/github-actions/.github/actions/export-provider-env@heathj/terragrunt-engine-workflow
+        env:
+          ALL_SECRETS: ${{ toJSON(secrets) }}
+      - name: Terragrunt ${{ inputs.action }}
+        working-directory: ${{ matrix.stack }}
+        id: tgaction
+        timeout-minutes: 90
+        run: |
+          # Pipefail ensures that a terragrunt failure is reported by the Github Action.
+          # Without it, the `tee` exit code always succeeds and the action looks green.
+          set -eo pipefail
+          echo "current_env=$(basename '${{ matrix.stack }}')" >> "$GITHUB_OUTPUT"
+          echo "action_trimmed=$(echo '${{ inputs.action }}' | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+
+          # '2> >(tee err.txt >&2)' captures stderr, writes it to err.txt AND pipes it back to stderr for the gha console.
+          terragrunt run --all --non-interactive -- ${{ inputs.action }} -no-color 2> >(tee err.txt >&2) | tee out.txt
+          cat out.txt && cat err.txt
+      - name: Store Outputs
+        uses: actions/upload-artifact@v7
+        id: store
+        if: (success() || failure())
+        with:
+          name: ${{ steps.tgaction.outputs.current_env }}-${{ steps.tgaction.outputs.action_trimmed }}-${{ github.sha }}
+          path: |
+            ${{ matrix.stack }}/*.txt
+      - name: Configure AWS credentials (cache role, cleanup, role chaining)
+        if: always()
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.cache_role_arn }}
+          role-chaining: true
+          role-session-name: TerragruntEngineCleanup
+      - name: Upload Provider Cache to S3
+        if: always()
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@heathj/terragrunt-engine-workflow
+        with:
+          operation: upload
+          provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
+          provider-cache-key: ${{ env.PROVIDER_CACHE_KEY }}
+          cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
+      - name: Release Terragrunt Locks (Cleanup)
+        if: always()
+        uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@heathj/terragrunt-engine-workflow
+        with:
+          stack-root: ${{ matrix.stack }}
