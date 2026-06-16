@@ -90,7 +90,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  find-changed-dirs:
+  find-changed-stacks:
     runs-on: ${{ inputs.runner }}
     outputs:
       allChanges: ${{ steps.stacks.outputs.stacks }}
@@ -111,12 +111,12 @@ jobs:
 
   run-all:
     runs-on: ${{ inputs.runner }}
-    needs: find-changed-dirs
+    needs: find-changed-stacks
     strategy:
       fail-fast: false
       matrix:
-        stack: ${{ fromJson(needs.find-changed-dirs.outputs.allChanges) }}
-    if: ${{ needs.find-changed-dirs.outputs.allChanges != '[]' }}
+        stack: ${{ fromJson(needs.find-changed-stacks.outputs.allChanges) }}
+    if: ${{ needs.find-changed-stacks.outputs.allChanges != '[]' }}
     env:
       TG_PROVIDER_CACHE: "1"
       TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
