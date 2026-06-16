@@ -178,14 +178,28 @@ jobs:
           cache: enable
       - name: Detect Terraform version
         id: tf_version
-        uses: dflook/terraform-version@v2
-        with:
-          path: ${{ matrix.stack }}
+        working-directory: ${{ matrix.stack }}
+        run: |
+          # Try to extract required_version from Terraform configuration
+          default_version="${{ inputs.terraform_version }}"
+          
+          # Search for required_version in all .tf files
+          if version=$(grep -r "required_version" . -A 1 | grep -oP '(?<=")\d+\.\d+\.\d+(?=")' | head -1); then
+            echo "Found Terraform version in configuration: $version"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          elif version=$(grep -r "required_version" . | grep -oP '(?<=~>|>=|=)\s*\d+\.\d+' | head -1 | xargs); then
+            # Handle constraint like ">= 1.9" or "~> 1.9" - use latest patch of that version
+            echo "Found Terraform version constraint in configuration: $version"
+            echo "version=${version}.0" >> "$GITHUB_OUTPUT"
+          else
+            echo "No required_version found, using default: $default_version"
+            echo "version=$default_version" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v4
         with:
           terraform_wrapper: false
-          terraform_version: ${{ steps.tf_version.outputs.terraform }}
+          terraform_version: ${{ steps.tf_version.outputs.version }}
       - name: Install AWS CLI
         uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@heathj/terragrunt-engine-workflow
       - name: Create local module symlinks
