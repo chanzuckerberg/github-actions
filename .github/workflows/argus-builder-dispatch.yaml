@@ -190,6 +190,7 @@ jobs:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
           context: ${{ matrix.image.context }}
+          platform: ${{ matrix.image.platform }}
           build_args: ${{ matrix.image.build_args }}
           secret_files: ${{ steps.secrets.outputs.secret_files }}
           image_tag: ${{ matrix.image.tag }}
