@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.23.0](https://github.com/chanzuckerberg/github-actions/compare/v6.22.1...v6.23.0) (2026-06-17)
+
+
+### Features
+
+* pass platform from matrix to docker-build action ([#553](https://github.com/chanzuckerberg/github-actions/issues/553)) ([b0487bf](https://github.com/chanzuckerberg/github-actions/commit/b0487bf046cb51d60401de5bdd448bc075dca58b))
+
 ## [6.22.1](https://github.com/chanzuckerberg/github-actions/compare/v6.22.0...v6.22.1) (2026-06-12)
 
 
