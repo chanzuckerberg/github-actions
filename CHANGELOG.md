@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.24.0](https://github.com/chanzuckerberg/github-actions/compare/v6.23.0...v6.24.0) (2026-06-24)
+
+
+### Features
+
+* per-image runner_labels ternary in argus-builder-dispatch ([#555](https://github.com/chanzuckerberg/github-actions/issues/555)) ([5686a00](https://github.com/chanzuckerberg/github-actions/commit/5686a0041aa7d206218b74a43da744c3f406fcba))
+
 ## [6.23.0](https://github.com/chanzuckerberg/github-actions/compare/v6.22.1...v6.23.0) (2026-06-17)
 
 
