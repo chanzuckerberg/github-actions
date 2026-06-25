@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.26.2](https://github.com/chanzuckerberg/github-actions/compare/v6.26.1...v6.26.2) (2026-06-25)
+
+
+### BugFixes
+
+* **terragrunt-engine:** bump get-github-ref-names to v1 for workflow_dispatch support ([#564](https://github.com/chanzuckerberg/github-actions/issues/564)) ([abf5d09](https://github.com/chanzuckerberg/github-actions/commit/abf5d09e3960e2924e18893845fc82bbb2b6737b))
+
 ## [6.26.1](https://github.com/chanzuckerberg/github-actions/compare/v6.26.0...v6.26.1) (2026-06-25)
 
 
