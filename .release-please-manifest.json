@@ -2,7 +2,7 @@
 	".github/actions/happy-cleanup": "1.10.0",
 	".github/actions/conventional-commits": "1.9.0",
 	".github/actions/docker-build-push": "1.13.0",
-	".": "6.25.0",
+	".": "6.26.0",
 	".github/actions/install-happy": "1.8.0",
 	".github/actions/deploy-happy-stack": "2.3.0",
 	".github/actions/get-github-ref-names": "1.8.0",
@@ -16,5 +16,5 @@
 	".github/actions/install-aws-cli": "0.1.0",
 	".github/actions/release-terraform-locks": "0.1.0",
 	".github/actions/terragrunt-provider-cache": "0.1.0",
-	".github/workflows/terragrunt-engine": "0.0.1"
+	".github/workflows/terragrunt-engine": "0.1.0"
 }

@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.26.0](https://github.com/chanzuckerberg/github-actions/compare/v6.25.0...v6.26.0) (2026-06-25)
+
+
+### Features
+
+* **terragrunt-engine:** add versioned release-please package for engine workflow ([#558](https://github.com/chanzuckerberg/github-actions/issues/558)) ([4525f72](https://github.com/chanzuckerberg/github-actions/commit/4525f72807c5889d2b32a91d92e97f057ef75621))
+* **terragrunt-engine:** move workflow into versioned package directory ([#560](https://github.com/chanzuckerberg/github-actions/issues/560)) ([ffdfe61](https://github.com/chanzuckerberg/github-actions/commit/ffdfe61e678fcbef2efa3d0f282657100043a362))
+
+
+### BugFixes
+
+* **terragrunt-engine:** revert workflow subdirectory move, add package dir ([#561](https://github.com/chanzuckerberg/github-actions/issues/561)) ([c7f765f](https://github.com/chanzuckerberg/github-actions/commit/c7f765f14567814f6b42160d203616e9df81ce4f))
+
 ## [6.25.0](https://github.com/chanzuckerberg/github-actions/compare/v6.24.0...v6.25.0) (2026-06-25)
 
 
