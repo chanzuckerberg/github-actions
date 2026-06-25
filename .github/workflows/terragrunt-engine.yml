@@ -98,14 +98,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
-      # TODO: pin the chanzuckerberg/github-actions action references in this
-      # workflow (find-changed-terragrunt-stacks, install-aws-cli,
-      # terragrunt-provider-cache, export-terraform-provider-secrets, release-terraform-locks)
-      # to a released major tag once this is merged, instead of
-      # @heathj/terragrunt-port-actions.
       - name: Resolve stacks
         id: stacks
-        uses: chanzuckerberg/github-actions/.github/actions/find-changed-terragrunt-stacks@heathj/terragrunt-port-actions
+        uses: chanzuckerberg/github-actions/.github/actions/find-changed-terragrunt-stacks@find-changed-terragrunt-stacks-v0.1.0
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
@@ -182,7 +177,7 @@ jobs:
           terraform_wrapper: false
           terraform_version: ${{ inputs.terraform_version }}
       - name: Install AWS CLI
-        uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@heathj/terragrunt-port-actions
+        uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@install-aws-cli-v0.1.0
       - name: Create local module symlinks
         run: |
           # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
@@ -208,7 +203,7 @@ jobs:
           role-chaining: true
           role-session-name: TerragruntEngineCache
       - name: Restore Provider Cache from S3
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@heathj/terragrunt-port-actions
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@terragrunt-provider-cache-v0.1.0
         with:
           operation: restore
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
@@ -222,7 +217,7 @@ jobs:
           role-session-name: TerragruntEngine
           unset-current-credentials: true
       - name: export terraform provider secrets
-        uses: chanzuckerberg/github-actions/.github/actions/export-terraform-provider-secrets@heathj/terragrunt-port-actions
+        uses: chanzuckerberg/github-actions/.github/actions/export-terraform-provider-secrets@export-terraform-provider-secrets-v0.1.0
         env:
           ALL_SECRETS: ${{ toJSON(secrets) }}
       - name: Terragrunt ${{ inputs.action }}
@@ -257,7 +252,7 @@ jobs:
           role-session-name: TerragruntEngineCleanup
       - name: Upload Provider Cache to S3
         if: always()
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@heathj/terragrunt-port-actions
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@terragrunt-provider-cache-v0.1.0
         with:
           operation: upload
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
@@ -265,6 +260,6 @@ jobs:
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
       - name: Release Terragrunt Locks (Cleanup)
         if: always()
-        uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@heathj/terragrunt-port-actions
+        uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@release-terraform-locks-v0.1.0
         with:
           stack-root: ${{ matrix.stack }}
