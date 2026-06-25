@@ -159,7 +159,7 @@ jobs:
     name: "${{ inputs.app }}: build ${{ matrix.image.name }}${{ matrix.image.env && format(' ({0})', matrix.image.env) || '' }}"
     needs: resolve
     if: needs.resolve.result == 'success'
-    runs-on: ${{ fromJson(inputs.default_runner_labels) }}
+    runs-on: ${{ matrix.image.runner_labels != '' && fromJson(matrix.image.runner_labels) || fromJson(inputs.default_runner_labels) }}
     permissions:
       id-token: write
       contents: read
@@ -190,6 +190,7 @@ jobs:
           image_name: ${{ matrix.image.name }}
           dockerfile: ${{ matrix.image.dockerfile }}
           context: ${{ matrix.image.context }}
+          platform: ${{ matrix.image.platform }}
           build_args: ${{ matrix.image.build_args }}
           secret_files: ${{ steps.secrets.outputs.secret_files }}
           image_tag: ${{ matrix.image.tag }}
