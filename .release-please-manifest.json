@@ -15,5 +15,6 @@
 	".github/actions/find-changed-terragrunt-stacks": "0.1.0",
 	".github/actions/install-aws-cli": "0.1.0",
 	".github/actions/release-terraform-locks": "0.1.0",
-	".github/actions/terragrunt-provider-cache": "0.1.0"
+	".github/actions/terragrunt-provider-cache": "0.1.0",
+	".github/workflows/terragrunt-engine": "0.0.1"
 }
