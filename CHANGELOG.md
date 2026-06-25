@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.25.0](https://github.com/chanzuckerberg/github-actions/compare/v6.24.0...v6.25.0) (2026-06-25)
+
+
+### Features
+
+* port terragrunt CI composite actions from argus-infra-stacks ([#549](https://github.com/chanzuckerberg/github-actions/issues/549)) ([bd264fb](https://github.com/chanzuckerberg/github-actions/commit/bd264fb30c6b9b4557cfd53151262dee9c339175))
+
 ## [6.24.0](https://github.com/chanzuckerberg/github-actions/compare/v6.23.0...v6.24.0) (2026-06-24)
 
 
