@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.26.1](https://github.com/chanzuckerberg/github-actions/compare/v6.26.0...v6.26.1) (2026-06-25)
+
+
+### BugFixes
+
+* **terragrunt-engine:** pin action refs to released v0.1.0 tags ([#562](https://github.com/chanzuckerberg/github-actions/issues/562)) ([3086ff8](https://github.com/chanzuckerberg/github-actions/commit/3086ff87e127af09ba8b7fac47a1ec9600f120be))
+
 ## [6.26.0](https://github.com/chanzuckerberg/github-actions/compare/v6.25.0...v6.26.0) (2026-06-25)
 
 
