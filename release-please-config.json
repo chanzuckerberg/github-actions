@@ -72,6 +72,9 @@
 		".github/actions/terragrunt-provider-cache": {
 			"package-name": "terragrunt-provider-cache"
 		},
+		".github/workflows/terragrunt-engine": {
+			"package-name": "terragrunt-engine"
+		},
 		".": {}
 	}
 }
