@@ -59,7 +59,6 @@ on:
         default: |
           terraform/envs
           terraform/accounts
-      # --- Authority inputs ---
       claim_authority:
         description: >
           If true, claim authority for each stack before applying. Fails the job if
