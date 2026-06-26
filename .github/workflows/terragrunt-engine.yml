@@ -236,7 +236,7 @@ jobs:
         with:
           operation: read
           stacks: ${{ format('["{0}"]', matrix.stack) }}
-          action_verb: ${{ contains(inputs.action, 'apply') && 'apply' || 'plan' }}
+          skip_if_owned: ${{ contains(inputs.action, 'apply') }}
           authority_table: ${{ inputs.authority_table }}
           aws_region: ${{ inputs.aws_region }}
       - name: Claim stack authority

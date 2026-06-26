@@ -40,6 +40,7 @@ async function run(): Promise<void> {
       }
 
       const actionVerb = core.getInput('action_verb') || '';
+      const skipIfOwned = core.getInput('skip_if_owned') === 'true';
       const results: Record<string, unknown> = {};
       let proceed = true;
 
@@ -56,12 +57,12 @@ async function run(): Promise<void> {
         core.info(`${stack}: owned by ${ownerLabel}`);
 
         if (owner === 'pr' && rec?.prNumber) {
-          if (actionVerb === 'apply') {
+          if (skipIfOwned) {
             core.warning(`Skipping ${stack} — owned by PR #${rec.prNumber}`);
             proceed = false;
-          } else if (actionVerb) {
+          } else {
             core.warning(
-              `${stack} is owned by PR #${rec.prNumber} — this ${actionVerb} may be misleading`,
+              `${stack} is owned by PR #${rec.prNumber} — this operation may be misleading`,
             );
           }
         }
