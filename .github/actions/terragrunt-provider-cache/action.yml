@@ -22,12 +22,6 @@ inputs:
       create module symlinks in each component dir so relative module paths
       resolve correctly inside .terragrunt-cache.
     required: true
-  modules-dir:
-    description: >
-      Absolute or repo-relative path to the shared modules directory (e.g.
-      terraform/modules). Defaults to terraform/modules relative to the workspace root.
-    required: false
-    default: terraform/modules
 
 runs:
   using: node24

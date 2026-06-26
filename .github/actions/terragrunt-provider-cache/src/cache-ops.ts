@@ -130,12 +130,8 @@ export async function run(): Promise<void> {
     await restore(bucket, cacheKey, cacheDir);
 
     const stackRoot = core.getInput('stack-root', { required: true });
-    const modulesDir = core.getInput('modules-dir') || 'terraform/modules';
-    const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-    const absStack = path.resolve(workspace, stackRoot);
-    const absMods = path.isAbsolute(modulesDir)
-      ? modulesDir
-      : path.resolve(workspace, modulesDir);
+    const absStack = path.resolve(process.env.GITHUB_WORKSPACE!, stackRoot);
+    const absMods = path.resolve(process.env.GITHUB_WORKSPACE!, 'terraform/modules');
     createModuleSymlinks(absStack, absMods);
     return;
   }
