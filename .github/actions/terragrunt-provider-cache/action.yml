@@ -18,11 +18,10 @@ inputs:
     required: true
   stack-root:
     description: >
-      Path to the stack being run (e.g. terraform/envs/dev-central). When provided
-      during restore, creates module symlinks in each component dir under this stack
-      so relative module paths resolve correctly inside .terragrunt-cache.
-    required: false
-    default: ''
+      Path to the stack being run (e.g. terraform/envs/dev-central). Used to
+      create module symlinks in each component dir so relative module paths
+      resolve correctly inside .terragrunt-cache.
+    required: true
   modules-dir:
     description: >
       Absolute or repo-relative path to the shared modules directory (e.g.

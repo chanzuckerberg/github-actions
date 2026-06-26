@@ -129,16 +129,14 @@ export async function run(): Promise<void> {
   if (operation === 'restore') {
     await restore(bucket, cacheKey, cacheDir);
 
-    const stackRoot = core.getInput('stack-root');
+    const stackRoot = core.getInput('stack-root', { required: true });
     const modulesDir = core.getInput('modules-dir') || 'terraform/modules';
-    if (stackRoot) {
-      const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-      const absStack = path.resolve(workspace, stackRoot);
-      const absMods = path.isAbsolute(modulesDir)
-        ? modulesDir
-        : path.resolve(workspace, modulesDir);
-      createModuleSymlinks(absStack, absMods);
-    }
+    const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+    const absStack = path.resolve(workspace, stackRoot);
+    const absMods = path.isAbsolute(modulesDir)
+      ? modulesDir
+      : path.resolve(workspace, modulesDir);
+    createModuleSymlinks(absStack, absMods);
     return;
   }
   if (operation === 'upload') {
