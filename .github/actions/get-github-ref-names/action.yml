@@ -47,6 +47,11 @@ runs:
             // default branch for base.
             head = context.ref.replace(/^refs\/(heads|tags)\//, "");
             base = context.payload.repository.default_branch;
+          } else if (eventName === "schedule") {
+            // Scheduled runs have no branch context beyond the default branch,
+            // so point both refs at it.
+            head = context.payload.repository.default_branch;
+            base = context.payload.repository.default_branch;
           } else {
             core.setFailed(`EventName ${eventName} not supported`);
             return;
