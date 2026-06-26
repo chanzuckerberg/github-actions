@@ -2,10 +2,6 @@ name: Terragrunt Engine
 
 # Reusable Terragrunt plan/apply engine. Repos call this with a thin caller
 # workflow (see chanzuckerberg/argus-infra-stacks for the reference).
-#
-# This is the parity port of the argus-infra-stacks terragrunt.yml: same
-# plan/apply behavior, with the previously hardcoded values exposed as inputs.
-# Authority/locking and the merge gate are added in later PRs.
 
 on:
   workflow_call:
@@ -63,6 +59,33 @@ on:
         default: |
           terraform/envs
           terraform/accounts
+      claim_authority:
+        description: >
+          If true, claim authority for each stack before applying. Fails the job if
+          a stack is owned by another PR. Used by the /apply workflow.
+        required: false
+        type: boolean
+        default: false
+      skip_pr_owned:
+        description: >
+          Read each stack's authority record before running. For apply actions, skip
+          any stack owned by a PR (with a warning). For plan actions, annotate but
+          always proceed. Safe to leave on — plans are never blocked.
+        required: false
+        type: boolean
+        default: true
+      release_authority:
+        description: >
+          If true, release authority (reset to main) for each stack after a successful
+          apply. Used by the /apply workflow after all stacks succeed.
+        required: false
+        type: boolean
+        default: false
+      authority_table:
+        description: "DynamoDB table for authority records. Defaults to the shared fleet-wide state-lock table."
+        required: false
+        type: string
+        default: core-platform-infra-prod-prod-argus-infra-stacks-state-lock
     # Callers should use `secrets: inherit` to pass org/repo secrets by convention.
     # The engine discovers secrets by naming convention:
     #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required)
@@ -178,23 +201,6 @@ jobs:
           terraform_version: ${{ inputs.terraform_version }}
       - name: Install AWS CLI
         uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@install-aws-cli-v0
-      - name: Create local module symlinks
-        run: |
-          # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
-          # local-only units, which breaks relative module paths like ../../../modules.
-          # Creating a `modules` symlink at each component dir makes ../../../modules resolve
-          # correctly from within the cache (cache/../../../modules -> component/modules -> terraform/modules).
-          # No-op for repos without a terraform/modules directory.
-          MODULES_ABS="$(pwd)/terraform/modules"
-          if [ ! -d "$MODULES_ABS" ]; then
-            echo "No terraform/modules directory; skipping module symlinks."
-            exit 0
-          fi
-          while IFS= read -r -d '' comp; do
-            if [ ! -d "$comp/modules" ] || [ -L "$comp/modules" ]; then
-              ln -sfn "$MODULES_ABS" "$comp/modules"
-            fi
-          done < <(find "${{ matrix.stack }}" -mindepth 1 -maxdepth 1 -type d -print0)
       - name: Configure AWS credentials (cache role, role chaining)
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -209,6 +215,7 @@ jobs:
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
           provider-cache-key: ${{ env.PROVIDER_CACHE_KEY }}
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
+          stack-root: ${{ matrix.stack }}
       - name: Configure AWS credentials (CI base role)
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -216,13 +223,34 @@ jobs:
           role-to-assume: ${{ inputs.ci_role_arn }}
           role-session-name: TerragruntEngine
           unset-current-credentials: true
+      - name: Check stack authority
+        id: authority
+        if: ${{ inputs.skip_pr_owned }}
+        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@heathj/stack-authority
+        with:
+          operation: read
+          stacks: ${{ format('["{0}"]', matrix.stack) }}
+          skip_if_owned: ${{ contains(inputs.action, 'apply') }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
+      - name: Claim stack authority
+        id: authority_claim
+        if: ${{ inputs.claim_authority && (steps.authority.outputs.proceed != 'false') }}
+        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@heathj/stack-authority
+        with:
+          operation: claim
+          stacks: ${{ format('["{0}"]', matrix.stack) }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
       - name: export terraform provider secrets
+        if: ${{ steps.authority.outputs.proceed != 'false' }}
         uses: chanzuckerberg/github-actions/.github/actions/export-terraform-provider-secrets@export-terraform-provider-secrets-v0
         env:
           ALL_SECRETS: ${{ toJSON(secrets) }}
       - name: Terragrunt ${{ inputs.action }}
         working-directory: ${{ matrix.stack }}
         id: tgaction
+        if: ${{ steps.authority.outputs.proceed != 'false' }}
         timeout-minutes: 90
         run: |
           # Pipefail ensures that a terragrunt failure is reported by the Github Action.
@@ -234,10 +262,18 @@ jobs:
           # '2> >(tee err.txt >&2)' captures stderr, writes it to err.txt AND pipes it back to stderr for the gha console.
           terragrunt run --all --non-interactive -- ${{ inputs.action }} -no-color 2> >(tee err.txt >&2) | tee out.txt
           cat out.txt && cat err.txt
+      - name: Release stack authority
+        if: ${{ inputs.release_authority && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
+        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@heathj/stack-authority
+        with:
+          operation: release
+          stacks: ${{ format('["{0}"]', matrix.stack) }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
       - name: Store Outputs
         uses: actions/upload-artifact@v7
         id: store
-        if: (success() || failure())
+        if: ${{ (success() || failure()) && steps.authority.outputs.proceed != 'false' }}
         with:
           name: ${{ steps.tgaction.outputs.current_env }}-${{ steps.tgaction.outputs.action_trimmed }}-${{ github.sha }}
           path: |

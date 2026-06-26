@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import {
   escapeRegex,
+  findBackendFiles,
   findFoggTfFiles,
   parseBackendS3Block,
   parseBackendS3FromText,
@@ -53,10 +54,10 @@ terraform {
 });
 
 describe('parseBackendS3Block', () => {
-  it('reads fogg.tf from disk', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'fogg-parse-'));
+  it('reads backend from disk', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'backend-parse-'));
     try {
-      const f = path.join(root, 'fogg.tf');
+      const f = path.join(root, 'backend.tf');
       fs.writeFileSync(
         f,
         `
@@ -82,23 +83,103 @@ terraform {
   });
 });
 
-describe('findFoggTfFiles', () => {
-  it('finds fogg.tf recursively and skips cache dirs', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'fogg-find-'));
+describe('findBackendFiles', () => {
+  it('finds fogg.tf files (backwards compatible)', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'backend-find-'));
     try {
-      fs.mkdirSync(path.join(root, 'a', '.terragrunt-cache'), {
-        recursive: true,
-      });
+      fs.mkdirSync(path.join(root, 'a'), { recursive: true });
       fs.writeFileSync(
-        path.join(root, 'a', '.terragrunt-cache', 'fogg.tf'),
-        '',
+        path.join(root, 'a', 'fogg.tf'),
+        'terraform { backend "s3" { bucket = "b" dynamodb_table = "t" key = "k" region = "r" } }',
       );
-      fs.mkdirSync(path.join(root, 'b'), { recursive: true });
-      const want = path.join(root, 'b', 'fogg.tf');
-      fs.writeFileSync(want, '');
+
+      const found = [...findBackendFiles(root)];
+      expect(found).toEqual([path.join(root, 'a', 'fogg.tf')]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('finds backend.tf files (non-fogg repos)', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'backend-find-'));
+    try {
+      fs.mkdirSync(path.join(root, 'comp'), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, 'comp', 'backend.tf'),
+        'terraform { backend "s3" { bucket = "b" dynamodb_table = "t" key = "k" region = "r" } }',
+      );
+
+      const found = [...findBackendFiles(root)];
+      expect(found).toEqual([path.join(root, 'comp', 'backend.tf')]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('falls back to other .tf files when no fogg.tf or backend.tf', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'backend-find-'));
+    try {
+      fs.mkdirSync(path.join(root, 'comp'), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, 'comp', 'main.tf'),
+        'terraform { backend "s3" { bucket = "b" dynamodb_table = "t" key = "k" region = "r" } }',
+      );
+
+      const found = [...findBackendFiles(root)];
+      expect(found).toEqual([path.join(root, 'comp', 'main.tf')]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('skips .terragrunt-cache and .terraform dirs', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'backend-find-'));
+    try {
+      fs.mkdirSync(path.join(root, '.terragrunt-cache'), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, '.terragrunt-cache', 'fogg.tf'),
+        'terraform { backend "s3" { bucket = "b" dynamodb_table = "t" key = "k" region = "r" } }',
+      );
+      fs.mkdirSync(path.join(root, '.terraform'), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, '.terraform', 'backend.tf'),
+        'terraform { backend "s3" { bucket = "b" dynamodb_table = "t" key = "k" region = "r" } }',
+      );
+
+      const found = [...findBackendFiles(root)];
+      expect(found).toEqual([]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('prefers fogg.tf over other .tf files in same dir', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'backend-find-'));
+    try {
+      const backendBlock = 'terraform { backend "s3" { bucket = "b" dynamodb_table = "t" key = "k" region = "r" } }';
+      fs.writeFileSync(path.join(root, 'fogg.tf'), backendBlock);
+      fs.writeFileSync(path.join(root, 'main.tf'), backendBlock);
+
+      const found = [...findBackendFiles(root)];
+      expect(found).toEqual([path.join(root, 'fogg.tf')]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('findFoggTfFiles (deprecated alias)', () => {
+  it('delegates to findBackendFiles', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'fogg-alias-'));
+    try {
+      fs.mkdirSync(path.join(root, 'a'), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, 'a', 'fogg.tf'),
+        'terraform { backend "s3" { bucket = "b" dynamodb_table = "t" key = "k" region = "r" } }',
+      );
 
       const found = [...findFoggTfFiles(root)];
-      expect(found).toEqual([want]);
+      expect(found).toEqual([path.join(root, 'a', 'fogg.tf')]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }

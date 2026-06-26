@@ -1,0 +1,57 @@
+name: Stack Authority
+description: >
+  Manage per-stack authority records in the shared fleet-wide DynamoDB state-lock table.
+  Authority records track which ref (main or a PR) currently owns a stack, preventing
+  cross-PR clobbering and protecting the nightly drift job from reverting unmerged work.
+  Operations: read, claim, release, reap.
+  Expects the runner to have DynamoDB access configured. The reap operation also
+  requires a GITHUB_TOKEN env var with pull-request read permission.
+
+inputs:
+  operation:
+    description: 'One of: read, claim, release, reap'
+    required: true
+  stacks:
+    description: >
+      JSON array of stack paths (e.g. '["terraform/envs/dev-central"]').
+      Required for read, claim, release. Ignored for reap (reap scans by repo prefix).
+    required: false
+    default: '[]'
+  skip_if_owned:
+    description: >
+      If true, the read operation sets proceed=false when a stack is owned by
+      another PR (used for apply/drift). If false, it annotates but always
+      proceeds (used for plan).
+    required: false
+    default: 'false'
+  authority_table:
+    description: >
+      DynamoDB table name for authority records. Defaults to the shared fleet-wide
+      state-lock table.
+    required: false
+    default: core-platform-infra-prod-prod-argus-infra-stacks-state-lock
+  aws_region:
+    description: 'AWS region of the DynamoDB table.'
+    required: false
+    default: us-west-2
+  max_claim_age_days:
+    description: 'Claims older than this are reaped. Used by the reap operation.'
+    required: false
+    default: '30'
+
+outputs:
+  results:
+    description: >
+      JSON object mapping stack path to its authority result.
+      For read: { "stack": { "ownerRef": "main"|"pr", "prNumber": "", ... } }
+      For claim: { "stack": { "claimed": true|false, "blockedByPr": "" } }
+      For release: { "stack": { "released": true } }
+      For reap: { "reaped": ["stack1", ...], "skipped": ["stack2", ...] }
+  proceed:
+    description: >
+      For read with action_verb: "true" if the engine should proceed with the
+      action, "false" if all stacks should be skipped. Only set by the read operation.
+
+runs:
+  using: node24
+  main: dist/index.js
