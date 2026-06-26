@@ -3,10 +3,9 @@ name: Terragrunt Engine
 # Reusable Terragrunt plan/apply engine. Repos call this with a thin caller
 # workflow (see chanzuckerberg/argus-infra-stacks for the reference).
 #
-# Authority-aware by default: the engine reads per-stack authority records
-# before running. For applies, it skips stacks owned by another PR. For plans,
-# it annotates but always proceeds. Callers opt in to claim/release for the
-# apply-on-PR flow; plans and drift work correctly with no extra inputs.
+# Authority-aware by default: reads per-stack authority records and skips
+# PR-owned stacks for applies, or annotates for plans (based on the action
+# input). Callers set claim_authority and release_authority for the /apply flow.
 
 on:
   workflow_call:
