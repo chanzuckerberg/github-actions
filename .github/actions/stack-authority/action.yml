@@ -23,10 +23,6 @@ inputs:
       proceeds (used for plan).
     required: false
     default: 'false'
-  repo:
-    description: 'Override repository (owner/name). Inferred from GITHUB_REPOSITORY if absent.'
-    required: false
-    default: ''
   authority_table:
     description: >
       DynamoDB table name for authority records. Defaults to the shared fleet-wide

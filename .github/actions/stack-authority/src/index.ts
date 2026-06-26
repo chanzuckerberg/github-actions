@@ -22,7 +22,7 @@ function getPrNumber(): string {
 async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
   const stacksRaw = core.getInput('stacks') || '[]';
-  const repo = core.getInput('repo') || process.env.GITHUB_REPOSITORY!;
+  const repo = process.env.GITHUB_REPOSITORY!;
   const prNumber = getPrNumber();
   const prSha = process.env.GITHUB_SHA || '';
   const actor = process.env.GITHUB_ACTOR || '';
