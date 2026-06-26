@@ -39,7 +39,6 @@ async function run(): Promise<void> {
         throw new Error('stacks input is required for read operation');
       }
 
-      const actionVerb = core.getInput('action_verb') || '';
       const skipIfOwned = core.getInput('skip_if_owned') === 'true';
       const results: Record<string, unknown> = {};
       let proceed = true;

@@ -16,10 +16,6 @@ inputs:
       Required for read, claim, release. Ignored for reap (reap scans by repo prefix).
     required: false
     default: '[]'
-  action_verb:
-    description: 'Deprecated, use skip_if_owned instead.'
-    required: false
-    default: ''
   skip_if_owned:
     description: >
       If true, the read operation sets proceed=false when a stack is owned by
