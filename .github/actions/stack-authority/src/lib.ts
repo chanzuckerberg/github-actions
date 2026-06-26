@@ -31,6 +31,11 @@ export interface ReapResult {
   skipped: string[];
 }
 
+export interface ClaimScanItem {
+  stack: string;
+  record: AuthorityRecord;
+}
+
 const OWNER_MAIN = 'main';
 
 export function authorityKey(repo: string, stack: string): string {
@@ -139,29 +144,21 @@ export async function release(
 }
 
 /**
- * Reap stale authority claims for a repo. A claim is stale if it is older
- * than maxAgeDays. Returns the list of reaped and skipped stacks.
+ * Scan all active (non-main) authority claims for a repo without releasing
+ * anything. Uses a DynamoDB Scan on the authority/<repo>/ prefix.
  *
- * Uses a DynamoDB Scan with a FilterExpression on the authority/<repo>/ prefix.
  * The state-lock table's partition key is LockID (string) with no sort key,
  * so Query with begins_with is not possible. Since authority rows are sparse
  * (one per stack per repo, typically tens of rows in the whole table), a
  * filtered scan is acceptable.
- *
- * Note: the caller is responsible for checking whether the owning PR is
- * closed (via the GitHub API). This function only checks age. The index.ts
- * orchestrator handles the PR-closed check.
  */
-export async function reap(
+export async function scanClaims(
   client: DynamoDBClient,
   table: string,
   repo: string,
-  maxAgeDays: number,
-): Promise<ReapResult> {
+): Promise<ClaimScanItem[]> {
   const prefix = `authority/${repo}/`;
-  const cutoff = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000);
-  const reaped: string[] = [];
-  const skipped: string[] = [];
+  const items: ClaimScanItem[] = [];
 
   let lastKey: Record<string, { S: string }> | undefined;
   do {
@@ -169,42 +166,76 @@ export async function reap(
       new ScanCommand({
         TableName: table,
         FilterExpression: 'begins_with(LockID, :prefix)',
-        ExpressionAttributeValues: {
-          ':prefix': { S: prefix },
-        },
+        ExpressionAttributeValues: { ':prefix': { S: prefix } },
         ExclusiveStartKey: lastKey,
       }),
     );
 
     for (const item of out.Items ?? []) {
       const lockId = item.LockID?.S ?? '';
-      const stack = lockId.replace(prefix, '');
       const ownerRef = item.OwnerRef?.S ?? OWNER_MAIN;
-
       if (ownerRef === OWNER_MAIN) {
         continue;
       }
-
-      const claimedAt = item.ClaimedAt?.S;
-      if (!claimedAt) {
-        reaped.push(stack);
-        await release(client, table, repo, stack);
-        continue;
-      }
-
-      const claimDate = new Date(claimedAt);
-      if (claimDate < cutoff) {
-        reaped.push(stack);
-        await release(client, table, repo, stack);
-      } else {
-        skipped.push(stack);
-      }
+      const stack = lockId.replace(prefix, '');
+      items.push({ stack, record: itemToRecord(item) });
     }
 
-    lastKey = out.LastEvaluatedKey as
-      | Record<string, { S: string }>
-      | undefined;
+    lastKey = out.LastEvaluatedKey as Record<string, { S: string }> | undefined;
   } while (lastKey);
+
+  return items;
+}
+
+/**
+ * Release all authority claims held by a specific PR. Returns the list of
+ * stacks that were released.
+ */
+export async function releaseByPr(
+  client: DynamoDBClient,
+  table: string,
+  repo: string,
+  prNumber: string,
+): Promise<string[]> {
+  const claims = await scanClaims(client, table, repo);
+  const released: string[] = [];
+
+  for (const { stack, record } of claims) {
+    if (record.prNumber === prNumber) {
+      await release(client, table, repo, stack);
+      released.push(stack);
+    }
+  }
+
+  return released;
+}
+
+/**
+ * Reap stale authority claims for a repo by age. A claim is stale if it is
+ * older than maxAgeDays. Returns the list of reaped and skipped stacks.
+ *
+ * This only reaps by age. To also release claims from closed PRs, call
+ * scanClaims() in the orchestrator and check PR state via the GitHub API.
+ */
+export async function reap(
+  client: DynamoDBClient,
+  table: string,
+  repo: string,
+  maxAgeDays: number,
+): Promise<ReapResult> {
+  const cutoff = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000);
+  const reaped: string[] = [];
+  const skipped: string[] = [];
+
+  for (const { stack, record } of await scanClaims(client, table, repo)) {
+    const claimDate = record.claimedAt ? new Date(record.claimedAt) : null;
+    if (!claimDate || claimDate < cutoff) {
+      reaped.push(stack);
+      await release(client, table, repo, stack);
+    } else {
+      skipped.push(stack);
+    }
+  }
 
   return { reaped, skipped };
 }

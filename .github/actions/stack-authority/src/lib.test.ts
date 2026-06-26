@@ -13,6 +13,8 @@ import {
   claim,
   release,
   reap,
+  scanClaims,
+  releaseByPr,
 } from './lib';
 
 const ddbMock = mockClient(DynamoDBClient);
@@ -121,6 +123,83 @@ describe('release', () => {
     expect(calls[0].args[0].input.Key).toEqual({
       LockID: { S: 'authority/org/repo/stack' },
     });
+  });
+});
+
+describe('scanClaims', () => {
+  it('returns all PR-owned records and omits main-owned rows', async () => {
+    ddbMock.on(ScanCommand).resolves({
+      Items: [
+        {
+          LockID: { S: 'authority/org/repo/stack-a' },
+          OwnerRef: { S: 'pr' },
+          PrNumber: { S: '10' },
+          PrSha: { S: 'sha1' },
+          Actor: { S: 'user1' },
+          ClaimedAt: { S: '2026-01-01T00:00:00.000Z' },
+        },
+        {
+          LockID: { S: 'authority/org/repo/stack-b' },
+          OwnerRef: { S: 'main' },
+        },
+      ],
+    });
+    const client = new DynamoDBClient({});
+    const result = await scanClaims(client, 'table', 'org/repo');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].stack).toBe('stack-a');
+    expect(result[0].record.prNumber).toBe('10');
+  });
+
+  it('returns empty array when no claims exist', async () => {
+    ddbMock.on(ScanCommand).resolves({ Items: [] });
+    const client = new DynamoDBClient({});
+    const result = await scanClaims(client, 'table', 'org/repo');
+    expect(result).toHaveLength(0);
+  });
+});
+
+describe('releaseByPr', () => {
+  it('releases only stacks owned by the given PR', async () => {
+    ddbMock.on(ScanCommand).resolves({
+      Items: [
+        {
+          LockID: { S: 'authority/org/repo/stack-a' },
+          OwnerRef: { S: 'pr' },
+          PrNumber: { S: '42' },
+          PrSha: { S: 'sha1' },
+          Actor: { S: 'user1' },
+          ClaimedAt: { S: '2026-01-01T00:00:00.000Z' },
+        },
+        {
+          LockID: { S: 'authority/org/repo/stack-b' },
+          OwnerRef: { S: 'pr' },
+          PrNumber: { S: '99' },
+          PrSha: { S: 'sha2' },
+          Actor: { S: 'user2' },
+          ClaimedAt: { S: '2026-01-01T00:00:00.000Z' },
+        },
+      ],
+    });
+    ddbMock.on(DeleteItemCommand).resolves({});
+
+    const client = new DynamoDBClient({});
+    const released = await releaseByPr(client, 'table', 'org/repo', '42');
+
+    expect(released).toEqual(['stack-a']);
+    const deleteCalls = ddbMock.commandCalls(DeleteItemCommand);
+    expect(deleteCalls).toHaveLength(1);
+    expect(deleteCalls[0].args[0].input.Key).toEqual({
+      LockID: { S: 'authority/org/repo/stack-a' },
+    });
+  });
+
+  it('returns empty array when no stacks are owned by the PR', async () => {
+    ddbMock.on(ScanCommand).resolves({ Items: [] });
+    const client = new DynamoDBClient({});
+    const released = await releaseByPr(client, 'table', 'org/repo', '42');
+    expect(released).toEqual([]);
   });
 });
 
