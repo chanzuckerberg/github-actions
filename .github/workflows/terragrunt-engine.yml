@@ -207,23 +207,6 @@ jobs:
           terraform_version: ${{ inputs.terraform_version }}
       - name: Install AWS CLI
         uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@install-aws-cli-v0
-      - name: Create local module symlinks
-        run: |
-          # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
-          # local-only units, which breaks relative module paths like ../../../modules.
-          # Creating a `modules` symlink at each component dir makes ../../../modules resolve
-          # correctly from within the cache (cache/../../../modules -> component/modules -> terraform/modules).
-          # No-op for repos without a terraform/modules directory.
-          MODULES_ABS="$(pwd)/terraform/modules"
-          if [ ! -d "$MODULES_ABS" ]; then
-            echo "No terraform/modules directory; skipping module symlinks."
-            exit 0
-          fi
-          while IFS= read -r -d '' comp; do
-            if [ ! -d "$comp/modules" ] || [ -L "$comp/modules" ]; then
-              ln -sfn "$MODULES_ABS" "$comp/modules"
-            fi
-          done < <(find "${{ matrix.stack }}" -mindepth 1 -maxdepth 1 -type d -print0)
       - name: Configure AWS credentials (cache role, role chaining)
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -238,6 +221,7 @@ jobs:
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
           provider-cache-key: ${{ env.PROVIDER_CACHE_KEY }}
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
+          stack-root: ${{ matrix.stack }}
       - name: Configure AWS credentials (CI base role)
         uses: aws-actions/configure-aws-credentials@v6
         with:

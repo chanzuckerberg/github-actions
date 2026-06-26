@@ -5,7 +5,7 @@ description: >
 
 inputs:
   operation:
-    description: restore (download + extract + baseline) or upload (maybe skip, then tar + cp)
+    description: restore (download + extract + baseline + optional symlinks) or upload (maybe skip, then tar + cp)
     required: true
   provider-cache-bucket:
     description: S3 bucket containing the shared provider cache tarball
@@ -16,6 +16,19 @@ inputs:
   cache-dir:
     description: Absolute path to the Terragrunt provider cache directory on the runner
     required: true
+  stack-root:
+    description: >
+      Path to the stack being run (e.g. terraform/envs/dev-central). When provided
+      during restore, creates module symlinks in each component dir under this stack
+      so relative module paths resolve correctly inside .terragrunt-cache.
+    required: false
+    default: ''
+  modules-dir:
+    description: >
+      Absolute or repo-relative path to the shared modules directory (e.g.
+      terraform/modules). Defaults to terraform/modules relative to the workspace root.
+    required: false
+    default: terraform/modules
 
 runs:
   using: node24

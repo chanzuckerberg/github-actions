@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as fs from 'fs';
+import * as path from 'path';
 import { fingerprintCacheDir } from './fingerprint';
 
 export const baselinePath = '/tmp/tg-provider-cache.baseline.fp';
@@ -13,6 +14,36 @@ function removeBaseline(): void {
   } catch {
     /* absent is fine */
   }
+}
+
+/**
+ * Create symlinks to a shared modules directory in each component dir under a
+ * stack root. This works around Terragrunt 1.0.0's 2-level .terragrunt-cache
+ * which breaks relative module paths like ../../../modules.
+ */
+function createModuleSymlinks(stackRoot: string, modulesDir: string): void {
+  const modulesAbs = path.resolve(modulesDir);
+  if (!fs.existsSync(modulesAbs) || !fs.statSync(modulesAbs).isDirectory()) {
+    core.info(`No modules directory at ${modulesAbs}; skipping symlinks`);
+    return;
+  }
+
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(stackRoot, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  for (const ent of entries) {
+    if (!ent.isDirectory()) continue;
+    const compDir = path.join(stackRoot, ent.name);
+    const target = path.join(compDir, 'modules');
+    if (!fs.existsSync(target) || fs.lstatSync(target).isSymbolicLink()) {
+      fs.symlinkSync(modulesAbs, target, 'dir');
+    }
+  }
+  core.info(`Module symlinks created under ${stackRoot}`);
 }
 
 async function restore(
@@ -97,6 +128,17 @@ export async function run(): Promise<void> {
 
   if (operation === 'restore') {
     await restore(bucket, cacheKey, cacheDir);
+
+    const stackRoot = core.getInput('stack-root');
+    const modulesDir = core.getInput('modules-dir') || 'terraform/modules';
+    if (stackRoot) {
+      const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+      const absStack = path.resolve(workspace, stackRoot);
+      const absMods = path.isAbsolute(modulesDir)
+        ? modulesDir
+        : path.resolve(workspace, modulesDir);
+      createModuleSymlinks(absStack, absMods);
+    }
     return;
   }
   if (operation === 'upload') {
