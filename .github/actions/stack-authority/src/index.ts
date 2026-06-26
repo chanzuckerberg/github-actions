@@ -10,8 +10,7 @@ import {
 async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
   const stacksRaw = core.getInput('stacks') || '[]';
-  const repo =
-    core.getInput('repo') || process.env.GITHUB_REPOSITORY || '';
+  const repo = core.getInput('repo') || process.env.GITHUB_REPOSITORY || '';
   const prNumber = core.getInput('pr_number');
   const prSha = core.getInput('pr_sha');
   const actor = core.getInput('actor');
@@ -50,8 +49,7 @@ async function run(): Promise<void> {
         }
         const rec = result.record;
         const owner = rec?.ownerRef ?? 'main';
-        const ownerLabel =
-          owner === 'main' ? 'main' : `PR #${rec?.prNumber}`;
+        const ownerLabel = owner === 'main' ? 'main' : `PR #${rec?.prNumber}`;
         core.info(`${stack}: owned by ${ownerLabel}`);
       }
       core.setOutput('results', JSON.stringify(results));
