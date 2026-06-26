@@ -1,0 +1,61 @@
+name: Stack Authority
+description: >
+  Manage per-stack authority records in the shared fleet-wide DynamoDB state-lock table.
+  Authority records track which ref (main or a PR) currently owns a stack, preventing
+  cross-PR clobbering and protecting the nightly drift job from reverting unmerged work.
+  Operations: read, claim, release, reap.
+  Expects the runner to already have DynamoDB access configured.
+
+inputs:
+  operation:
+    description: 'One of: read, claim, release, reap'
+    required: true
+  stacks:
+    description: >
+      JSON array of stack paths (e.g. '["terraform/envs/dev-central"]').
+      Required for read, claim, release. Ignored for reap (reap scans by repo prefix).
+    required: false
+    default: '[]'
+  repo:
+    description: 'Repository (owner/name). Defaults to the current repo (github.repository).'
+    required: false
+    default: ''
+  pr_number:
+    description: 'PR number claiming or releasing authority. Required for claim and release.'
+    required: false
+    default: ''
+  pr_sha:
+    description: 'Head SHA of the PR (recorded on claim for audit).'
+    required: false
+    default: ''
+  actor:
+    description: 'GitHub actor performing the operation (recorded on claim for audit).'
+    required: false
+    default: ''
+  authority_table:
+    description: >
+      DynamoDB table name for authority records. Defaults to the shared fleet-wide
+      state-lock table.
+    required: false
+    default: core-platform-infra-prod-prod-argus-infra-stacks-state-lock
+  aws_region:
+    description: 'AWS region of the DynamoDB table.'
+    required: false
+    default: us-west-2
+  max_claim_age_days:
+    description: 'Claims older than this are reaped. Used by the reap operation.'
+    required: false
+    default: '30'
+
+outputs:
+  results:
+    description: >
+      JSON object mapping stack path to its authority result.
+      For read: { "stack": { "owner_ref": "main"|"pr", "pr_number": "", "pr_sha": "", ... } }
+      For claim: { "stack": { "claimed": true|false, "blocked_by_pr": "" } }
+      For release: { "stack": { "released": true } }
+      For reap: { "reaped": ["stack1", ...], "skipped": ["stack2", ...] }
+
+runs:
+  using: node24
+  main: dist/index.js

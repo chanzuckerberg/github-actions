@@ -7,7 +7,7 @@ import {
 import * as fs from 'fs';
 import * as path from 'path';
 import {
-  findFoggTfFiles,
+  findBackendFiles,
   parseBackendS3Block,
 } from './lib';
 
@@ -25,13 +25,13 @@ async function run(): Promise<void> {
   }
 
   let foundAny = false;
-  for (const foggPath of findFoggTfFiles(stackRoot)) {
-    const backend = parseBackendS3Block(foggPath);
+  for (const backendPath of findBackendFiles(stackRoot)) {
+    const backend = parseBackendS3Block(backendPath);
     if (!backend) {
       continue;
     }
     foundAny = true;
-    const componentDir = path.dirname(foggPath);
+    const componentDir = path.dirname(backendPath);
     const lockId = `${backend.bucket}/${backend.key}`;
 
     core.info(`Checking DynamoDB lock for ${componentDir} (LockID=${lockId})`);
@@ -85,7 +85,7 @@ async function run(): Promise<void> {
 
   if (!foundAny) {
     core.info(
-      `No fogg.tf with a parsable backend "s3" block under ${stackRoot}; nothing to check`,
+      `No .tf file with a parsable backend "s3" block under ${stackRoot}; nothing to check`,
     );
   }
   core.info('Lock cleanup (DynamoDB) completed');

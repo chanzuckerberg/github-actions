@@ -1,0 +1,18 @@
+{
+  "name": "@chanzuckerberg/stack-authority-action",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "test": "jest --config=../../../jest.config.js --rootDir=./",
+    "build": "ncc build src/index.ts --source-map --minify",
+    "lint": "eslint --max-warnings=0 src/",
+    "lint:fix": "eslint --fix src/"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@aws-sdk/client-dynamodb": "^3.700.0"
+  },
+  "devDependencies": {
+    "aws-sdk-client-mock": "^4.1.0"
+  }
+}
