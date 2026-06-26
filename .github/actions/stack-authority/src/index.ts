@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import * as fs from 'fs';
 import * as github from '@actions/github';
 import {
   makeClient,
@@ -9,22 +10,27 @@ import {
   scanClaims,
 } from './lib';
 
+function getPrNumber(): string {
+  const eventPath = process.env.GITHUB_EVENT_PATH;
+  if (!eventPath) return '';
+  try {
+    const event = JSON.parse(fs.readFileSync(eventPath, 'utf-8'));
+    return String(event.pull_request?.number ?? event.issue?.number ?? '');
+  } catch {
+    return '';
+  }
+}
+
 async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
   const stacksRaw = core.getInput('stacks') || '[]';
-  const repo = core.getInput('repo') || process.env.GITHUB_REPOSITORY || '';
-  const prNumber = core.getInput('pr_number');
-  const prSha = core.getInput('pr_sha');
-  const actor = core.getInput('actor');
+  const repo = process.env.GITHUB_REPOSITORY!;
+  const prNumber = getPrNumber();
+  const prSha = process.env.GITHUB_SHA || '';
+  const actor = process.env.GITHUB_ACTOR || '';
   const table = core.getInput('authority_table', { required: true });
   const region = core.getInput('aws_region') || 'us-west-2';
   const maxAgeDays = parseInt(core.getInput('max_claim_age_days') || '30', 10);
-
-  if (!repo) {
-    throw new Error(
-      'repo input is required (or GITHUB_REPOSITORY must be set)',
-    );
-  }
 
   const client = makeClient(region);
   let stacks: string[];
@@ -41,7 +47,10 @@ async function run(): Promise<void> {
         throw new Error('stacks input is required for read operation');
       }
 
+      const skipIfOwned = core.getInput('skip_if_owned') === 'true';
       const results: Record<string, unknown> = {};
+      let proceed = true;
+
       for (const stack of stacks) {
         const result = await read(client, table, repo, stack);
         const rec = result.record;
@@ -57,8 +66,21 @@ async function run(): Promise<void> {
         const owner = rec?.ownerRef ?? 'main';
         const ownerLabel = owner === 'main' ? 'main' : `PR #${rec?.prNumber}`;
         core.info(`${stack}: owned by ${ownerLabel}`);
+
+        if (owner === 'pr' && rec?.prNumber) {
+          if (skipIfOwned) {
+            core.warning(`Skipping ${stack} — owned by PR #${rec.prNumber}`);
+            proceed = false;
+          } else {
+            core.warning(
+              `${stack} is owned by PR #${rec.prNumber} — this operation may be misleading`,
+            );
+          }
+        }
       }
+
       core.setOutput('results', JSON.stringify(results));
+      core.setOutput('proceed', String(proceed));
       break;
     }
 
