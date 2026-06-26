@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
+    "@actions/github": "^8.0.1",
     "@aws-sdk/client-dynamodb": "^3.700.0"
   },
   "devDependencies": {

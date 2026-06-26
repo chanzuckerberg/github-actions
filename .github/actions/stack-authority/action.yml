@@ -4,7 +4,8 @@ description: >
   Authority records track which ref (main or a PR) currently owns a stack, preventing
   cross-PR clobbering and protecting the nightly drift job from reverting unmerged work.
   Operations: read, claim, release, reap.
-  Expects the runner to already have DynamoDB access configured.
+  Expects the runner to have DynamoDB access configured. The reap operation also
+  requires a GITHUB_TOKEN env var with pull-request read permission.
 
 inputs:
   operation:
