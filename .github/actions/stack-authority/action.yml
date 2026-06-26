@@ -16,6 +16,13 @@ inputs:
       Required for read, claim, release. Ignored for reap (reap scans by repo prefix).
     required: false
     default: '[]'
+  action_verb:
+    description: >
+      The Terraform action being run (e.g. "plan" or "apply"). Used by the read
+      operation to decide skip vs annotate behavior: apply skips PR-owned stacks,
+      plan annotates but proceeds.
+    required: false
+    default: ''
   repo:
     description: 'Repository (owner/name). Defaults to the current repo (github.repository).'
     required: false
@@ -51,10 +58,14 @@ outputs:
   results:
     description: >
       JSON object mapping stack path to its authority result.
-      For read: { "stack": { "owner_ref": "main"|"pr", "pr_number": "", "pr_sha": "", ... } }
-      For claim: { "stack": { "claimed": true|false, "blocked_by_pr": "" } }
+      For read: { "stack": { "ownerRef": "main"|"pr", "prNumber": "", ... } }
+      For claim: { "stack": { "claimed": true|false, "blockedByPr": "" } }
       For release: { "stack": { "released": true } }
       For reap: { "reaped": ["stack1", ...], "skipped": ["stack2", ...] }
+  proceed:
+    description: >
+      For read with action_verb: "true" if the engine should proceed with the
+      action, "false" if all stacks should be skipped. Only set by the read operation.
 
 runs:
   using: node24

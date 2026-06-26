@@ -40,7 +40,10 @@ async function run(): Promise<void> {
         throw new Error('stacks input is required for read operation');
       }
 
+      const actionVerb = core.getInput('action_verb') || '';
       const results: Record<string, unknown> = {};
+      let proceed = true;
+
       for (const stack of stacks) {
         const result = await read(client, table, repo, stack);
         if (result.exists && result.record) {
@@ -53,8 +56,21 @@ async function run(): Promise<void> {
         const ownerLabel =
           owner === 'main' ? 'main' : `PR #${rec?.prNumber}`;
         core.info(`${stack}: owned by ${ownerLabel}`);
+
+        if (owner === 'pr' && rec?.prNumber) {
+          if (actionVerb === 'apply') {
+            core.warning(`Skipping ${stack} — owned by PR #${rec.prNumber}`);
+            proceed = false;
+          } else if (actionVerb) {
+            core.warning(
+              `${stack} is owned by PR #${rec.prNumber} — this ${actionVerb} may be misleading`,
+            );
+          }
+        }
       }
+
       core.setOutput('results', JSON.stringify(results));
+      core.setOutput('proceed', String(proceed));
       break;
     }
 
