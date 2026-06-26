@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.26.3](https://github.com/chanzuckerberg/github-actions/compare/v6.26.2...v6.26.3) (2026-06-26)
+
+
+### BugFixes
+
+* **get-github-ref-names:** support schedule event ([#566](https://github.com/chanzuckerberg/github-actions/issues/566)) ([7accd70](https://github.com/chanzuckerberg/github-actions/commit/7accd70f95ae2171c14b891a3dcf94cc39f1a9d1))
+
 ## [6.26.2](https://github.com/chanzuckerberg/github-actions/compare/v6.26.1...v6.26.2) (2026-06-25)
 
 

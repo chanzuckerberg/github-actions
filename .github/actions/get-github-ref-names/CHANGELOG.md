@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.1](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.8.0...get-github-ref-names-v1.8.1) (2026-06-26)
+
+
+### BugFixes
+
+* **get-github-ref-names:** support schedule event ([#566](https://github.com/chanzuckerberg/github-actions/issues/566)) ([7accd70](https://github.com/chanzuckerberg/github-actions/commit/7accd70f95ae2171c14b891a3dcf94cc39f1a9d1))
+
 ## [1.8.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.7.0...get-github-ref-names-v1.8.0) (2026-06-10)
 
 
