@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import * as fs from 'fs';
 import {
   makeClient,
   read,
@@ -7,22 +8,27 @@ import {
   reap,
 } from './lib';
 
+function getPrNumber(): string {
+  const eventPath = process.env.GITHUB_EVENT_PATH;
+  if (!eventPath) return '';
+  try {
+    const event = JSON.parse(fs.readFileSync(eventPath, 'utf-8'));
+    return String(event.pull_request?.number ?? event.issue?.number ?? '');
+  } catch {
+    return '';
+  }
+}
+
 async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
   const stacksRaw = core.getInput('stacks') || '[]';
-  const repo = core.getInput('repo') || process.env.GITHUB_REPOSITORY || '';
-  const prNumber = core.getInput('pr_number');
-  const prSha = core.getInput('pr_sha');
-  const actor = core.getInput('actor');
+  const repo = core.getInput('repo') || process.env.GITHUB_REPOSITORY!;
+  const prNumber = getPrNumber();
+  const prSha = process.env.GITHUB_SHA || '';
+  const actor = process.env.GITHUB_ACTOR || '';
   const table = core.getInput('authority_table', { required: true });
   const region = core.getInput('aws_region') || 'us-west-2';
   const maxAgeDays = parseInt(core.getInput('max_claim_age_days') || '30', 10);
-
-  if (!repo) {
-    throw new Error(
-      'repo input is required (or GITHUB_REPOSITORY must be set)',
-    );
-  }
 
   const client = makeClient(region);
   let stacks: string[];

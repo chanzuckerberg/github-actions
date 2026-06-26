@@ -24,19 +24,7 @@ inputs:
     required: false
     default: 'false'
   repo:
-    description: 'Repository (owner/name). Defaults to the current repo (github.repository).'
-    required: false
-    default: ''
-  pr_number:
-    description: 'PR number claiming or releasing authority. Required for claim and release.'
-    required: false
-    default: ''
-  pr_sha:
-    description: 'Head SHA of the PR (recorded on claim for audit).'
-    required: false
-    default: ''
-  actor:
-    description: 'GitHub actor performing the operation (recorded on claim for audit).'
+    description: 'Override repository (owner/name). Inferred from GITHUB_REPOSITORY if absent.'
     required: false
     default: ''
   authority_table:

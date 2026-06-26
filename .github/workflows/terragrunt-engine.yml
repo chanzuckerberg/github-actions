@@ -240,9 +240,6 @@ jobs:
         with:
           operation: claim
           stacks: ${{ format('["{0}"]', matrix.stack) }}
-          pr_number: ${{ github.event.pull_request.number || github.event.issue.number || '' }}
-          pr_sha: ${{ github.sha }}
-          actor: ${{ github.actor }}
           authority_table: ${{ inputs.authority_table }}
           aws_region: ${{ inputs.aws_region }}
       - name: export terraform provider secrets
