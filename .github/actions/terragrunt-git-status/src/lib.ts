@@ -133,25 +133,14 @@ export async function finalize(
   return allSucceeded;
 }
 
-function parseCommand(expected: string): { commenter: string; prNumber: number } | null {
-  const { comment } = context.payload;
-  if (!comment?.body) {
-    core.info('No comment body — skipping');
-    return null;
-  }
-
-  const match = comment.body.trim().match(new RegExp(`^\\/${expected}\\s*$`));
-  if (!match) {
-    return null;
-  }
-
+function issueCommentContext(): { commenter: string; prNumber: number } | null {
   const prNumber = context.payload.issue?.number;
-  if (!prNumber) {
-    core.info('No issue number in payload');
+  const commenter = context.payload.comment?.user?.login;
+  if (!prNumber || !commenter) {
+    core.info('Missing PR number or commenter in payload');
     return null;
   }
-
-  return { commenter: comment.user.login, prNumber };
+  return { commenter, prNumber };
 }
 
 async function requireWriteAccess(
@@ -175,12 +164,12 @@ async function requireWriteAccess(
   return false;
 }
 
-export async function applyTg(octokit: Octokit): Promise<boolean> {
-  const parsed = parseCommand('apply');
-  if (!parsed) {
+export async function validateApply(octokit: Octokit): Promise<boolean> {
+  const ctx = issueCommentContext();
+  if (!ctx) {
     return false;
   }
-  const { commenter, prNumber } = parsed;
+  const { commenter, prNumber } = ctx;
 
   if (!(await requireWriteAccess(octokit, commenter, prNumber, 'apply'))) {
     return false;
@@ -216,12 +205,12 @@ export async function applyTg(octokit: Octokit): Promise<boolean> {
   return true;
 }
 
-export async function unlockTg(octokit: Octokit): Promise<boolean> {
-  const parsed = parseCommand('unlock');
-  if (!parsed) {
+export async function validateUnlock(octokit: Octokit): Promise<boolean> {
+  const ctx = issueCommentContext();
+  if (!ctx) {
     return false;
   }
-  const { commenter, prNumber } = parsed;
+  const { commenter, prNumber } = ctx;
 
   if (!(await requireWriteAccess(octokit, commenter, prNumber, 'unlock'))) {
     return false;
