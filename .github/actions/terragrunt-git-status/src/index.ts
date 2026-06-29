@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { gate, finalize, applyTg } from './lib';
+import { gate, finalize, applyTg, unlockTg } from './lib';
 
 async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
@@ -37,13 +37,19 @@ async function run(): Promise<void> {
     }
 
     case 'apply-tg': {
-      const result = await applyTg(octokit);
-      core.setOutput('command', result.command);
+      const approved = await applyTg(octokit);
+      core.setOutput('approved', String(approved));
+      break;
+    }
+
+    case 'unlock-tg': {
+      const approved = await unlockTg(octokit);
+      core.setOutput('approved', String(approved));
       break;
     }
 
     default:
-      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize, apply-tg`);
+      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize, apply-tg, unlock-tg`);
   }
 }
 

@@ -133,72 +133,100 @@ export async function finalize(
   return allSucceeded;
 }
 
-export interface ApplyTgResult {
-  command: 'apply' | 'unlock' | 'none';
-}
-
-export async function applyTg(octokit: Octokit): Promise<ApplyTgResult> {
-  const none: ApplyTgResult = { command: 'none' };
-
+function parseCommand(expected: string): { commenter: string; prNumber: number } | null {
   const comment = context.payload.comment;
   if (!comment?.body) {
     core.info('No comment body — skipping');
-    return none;
+    return null;
   }
 
-  const match = comment.body.trim().match(/^\/(apply|unlock)\s*$/);
+  const match = comment.body.trim().match(new RegExp(`^\\/${expected}\\s*$`));
   if (!match) {
-    return none;
+    return null;
   }
-  const command = match[1] as 'apply' | 'unlock';
+
   const prNumber = context.payload.issue?.number;
   if (!prNumber) {
     core.info('No issue number in payload');
-    return none;
+    return null;
   }
 
-  const commenter: string = comment.user.login;
+  return { commenter: comment.user.login, prNumber };
+}
+
+async function requireWriteAccess(
+  octokit: Octokit,
+  commenter: string,
+  prNumber: number,
+  command: string,
+): Promise<boolean> {
   const { data: perm } = await octokit.rest.repos.getCollaboratorPermissionLevel({
     ...context.repo,
     username: commenter,
   });
-  if (!['admin', 'write'].includes(perm.permission)) {
+  if (['admin', 'write'].includes(perm.permission)) {
+    return true;
+  }
+  await octokit.rest.issues.createComment({
+    ...context.repo,
+    issue_number: prNumber,
+    body: `\`/${command}\` requires write access.`,
+  });
+  return false;
+}
+
+export async function applyTg(octokit: Octokit): Promise<boolean> {
+  const parsed = parseCommand('apply');
+  if (!parsed) {
+    return false;
+  }
+  const { commenter, prNumber } = parsed;
+
+  if (!(await requireWriteAccess(octokit, commenter, prNumber, 'apply'))) {
+    return false;
+  }
+
+  const { data: reviews } = await octokit.rest.pulls.listReviews({
+    ...context.repo,
+    pull_number: prNumber,
+  });
+  if (!reviews.some(r => r.state === 'APPROVED')) {
     await octokit.rest.issues.createComment({
       ...context.repo,
       issue_number: prNumber,
-      body: `\`/${command}\` requires write access.`,
+      body: '`/apply` requires at least one approval.',
     });
-    return none;
+    return false;
   }
 
-  if (command === 'apply') {
-    const { data: reviews } = await octokit.rest.pulls.listReviews({
+  const { data: pr } = await octokit.rest.pulls.get({
+    ...context.repo,
+    pull_number: prNumber,
+  });
+  if (pr.mergeable_state === 'dirty' || pr.mergeable === false) {
+    await octokit.rest.issues.createComment({
       ...context.repo,
-      pull_number: prNumber,
+      issue_number: prNumber,
+      body: 'Cannot apply — the branch has conflicts with the base branch. Resolve them and try again.',
     });
-    if (!reviews.some(r => r.state === 'APPROVED')) {
-      await octokit.rest.issues.createComment({
-        ...context.repo,
-        issue_number: prNumber,
-        body: '`/apply` requires at least one approval.',
-      });
-      return none;
-    }
-
-    const { data: pr } = await octokit.rest.pulls.get({
-      ...context.repo,
-      pull_number: prNumber,
-    });
-    if (pr.mergeable_state === 'dirty' || pr.mergeable === false) {
-      await octokit.rest.issues.createComment({
-        ...context.repo,
-        issue_number: prNumber,
-        body: 'Cannot apply — the branch has conflicts with the base branch. Resolve them and try again.',
-      });
-      return none;
-    }
+    return false;
   }
 
-  core.info(`Accepted /${command} from ${commenter}`);
-  return { command };
+  core.info(`Accepted /apply from ${commenter}`);
+  return true;
+}
+
+export async function unlockTg(octokit: Octokit): Promise<boolean> {
+  const parsed = parseCommand('unlock');
+  if (!parsed) {
+    return false;
+  }
+  const { commenter, prNumber } = parsed;
+
+  if (!(await requireWriteAccess(octokit, commenter, prNumber, 'unlock'))) {
+    return false;
+  }
+
+  core.info(`Accepted /unlock from ${commenter}`);
+  return true;
 }
