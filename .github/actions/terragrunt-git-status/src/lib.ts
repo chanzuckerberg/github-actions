@@ -133,12 +133,12 @@ export async function finalize(
   return allSucceeded;
 }
 
-export interface CommentGateResult {
+export interface ParseCommentResult {
   command: 'apply' | 'unlock' | 'none';
 }
 
-export async function commentGate(octokit: Octokit): Promise<CommentGateResult> {
-  const none: CommentGateResult = { command: 'none' };
+export async function parseComment(octokit: Octokit): Promise<ParseCommentResult> {
+  const none: ParseCommentResult = { command: 'none' };
 
   const comment = context.payload.comment;
   if (!comment?.body) {
