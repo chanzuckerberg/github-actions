@@ -57,8 +57,8 @@
 		".github/actions/release-please-semvar": {
 			"package-name": "release-please-semvar"
 		},
-		".github/actions/export-terraform-provider-secrets": {
-			"package-name": "export-terraform-provider-secrets"
+		".github/actions/terragrunt-provider-secrets": {
+			"package-name": "terragrunt-provider-secrets"
 		},
 		".github/actions/find-changed-terragrunt-stacks": {
 			"package-name": "find-changed-terragrunt-stacks"
@@ -66,11 +66,11 @@
 		".github/actions/install-aws-cli": {
 			"package-name": "install-aws-cli"
 		},
-		".github/actions/release-terraform-locks": {
-			"package-name": "release-terraform-locks"
+		".github/actions/terragrunt-release-locks": {
+			"package-name": "terragrunt-release-locks"
 		},
-		".github/actions/stack-authority": {
-			"package-name": "stack-authority"
+		".github/actions/terragrunt-stack-authority": {
+			"package-name": "terragrunt-stack-authority"
 		},
 		".github/actions/terragrunt-git-status": {
 			"package-name": "terragrunt-git-status"

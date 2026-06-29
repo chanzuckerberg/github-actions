@@ -267,7 +267,7 @@ jobs:
       - name: Check stack authority
         id: authority
         if: ${{ inputs.skip_pr_owned }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: read
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -277,7 +277,7 @@ jobs:
       - name: Claim stack authority
         id: authority_claim
         if: ${{ (inputs.claim_authority || github.event_name == 'issue_comment') && (steps.authority.outputs.proceed != 'false') }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: claim
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -292,7 +292,7 @@ jobs:
           unset-current-credentials: true
       - name: export terraform provider secrets
         if: ${{ steps.authority.outputs.proceed != 'false' }}
-        uses: chanzuckerberg/github-actions/.github/actions/export-terraform-provider-secrets@export-terraform-provider-secrets-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-secrets@terragrunt-provider-secrets-v0
         env:
           ALL_SECRETS: ${{ toJSON(secrets) }}
       - name: Terragrunt ${{ inputs.action }}
@@ -328,7 +328,7 @@ jobs:
           role-session-name: TerragruntEngineCleanup
       - name: Release stack authority
         if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && github.event_name != 'issue_comment' && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: release
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -344,7 +344,7 @@ jobs:
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
       - name: Release Terragrunt Locks (Cleanup)
         if: always()
-        uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@release-terraform-locks-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-release-locks@terragrunt-release-locks-v0
         with:
           stack-root: ${{ matrix.stack }}
 
@@ -381,7 +381,7 @@ jobs:
           run_result: ${{ needs.run-all.result }}
       - name: Release authority (all stacks)
         if: ${{ steps.result.outputs.all_succeeded == 'true' }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: release
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
