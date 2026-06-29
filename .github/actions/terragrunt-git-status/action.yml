@@ -5,12 +5,12 @@ description: >
     gate         — post "pending" if stacks changed, "success" if none (plan caller).
     finalize     — post the aggregate apply result, enable auto-merge on success,
                    and comment on failure (apply caller).
-    parse-comment — parse /apply or /unlock from an issue_comment, validate write
-                    access, approval, and mergeability. Returns the command via output.
+    apply-tg     — parse /apply or /unlock from an issue_comment, validate write
+                   access, approval, and mergeability. Returns the command via output.
 
 inputs:
   operation:
-    description: 'One of: gate, finalize, parse-comment'
+    description: 'One of: gate, finalize, apply-tg'
     required: true
   stacks:
     description: 'JSON array of stack paths (e.g. ''["terraform/envs/dev"]''). Required for gate and finalize.'
@@ -31,7 +31,7 @@ outputs:
   all_succeeded:
     description: '"true" if all stacks succeeded, "false" otherwise. Set by finalize.'
   command:
-    description: '"apply", "unlock", or "none". Set by parse-comment.'
+    description: '"apply", "unlock", or "none". Set by apply-tg.'
 
 runs:
   using: node24

@@ -133,12 +133,12 @@ export async function finalize(
   return allSucceeded;
 }
 
-export interface ParseCommentResult {
+export interface ApplyTgResult {
   command: 'apply' | 'unlock' | 'none';
 }
 
-export async function parseComment(octokit: Octokit): Promise<ParseCommentResult> {
-  const none: ParseCommentResult = { command: 'none' };
+export async function applyTg(octokit: Octokit): Promise<ApplyTgResult> {
+  const none: ApplyTgResult = { command: 'none' };
 
   const comment = context.payload.comment;
   if (!comment?.body) {
