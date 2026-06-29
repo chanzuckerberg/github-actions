@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.27.2](https://github.com/chanzuckerberg/github-actions/compare/v6.27.1...v6.27.2) (2026-06-29)
+
+
+### BugFixes
+
+* **terragrunt-engine:** use cache role for all stack-authority operations ([#573](https://github.com/chanzuckerberg/github-actions/issues/573)) ([19e3cb8](https://github.com/chanzuckerberg/github-actions/commit/19e3cb85b97b3ed81aaa5eecab6a28354ef4d2b0))
+
 ## [6.27.1](https://github.com/chanzuckerberg/github-actions/compare/v6.27.0...v6.27.1) (2026-06-29)
 
 
