@@ -81,6 +81,28 @@ on:
         required: false
         type: boolean
         default: false
+      auto_merge_on_success:
+        description: >
+          If true, a finalize job runs after all matrix legs complete. On full success
+          it posts a green commit status, releases authority for all stacks, and enables
+          GitHub native auto-merge on the PR. On any failure it posts a red status and
+          comments on the PR. Used by the /apply workflow.
+        required: false
+        type: boolean
+        default: false
+      set_apply_gate:
+        description: >
+          If true, set the apply-gate commit status right after stack discovery.
+          Posts "pending" if stacks changed (merge blocked until /apply succeeds) or
+          "success" if none changed (docs-only PRs pass through). Used by the plan workflow.
+        required: false
+        type: boolean
+        default: false
+      status_check_name:
+        description: "Name of the commit status used as the apply merge gate."
+        required: false
+        type: string
+        default: terragrunt-apply
       authority_table:
         description: "DynamoDB table for authority records. Defaults to the shared fleet-wide state-lock table."
         required: false
@@ -111,7 +133,8 @@ permissions:
   actions: write
   contents: write
   id-token: write
-  pull-requests: read
+  pull-requests: write
+  statuses: write
 
 jobs:
   find-changed-stacks:
@@ -127,6 +150,19 @@ jobs:
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
+
+  set-apply-gate:
+    runs-on: ${{ inputs.runner }}
+    needs: find-changed-stacks
+    if: ${{ inputs.set_apply_gate }}
+    timeout-minutes: 5
+    steps:
+      - name: Set apply gate
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        with:
+          operation: gate
+          stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
+          status_check_name: ${{ inputs.status_check_name }}
 
   run-all:
     runs-on: ${{ inputs.runner }}
@@ -279,7 +315,7 @@ jobs:
           role-chaining: true
           role-session-name: TerragruntEngineCleanup
       - name: Release stack authority
-        if: ${{ inputs.release_authority && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
+        if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
         uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
         with:
           operation: release
@@ -299,3 +335,43 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@release-terraform-locks-v0
         with:
           stack-root: ${{ matrix.stack }}
+
+  finalize:
+    runs-on: ${{ inputs.runner }}
+    needs: [find-changed-stacks, run-all]
+    if: >-
+      always() &&
+      needs.find-changed-stacks.result == 'success' &&
+      needs.find-changed-stacks.outputs.stacks != '[]' &&
+      inputs.auto_merge_on_success
+    timeout-minutes: 10
+    steps:
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngineFinalize
+      - name: Configure AWS credentials (cache role, role chaining)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.cache_role_arn }}
+          role-chaining: true
+          role-session-name: TerragruntEngineFinalizeCache
+      - name: Post status and finalize
+        id: result
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        with:
+          operation: finalize
+          stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
+          status_check_name: ${{ inputs.status_check_name }}
+          run_result: ${{ needs.run-all.result }}
+      - name: Release authority (all stacks)
+        if: ${{ steps.result.outputs.all_succeeded == 'true' }}
+        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        with:
+          operation: release
+          stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}

@@ -72,6 +72,9 @@
 		".github/actions/stack-authority": {
 			"package-name": "stack-authority"
 		},
+		".github/actions/terragrunt-git-status": {
+			"package-name": "terragrunt-git-status"
+		},
 		".github/actions/terragrunt-provider-cache": {
 			"package-name": "terragrunt-provider-cache"
 		},
