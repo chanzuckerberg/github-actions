@@ -226,7 +226,7 @@ jobs:
       - name: Check stack authority
         id: authority
         if: ${{ inputs.skip_pr_owned }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@heathj/stack-authority
+        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
         with:
           operation: read
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -236,7 +236,7 @@ jobs:
       - name: Claim stack authority
         id: authority_claim
         if: ${{ inputs.claim_authority && (steps.authority.outputs.proceed != 'false') }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@heathj/stack-authority
+        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
         with:
           operation: claim
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -264,7 +264,7 @@ jobs:
           cat out.txt && cat err.txt
       - name: Release stack authority
         if: ${{ inputs.release_authority && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@heathj/stack-authority
+        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
         with:
           operation: release
           stacks: ${{ format('["{0}"]', matrix.stack) }}
