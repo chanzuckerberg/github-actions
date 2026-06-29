@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { gate, finalize } from './lib';
+import { gate, finalize, commentGate } from './lib';
 
 async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
@@ -36,8 +36,14 @@ async function run(): Promise<void> {
       break;
     }
 
+    case 'comment-gate': {
+      const result = await commentGate(octokit);
+      core.setOutput('command', result.command);
+      break;
+    }
+
     default:
-      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize`);
+      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize, comment-gate`);
   }
 }
 
