@@ -145,7 +145,7 @@ jobs:
       - name: Validate /apply comment
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
-          operation: apply
+          operation: validate-apply
 
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}

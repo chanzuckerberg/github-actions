@@ -38,20 +38,20 @@ async function run(): Promise<void> {
       break;
     }
 
-    case 'apply': {
+    case 'validate-apply': {
       const approved = await validateApply(octokit);
       core.setOutput('approved', String(approved));
       break;
     }
 
-    case 'unlock': {
+    case 'validate-unlock': {
       const approved = await validateUnlock(octokit);
       core.setOutput('approved', String(approved));
       break;
     }
 
     default:
-      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize, apply, unlock`);
+      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize, validate-apply, validate-unlock`);
   }
 }
 
