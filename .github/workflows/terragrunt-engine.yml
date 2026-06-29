@@ -216,13 +216,6 @@ jobs:
           provider-cache-key: ${{ env.PROVIDER_CACHE_KEY }}
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
           stack-root: ${{ matrix.stack }}
-      - name: Configure AWS credentials (CI base role)
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          aws-region: ${{ inputs.aws_region }}
-          role-to-assume: ${{ inputs.ci_role_arn }}
-          role-session-name: TerragruntEngine
-          unset-current-credentials: true
       - name: Check stack authority
         id: authority
         if: ${{ inputs.skip_pr_owned }}
@@ -242,6 +235,13 @@ jobs:
           stacks: ${{ format('["{0}"]', matrix.stack) }}
           authority_table: ${{ inputs.authority_table }}
           aws_region: ${{ inputs.aws_region }}
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngine
+          unset-current-credentials: true
       - name: export terraform provider secrets
         if: ${{ steps.authority.outputs.proceed != 'false' }}
         uses: chanzuckerberg/github-actions/.github/actions/export-terraform-provider-secrets@export-terraform-provider-secrets-v0
@@ -262,14 +262,6 @@ jobs:
           # '2> >(tee err.txt >&2)' captures stderr, writes it to err.txt AND pipes it back to stderr for the gha console.
           terragrunt run --all --non-interactive -- ${{ inputs.action }} -no-color 2> >(tee err.txt >&2) | tee out.txt
           cat out.txt && cat err.txt
-      - name: Release stack authority
-        if: ${{ inputs.release_authority && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
-        with:
-          operation: release
-          stacks: ${{ format('["{0}"]', matrix.stack) }}
-          authority_table: ${{ inputs.authority_table }}
-          aws_region: ${{ inputs.aws_region }}
       - name: Store Outputs
         uses: actions/upload-artifact@v7
         id: store
@@ -286,6 +278,14 @@ jobs:
           role-to-assume: ${{ inputs.cache_role_arn }}
           role-chaining: true
           role-session-name: TerragruntEngineCleanup
+      - name: Release stack authority
+        if: ${{ inputs.release_authority && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
+        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        with:
+          operation: release
+          stacks: ${{ format('["{0}"]', matrix.stack) }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
       - name: Upload Provider Cache to S3
         if: always()
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@terragrunt-provider-cache-v0
