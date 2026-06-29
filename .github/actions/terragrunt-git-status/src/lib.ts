@@ -134,7 +134,7 @@ export async function finalize(
 }
 
 function parseCommand(expected: string): { commenter: string; prNumber: number } | null {
-  const comment = context.payload.comment;
+  const { comment } = context.payload;
   if (!comment?.body) {
     core.info('No comment body — skipping');
     return null;
@@ -190,7 +190,7 @@ export async function applyTg(octokit: Octokit): Promise<boolean> {
     ...context.repo,
     pull_number: prNumber,
   });
-  if (!reviews.some(r => r.state === 'APPROVED')) {
+  if (!reviews.some((r) => r.state === 'APPROVED')) {
     await octokit.rest.issues.createComment({
       ...context.repo,
       issue_number: prNumber,

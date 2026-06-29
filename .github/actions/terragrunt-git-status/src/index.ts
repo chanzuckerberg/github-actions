@@ -1,6 +1,8 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { gate, finalize, applyTg, unlockTg } from './lib';
+import {
+  gate, finalize, applyTg, unlockTg,
+} from './lib';
 
 async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
