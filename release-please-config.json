@@ -60,8 +60,8 @@
 		".github/actions/terragrunt-provider-secrets": {
 			"package-name": "terragrunt-provider-secrets"
 		},
-		".github/actions/find-changed-terragrunt-stacks": {
-			"package-name": "find-changed-terragrunt-stacks"
+		".github/actions/terragrunt-changed-stacks": {
+			"package-name": "terragrunt-changed-stacks"
 		},
 		".github/actions/install-aws-cli": {
 			"package-name": "install-aws-cli"

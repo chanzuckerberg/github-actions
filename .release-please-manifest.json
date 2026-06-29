@@ -12,7 +12,7 @@
 	".github/actions/jira-validate-reference": "1.3.0",
 	".github/actions/release-please-semvar": "0.5.0",
 	".github/actions/terragrunt-provider-secrets": "0.1.0",
-	".github/actions/find-changed-terragrunt-stacks": "0.1.0",
+	".github/actions/terragrunt-changed-stacks": "0.1.0",
 	".github/actions/install-aws-cli": "0.1.0",
 	".github/actions/terragrunt-release-locks": "0.2.0",
 	".github/actions/terragrunt-stack-authority": "0.1.0",
