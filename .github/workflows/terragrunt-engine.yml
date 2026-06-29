@@ -151,7 +151,7 @@ jobs:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
 
-  seed-status:
+  set-apply-gate:
     runs-on: ${{ inputs.runner }}
     needs: find-changed-stacks
     if: ${{ inputs.set_apply_gate }}
