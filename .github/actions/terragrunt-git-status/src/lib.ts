@@ -55,7 +55,7 @@ export async function gate(
     state: hasStacks ? 'pending' : 'success',
     context: statusCheckName,
     description: hasStacks
-      ? 'Stacks changed — run /apply to unblock merge'
+      ? 'Stacks changed — run /apply-and-merge to unblock merge'
       : 'No Terraform stacks changed',
     target_url: runUrl(),
   });
@@ -125,7 +125,7 @@ export async function finalize(
         'Apply failed — one or more stacks did not apply cleanly.',
         `See the [workflow run](${url}) for details.`,
         '',
-        'Fix the issue and run `/apply` again.',
+        'Fix the issue and run `/apply-and-merge` again.',
       ].join('\n'),
     });
   }
@@ -171,7 +171,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
   }
   const { commenter, prNumber } = ctx;
 
-  if (!(await requireWriteAccess(octokit, commenter, prNumber, 'apply'))) {
+  if (!(await requireWriteAccess(octokit, commenter, prNumber, 'apply-and-merge'))) {
     return false;
   }
 
@@ -183,7 +183,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     await octokit.rest.issues.createComment({
       ...context.repo,
       issue_number: prNumber,
-      body: '`/apply` requires at least one approval.',
+      body: '`/apply-and-merge` requires at least one approval.',
     });
     return false;
   }
@@ -201,7 +201,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     return false;
   }
 
-  core.info(`Accepted /apply from ${commenter}`);
+  core.info(`Accepted /apply-and-merge from ${commenter}`);
   return true;
 }
 

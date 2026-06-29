@@ -62,7 +62,7 @@ on:
       claim_authority:
         description: >
           If true, claim authority for each stack before applying. Fails the job if
-          a stack is owned by another PR. Used by the /apply workflow.
+          a stack is owned by another PR. Used by the /apply-and-merge workflow.
         required: false
         type: boolean
         default: false
@@ -77,7 +77,7 @@ on:
       release_authority:
         description: >
           If true, release authority (reset to main) for each stack after a successful
-          apply. Used by the /apply workflow after all stacks succeed.
+          apply. Used by the /apply-and-merge workflow after all stacks succeed.
         required: false
         type: boolean
         default: false
@@ -86,14 +86,14 @@ on:
           If true, a finalize job runs after all matrix legs complete. On full success
           it posts a green commit status, releases authority for all stacks, and enables
           GitHub native auto-merge on the PR. On any failure it posts a red status and
-          comments on the PR. Used by the /apply workflow.
+          comments on the PR. Used by the /apply-and-merge workflow.
         required: false
         type: boolean
         default: false
       set_apply_gate:
         description: >
           If true, set the apply-gate commit status right after stack discovery.
-          Posts "pending" if stacks changed (merge blocked until /apply succeeds) or
+          Posts "pending" if stacks changed (merge blocked until /apply-and-merge succeeds) or
           "success" if none changed (docs-only PRs pass through). Used by the plan workflow.
         required: false
         type: boolean
@@ -142,7 +142,7 @@ jobs:
     if: ${{ github.event_name == 'issue_comment' }}
     timeout-minutes: 5
     steps:
-      - name: Validate /apply comment
+      - name: Validate /apply-and-merge comment
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
           operation: validate-apply
