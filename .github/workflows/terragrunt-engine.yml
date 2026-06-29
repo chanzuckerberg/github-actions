@@ -90,9 +90,9 @@ on:
         required: false
         type: boolean
         default: false
-      seed_apply_status:
+      set_apply_gate:
         description: >
-          If true, seed the apply-gate commit status right after stack discovery.
+          If true, set the apply-gate commit status right after stack discovery.
           Posts "pending" if stacks changed (merge blocked until /apply succeeds) or
           "success" if none changed (docs-only PRs pass through). Used by the plan workflow.
         required: false
@@ -154,13 +154,13 @@ jobs:
   seed-status:
     runs-on: ${{ inputs.runner }}
     needs: find-changed-stacks
-    if: ${{ inputs.seed_apply_status }}
+    if: ${{ inputs.set_apply_gate }}
     timeout-minutes: 5
     steps:
-      - name: Seed apply-gate status
+      - name: Set apply gate
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
-          operation: seed
+          operation: gate
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
           status_check_name: ${{ inputs.status_check_name }}
 

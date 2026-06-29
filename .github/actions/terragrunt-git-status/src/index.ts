@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { seed, finalize } from './lib';
+import { gate, finalize } from './lib';
 
 async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
@@ -21,8 +21,8 @@ async function run(): Promise<void> {
   const octokit = github.getOctokit(token);
 
   switch (operation) {
-    case 'seed': {
-      await seed(octokit, stacks, statusCheckName);
+    case 'gate': {
+      await gate(octokit, stacks, statusCheckName);
       break;
     }
 
@@ -37,7 +37,7 @@ async function run(): Promise<void> {
     }
 
     default:
-      throw new Error(`Unknown operation: ${operation}. Must be one of: seed, finalize`);
+      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize`);
   }
 }
 

@@ -35,7 +35,7 @@ function runUrl(): string {
   return `${base}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 }
 
-export async function seed(
+export async function gate(
   octokit: Octokit,
   stacks: string[],
   statusCheckName: string,
