@@ -158,7 +158,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Seed apply-gate status
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@main
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
           operation: seed
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
@@ -361,7 +361,7 @@ jobs:
           role-session-name: TerragruntEngineFinalizeCache
       - name: Post status and finalize
         id: result
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@main
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
           operation: finalize
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
