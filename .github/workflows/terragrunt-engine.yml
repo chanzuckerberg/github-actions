@@ -137,8 +137,20 @@ permissions:
   statuses: write
 
 jobs:
+  validate-comment:
+    runs-on: ${{ inputs.runner }}
+    if: ${{ github.event_name == 'issue_comment' }}
+    timeout-minutes: 5
+    steps:
+      - name: Validate /apply comment
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        with:
+          operation: apply
+
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
+    needs: validate-comment
+    if: ${{ !cancelled() && (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') }}
     outputs:
       stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
@@ -264,7 +276,7 @@ jobs:
           aws_region: ${{ inputs.aws_region }}
       - name: Claim stack authority
         id: authority_claim
-        if: ${{ inputs.claim_authority && (steps.authority.outputs.proceed != 'false') }}
+        if: ${{ (inputs.claim_authority || github.event_name == 'issue_comment') && (steps.authority.outputs.proceed != 'false') }}
         uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
         with:
           operation: claim
@@ -315,7 +327,7 @@ jobs:
           role-chaining: true
           role-session-name: TerragruntEngineCleanup
       - name: Release stack authority
-        if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
+        if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && github.event_name != 'issue_comment' && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
         uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
         with:
           operation: release
@@ -343,7 +355,7 @@ jobs:
       always() &&
       needs.find-changed-stacks.result == 'success' &&
       needs.find-changed-stacks.outputs.stacks != '[]' &&
-      inputs.auto_merge_on_success
+      (inputs.auto_merge_on_success || github.event_name == 'issue_comment')
     timeout-minutes: 10
     steps:
       - name: Configure AWS credentials (CI base role)
