@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.27.1](https://github.com/chanzuckerberg/github-actions/compare/v6.27.0...v6.27.1) (2026-06-29)
+
+
+### BugFixes
+
+* repin the stack authority github action ([#571](https://github.com/chanzuckerberg/github-actions/issues/571)) ([c6b33d7](https://github.com/chanzuckerberg/github-actions/commit/c6b33d715f8ee1c1c57b257f17dc8cedb9da8c74))
+
 ## [6.27.0](https://github.com/chanzuckerberg/github-actions/compare/v6.26.3...v6.27.0) (2026-06-26)
 
 
