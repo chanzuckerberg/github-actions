@@ -81,6 +81,28 @@ on:
         required: false
         type: boolean
         default: false
+      auto_merge_on_success:
+        description: >
+          If true, a finalize job runs after all matrix legs complete. On full success
+          it posts a green commit status, releases authority for all stacks, and enables
+          GitHub native auto-merge on the PR. On any failure it posts a red status and
+          comments on the PR. Used by the /apply workflow.
+        required: false
+        type: boolean
+        default: false
+      seed_apply_status:
+        description: >
+          If true, seed the apply-gate commit status right after stack discovery.
+          Posts "pending" if stacks changed (merge blocked until /apply succeeds) or
+          "success" if none changed (docs-only PRs pass through). Used by the plan workflow.
+        required: false
+        type: boolean
+        default: false
+      status_check_name:
+        description: "Name of the commit status used as the apply merge gate."
+        required: false
+        type: string
+        default: terragrunt-apply
       authority_table:
         description: "DynamoDB table for authority records. Defaults to the shared fleet-wide state-lock table."
         required: false
@@ -111,7 +133,8 @@ permissions:
   actions: write
   contents: write
   id-token: write
-  pull-requests: read
+  pull-requests: write
+  statuses: write
 
 jobs:
   find-changed-stacks:
@@ -127,6 +150,38 @@ jobs:
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
+
+  seed-status:
+    runs-on: ${{ inputs.runner }}
+    needs: find-changed-stacks
+    if: ${{ inputs.seed_apply_status }}
+    timeout-minutes: 5
+    steps:
+      - name: Seed apply-gate status
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const prNumber = context.payload.pull_request?.number
+              ?? context.payload.issue?.number;
+            if (!prNumber) {
+              core.info('No PR context — skipping status seed');
+              return;
+            }
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: prNumber,
+            });
+            const hasStacks = '${{ needs.find-changed-stacks.outputs.stacks }}' !== '[]';
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: pr.head.sha,
+              state: hasStacks ? 'pending' : 'success',
+              context: '${{ inputs.status_check_name }}',
+              description: hasStacks
+                ? 'Stacks changed — run /apply to unblock merge'
+                : 'No Terraform stacks changed',
+              target_url: `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
 
   run-all:
     runs-on: ${{ inputs.runner }}
@@ -279,7 +334,7 @@ jobs:
           role-chaining: true
           role-session-name: TerragruntEngineCleanup
       - name: Release stack authority
-        if: ${{ inputs.release_authority && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
+        if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
         uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
         with:
           operation: release
@@ -299,3 +354,97 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@release-terraform-locks-v0
         with:
           stack-root: ${{ matrix.stack }}
+
+  finalize:
+    runs-on: ${{ inputs.runner }}
+    needs: [find-changed-stacks, run-all]
+    if: >-
+      always() &&
+      needs.find-changed-stacks.result == 'success' &&
+      needs.find-changed-stacks.outputs.stacks != '[]' &&
+      inputs.auto_merge_on_success
+    timeout-minutes: 10
+    steps:
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngineFinalize
+      - name: Configure AWS credentials (cache role, role chaining)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.cache_role_arn }}
+          role-chaining: true
+          role-session-name: TerragruntEngineFinalizeCache
+      - name: Post status and finalize
+        id: result
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const prNumber = context.payload.pull_request?.number
+              ?? context.payload.issue?.number;
+            if (!prNumber) {
+              core.warning('No PR context — skipping finalize');
+              return;
+            }
+
+            const runResult = '${{ needs.run-all.result }}';
+            const allSucceeded = runResult === 'success';
+            core.setOutput('all_succeeded', String(allSucceeded));
+
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: prNumber,
+            });
+
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: pr.head.sha,
+              state: allSucceeded ? 'success' : 'failure',
+              context: '${{ inputs.status_check_name }}',
+              description: allSucceeded
+                ? 'All stacks applied successfully'
+                : 'One or more stacks failed to apply',
+              target_url: runUrl,
+            });
+
+            if (allSucceeded) {
+              core.info('All stacks succeeded — enabling auto-merge');
+              try {
+                await github.graphql(`
+                  mutation($prId: ID!) {
+                    enablePullRequestAutoMerge(input: {
+                      pullRequestId: $prId,
+                      mergeMethod: MERGE
+                    }) {
+                      pullRequest { autoMergeRequest { enabledAt } }
+                    }
+                  }
+                `, { prId: pr.node_id });
+              } catch (err) {
+                core.warning(`Auto-merge could not be enabled: ${err.message}`);
+              }
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: prNumber,
+                body: [
+                  'Apply failed — one or more stacks did not apply cleanly.',
+                  `See the [workflow run](${runUrl}) for details.`,
+                  '',
+                  'Fix the issue and run `/apply` again.',
+                ].join('\n'),
+              });
+            }
+      - name: Release authority (all stacks)
+        if: ${{ steps.result.outputs.all_succeeded == 'true' }}
+        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        with:
+          operation: release
+          stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
