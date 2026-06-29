@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.28.0](https://github.com/chanzuckerberg/github-actions/compare/v6.27.2...v6.28.0) (2026-06-29)
+
+
+### Features
+
+* **terragrunt-engine:** add finalize job and apply-gate status seeding ([#575](https://github.com/chanzuckerberg/github-actions/issues/575)) ([62252e6](https://github.com/chanzuckerberg/github-actions/commit/62252e6b8fe18c7839adf0240def88ce6c87fad8))
+
 ## [6.27.2](https://github.com/chanzuckerberg/github-actions/compare/v6.27.1...v6.27.2) (2026-06-29)
 
 
