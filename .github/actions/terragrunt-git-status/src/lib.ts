@@ -107,7 +107,7 @@ export async function finalize(
         mutation($prId: ID!) {
           enablePullRequestAutoMerge(input: {
             pullRequestId: $prId,
-            mergeMethod: MERGE
+            mergeMethod: SQUASH
           }) {
             pullRequest { autoMergeRequest { enabledAt } }
           }

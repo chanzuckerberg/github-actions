@@ -143,9 +143,23 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Validate /apply-and-merge comment
+        id: validate
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
           operation: validate-apply
+      - name: Generate token
+        id: generate_token
+        if: ${{ steps.validate.outputs.approved == 'true' }}
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+      - name: Ensure branch protection
+        if: ${{ steps.validate.outputs.approved == 'true' }}
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-branch-protection@terragrunt-branch-protection-v0
+        with:
+          status_check_name: ${{ inputs.status_check_name }}
+          github_token: ${{ steps.generate_token.outputs.token }}
 
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}

@@ -75,6 +75,9 @@
 		".github/actions/terragrunt-git-status": {
 			"package-name": "terragrunt-git-status"
 		},
+		".github/actions/terragrunt-branch-protection": {
+			"package-name": "terragrunt-branch-protection"
+		},
 		".github/actions/terragrunt-provider-cache": {
 			"package-name": "terragrunt-provider-cache"
 		},

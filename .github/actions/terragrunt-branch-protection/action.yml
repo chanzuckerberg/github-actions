@@ -1,0 +1,18 @@
+name: Terragrunt Branch Protection
+description: >
+  Ensure the calling repository has the required settings for the Terragrunt
+  engine: auto-merge enabled, squash-only merges, and the apply-gate status
+  check required on the default branch. Fixes any drift automatically.
+
+inputs:
+  status_check_name:
+    description: "Name of the required status check to enforce on the default branch."
+    required: false
+    default: terragrunt-apply
+  github_token:
+    description: "GitHub token with administration:write permission (GitHub App token)."
+    required: true
+
+runs:
+  using: node24
+  main: dist/index.js
