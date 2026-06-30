@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.29.0](https://github.com/chanzuckerberg/github-actions/compare/v6.28.0...v6.29.0) (2026-06-30)
+
+
+### Features
+
+* **get-github-ref-names:** support issue_comment events ([#577](https://github.com/chanzuckerberg/github-actions/issues/577)) ([ef6e01a](https://github.com/chanzuckerberg/github-actions/commit/ef6e01a072f6cb5e4ac5553027ad2ecc4b223a8e))
+* **terragrunt-git-status:** add comment-gate operation and remove legacy actions ([#579](https://github.com/chanzuckerberg/github-actions/issues/579)) ([ba48111](https://github.com/chanzuckerberg/github-actions/commit/ba481115687747005ed7abd417bbc7c6a5a61d21))
+
 ## [6.28.0](https://github.com/chanzuckerberg/github-actions/compare/v6.27.2...v6.28.0) (2026-06-29)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.8.1...get-github-ref-names-v1.9.0) (2026-06-30)
+
+
+### Features
+
+* **get-github-ref-names:** support issue_comment events ([#577](https://github.com/chanzuckerberg/github-actions/issues/577)) ([ef6e01a](https://github.com/chanzuckerberg/github-actions/commit/ef6e01a072f6cb5e4ac5553027ad2ecc4b223a8e))
+
 ## [1.8.1](https://github.com/chanzuckerberg/github-actions/compare/get-github-ref-names-v1.8.0...get-github-ref-names-v1.8.1) (2026-06-26)
 
 
