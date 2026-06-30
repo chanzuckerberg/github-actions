@@ -149,6 +149,8 @@ jobs:
 
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
+    needs: validate-comment
+    if: ${{ !cancelled() && (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') }}
     outputs:
       stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
