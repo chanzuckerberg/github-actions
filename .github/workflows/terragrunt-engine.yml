@@ -144,7 +144,7 @@ jobs:
     steps:
       - name: Validate /apply-and-merge comment
         id: validate
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/fix-set-apply-gate
         with:
           operation: validate-apply
       - name: Generate token
@@ -156,7 +156,7 @@ jobs:
           private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
       - name: Ensure branch protection
         if: ${{ steps.validate.outputs.approved == 'true' }}
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-branch-protection@terragrunt-branch-protection-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-branch-protection@heathj/fix-set-apply-gate
         with:
           status_check_name: ${{ inputs.status_check_name }}
           github_token: ${{ steps.generate_token.outputs.token }}
