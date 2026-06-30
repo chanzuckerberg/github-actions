@@ -16,10 +16,7 @@ async function run(): Promise<void> {
     throw new Error(`stacks input must be valid JSON array, got: ${stacksRaw}`);
   }
 
-  const token = process.env.GITHUB_TOKEN;
-  if (!token) {
-    throw new Error('GITHUB_TOKEN environment variable is required');
-  }
+  const token = core.getInput('github_token', { required: true });
   const octokit = github.getOctokit(token);
 
   switch (operation) {

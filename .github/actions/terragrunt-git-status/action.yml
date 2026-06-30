@@ -28,6 +28,10 @@ inputs:
       Required for the finalize operation.
     required: false
     default: ''
+  github_token:
+    description: 'GitHub token for API calls.'
+    required: false
+    default: ${{ github.token }}
 
 outputs:
   all_succeeded:
