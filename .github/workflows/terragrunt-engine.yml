@@ -177,7 +177,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Set apply gate
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/fix-set-apply-gate
         with:
           operation: gate
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
