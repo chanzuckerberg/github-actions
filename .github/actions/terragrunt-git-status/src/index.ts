@@ -1,6 +1,8 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { gate, finalize } from './lib';
+import {
+  gate, finalize, validateApply, validateUnlock,
+} from './lib';
 
 async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
@@ -36,8 +38,20 @@ async function run(): Promise<void> {
       break;
     }
 
+    case 'validate-apply': {
+      const approved = await validateApply(octokit);
+      core.setOutput('approved', String(approved));
+      break;
+    }
+
+    case 'validate-unlock': {
+      const approved = await validateUnlock(octokit);
+      core.setOutput('approved', String(approved));
+      break;
+    }
+
     default:
-      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize`);
+      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize, validate-apply, validate-unlock`);
   }
 }
 

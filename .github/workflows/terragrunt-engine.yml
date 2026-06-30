@@ -62,7 +62,7 @@ on:
       claim_authority:
         description: >
           If true, claim authority for each stack before applying. Fails the job if
-          a stack is owned by another PR. Used by the /apply workflow.
+          a stack is owned by another PR. Used by the /apply-and-merge workflow.
         required: false
         type: boolean
         default: false
@@ -77,7 +77,7 @@ on:
       release_authority:
         description: >
           If true, release authority (reset to main) for each stack after a successful
-          apply. Used by the /apply workflow after all stacks succeed.
+          apply. Used by the /apply-and-merge workflow after all stacks succeed.
         required: false
         type: boolean
         default: false
@@ -86,14 +86,14 @@ on:
           If true, a finalize job runs after all matrix legs complete. On full success
           it posts a green commit status, releases authority for all stacks, and enables
           GitHub native auto-merge on the PR. On any failure it posts a red status and
-          comments on the PR. Used by the /apply workflow.
+          comments on the PR. Used by the /apply-and-merge workflow.
         required: false
         type: boolean
         default: false
       set_apply_gate:
         description: >
           If true, set the apply-gate commit status right after stack discovery.
-          Posts "pending" if stacks changed (merge blocked until /apply succeeds) or
+          Posts "pending" if stacks changed (merge blocked until /apply-and-merge succeeds) or
           "success" if none changed (docs-only PRs pass through). Used by the plan workflow.
         required: false
         type: boolean
@@ -137,8 +137,20 @@ permissions:
   statuses: write
 
 jobs:
+  validate-comment:
+    runs-on: ${{ inputs.runner }}
+    if: ${{ github.event_name == 'issue_comment' }}
+    timeout-minutes: 5
+    steps:
+      - name: Validate /apply-and-merge comment
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        with:
+          operation: validate-apply
+
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
+    needs: validate-comment
+    if: ${{ !cancelled() && (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') }}
     outputs:
       stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
@@ -146,7 +158,7 @@ jobs:
       - uses: actions/checkout@v6
       - name: Resolve stacks
         id: stacks
-        uses: chanzuckerberg/github-actions/.github/actions/find-changed-terragrunt-stacks@find-changed-terragrunt-stacks-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-changed-stacks@terragrunt-changed-stacks-v0
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
@@ -255,7 +267,7 @@ jobs:
       - name: Check stack authority
         id: authority
         if: ${{ inputs.skip_pr_owned }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: read
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -264,8 +276,8 @@ jobs:
           aws_region: ${{ inputs.aws_region }}
       - name: Claim stack authority
         id: authority_claim
-        if: ${{ inputs.claim_authority && (steps.authority.outputs.proceed != 'false') }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        if: ${{ (inputs.claim_authority || github.event_name == 'issue_comment') && (steps.authority.outputs.proceed != 'false') }}
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: claim
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -280,7 +292,7 @@ jobs:
           unset-current-credentials: true
       - name: export terraform provider secrets
         if: ${{ steps.authority.outputs.proceed != 'false' }}
-        uses: chanzuckerberg/github-actions/.github/actions/export-terraform-provider-secrets@export-terraform-provider-secrets-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-secrets@terragrunt-provider-secrets-v0
         env:
           ALL_SECRETS: ${{ toJSON(secrets) }}
       - name: Terragrunt ${{ inputs.action }}
@@ -315,8 +327,8 @@ jobs:
           role-chaining: true
           role-session-name: TerragruntEngineCleanup
       - name: Release stack authority
-        if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && github.event_name != 'issue_comment' && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: release
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -332,7 +344,7 @@ jobs:
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
       - name: Release Terragrunt Locks (Cleanup)
         if: always()
-        uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@release-terraform-locks-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-release-locks@terragrunt-release-locks-v0
         with:
           stack-root: ${{ matrix.stack }}
 
@@ -343,7 +355,7 @@ jobs:
       always() &&
       needs.find-changed-stacks.result == 'success' &&
       needs.find-changed-stacks.outputs.stacks != '[]' &&
-      inputs.auto_merge_on_success
+      (inputs.auto_merge_on_success || github.event_name == 'issue_comment')
     timeout-minutes: 10
     steps:
       - name: Configure AWS credentials (CI base role)
@@ -369,7 +381,7 @@ jobs:
           run_result: ${{ needs.run-all.result }}
       - name: Release authority (all stacks)
         if: ${{ steps.result.outputs.all_succeeded == 'true' }}
-        uses: chanzuckerberg/github-actions/.github/actions/stack-authority@stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: release
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}

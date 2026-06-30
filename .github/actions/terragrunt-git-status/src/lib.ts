@@ -55,7 +55,7 @@ export async function gate(
     state: hasStacks ? 'pending' : 'success',
     context: statusCheckName,
     description: hasStacks
-      ? 'Stacks changed — run /apply to unblock merge'
+      ? 'Stacks changed — run /apply-and-merge to unblock merge'
       : 'No Terraform stacks changed',
     target_url: runUrl(),
   });
@@ -125,10 +125,97 @@ export async function finalize(
         'Apply failed — one or more stacks did not apply cleanly.',
         `See the [workflow run](${url}) for details.`,
         '',
-        'Fix the issue and run `/apply` again.',
+        'Fix the issue and run `/apply-and-merge` again.',
       ].join('\n'),
     });
   }
 
   return allSucceeded;
+}
+
+function issueCommentContext(): { commenter: string; prNumber: number } | null {
+  const prNumber = context.payload.issue?.number;
+  const commenter = context.payload.comment?.user?.login;
+  if (!prNumber || !commenter) {
+    core.info('Missing PR number or commenter in payload');
+    return null;
+  }
+  return { commenter, prNumber };
+}
+
+async function requireWriteAccess(
+  octokit: Octokit,
+  commenter: string,
+  prNumber: number,
+  command: string,
+): Promise<boolean> {
+  const { data: perm } = await octokit.rest.repos.getCollaboratorPermissionLevel({
+    ...context.repo,
+    username: commenter,
+  });
+  if (['admin', 'write'].includes(perm.permission)) {
+    return true;
+  }
+  await octokit.rest.issues.createComment({
+    ...context.repo,
+    issue_number: prNumber,
+    body: `\`/${command}\` requires write access.`,
+  });
+  return false;
+}
+
+export async function validateApply(octokit: Octokit): Promise<boolean> {
+  const ctx = issueCommentContext();
+  if (!ctx) {
+    return false;
+  }
+  const { commenter, prNumber } = ctx;
+
+  if (!(await requireWriteAccess(octokit, commenter, prNumber, 'apply-and-merge'))) {
+    return false;
+  }
+
+  const { data: reviews } = await octokit.rest.pulls.listReviews({
+    ...context.repo,
+    pull_number: prNumber,
+  });
+  if (!reviews.some((r) => r.state === 'APPROVED')) {
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body: '`/apply-and-merge` requires at least one approval.',
+    });
+    return false;
+  }
+
+  const { data: pr } = await octokit.rest.pulls.get({
+    ...context.repo,
+    pull_number: prNumber,
+  });
+  if (pr.mergeable_state === 'dirty' || pr.mergeable === false) {
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body: 'Cannot apply — the branch has conflicts with the base branch. Resolve them and try again.',
+    });
+    return false;
+  }
+
+  core.info(`Accepted /apply-and-merge from ${commenter}`);
+  return true;
+}
+
+export async function validateUnlock(octokit: Octokit): Promise<boolean> {
+  const ctx = issueCommentContext();
+  if (!ctx) {
+    return false;
+  }
+  const { commenter, prNumber } = ctx;
+
+  if (!(await requireWriteAccess(octokit, commenter, prNumber, 'unlock'))) {
+    return false;
+  }
+
+  core.info(`Accepted /unlock from ${commenter}`);
+  return true;
 }
