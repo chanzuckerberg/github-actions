@@ -165,8 +165,15 @@ jobs:
 
   set-apply-gate:
     runs-on: ${{ inputs.runner }}
-    needs: find-changed-stacks
-    if: ${{ inputs.set_apply_gate }}
+    needs:
+      - find-changed-stacks
+      - validate-comment
+    if: >-
+      !cancelled() &&
+      inputs.set_apply_gate &&
+      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
+      needs.find-changed-stacks.result == 'success' &&
+      needs.find-changed-stacks.outputs.stacks != '[]'
     timeout-minutes: 5
     steps:
       - name: Set apply gate
