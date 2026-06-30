@@ -149,8 +149,6 @@ jobs:
 
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
-    needs: validate-comment
-    if: ${{ !cancelled() && (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') }}
     outputs:
       stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
@@ -178,12 +176,16 @@ jobs:
 
   run-all:
     runs-on: ${{ inputs.runner }}
-    needs: find-changed-stacks
+    needs: [validate-comment, find-changed-stacks]
     strategy:
       fail-fast: false
       matrix:
         stack: ${{ fromJson(needs.find-changed-stacks.outputs.stacks) }}
-    if: ${{ needs.find-changed-stacks.outputs.stacks != '[]' }}
+    if: >-
+      !cancelled() &&
+      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
+      needs.find-changed-stacks.result == 'success' &&
+      needs.find-changed-stacks.outputs.stacks != '[]'
     env:
       TG_PROVIDER_CACHE: "1"
       TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
@@ -350,9 +352,10 @@ jobs:
 
   finalize:
     runs-on: ${{ inputs.runner }}
-    needs: [find-changed-stacks, run-all]
+    needs: [validate-comment, find-changed-stacks, run-all]
     if: >-
       always() &&
+      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
       needs.find-changed-stacks.result == 'success' &&
       needs.find-changed-stacks.outputs.stacks != '[]' &&
       (inputs.auto_merge_on_success || github.event_name == 'issue_comment')
