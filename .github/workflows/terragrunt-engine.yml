@@ -168,7 +168,12 @@ jobs:
     needs:
       - find-changed-stacks
       - validate-comment
-    if: ${{ inputs.set_apply_gate && (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') && needs.find-changed-stacks.result == 'success' && needs.find-changed-stacks.outputs.stacks != '[]' }}
+    if: >-
+      !cancelled() &&
+      inputs.set_apply_gate &&
+      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
+      needs.find-changed-stacks.result == 'success' &&
+      needs.find-changed-stacks.outputs.stacks != '[]'
     timeout-minutes: 5
     steps:
       - name: Set apply gate
