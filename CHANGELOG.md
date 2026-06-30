@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.29.2](https://github.com/chanzuckerberg/github-actions/compare/v6.29.1...v6.29.2) (2026-06-30)
+
+
+### BugFixes
+
+* **terragrunt-engine:** add !cancelled() to set-apply-gate condition ([#582](https://github.com/chanzuckerberg/github-actions/issues/582)) ([6eae80d](https://github.com/chanzuckerberg/github-actions/commit/6eae80d127de433f25e07b7f3567b5f01c9f249f))
+
 ## [6.29.1](https://github.com/chanzuckerberg/github-actions/compare/v6.29.0...v6.29.1) (2026-06-30)
 
 
