@@ -68,9 +68,11 @@ async function run(): Promise<void> {
         core.info(`${stack}: owned by ${ownerLabel}`);
 
         if (owner === 'pr' && rec?.prNumber) {
-          if (skipIfOwned) {
+          if (skipIfOwned && rec.prNumber !== prNumber) {
             core.warning(`Skipping ${stack} — owned by PR #${rec.prNumber}`);
             proceed = false;
+          } else if (skipIfOwned && rec.prNumber === prNumber) {
+            core.info(`${stack} is owned by this PR (#${prNumber}) — proceeding`);
           } else {
             core.warning(
               `${stack} is owned by PR #${rec.prNumber} — this operation may be misleading`,
