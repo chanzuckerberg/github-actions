@@ -150,6 +150,11 @@ jobs:
         with:
           operation: validate-apply
           github_token: ${{ steps.generate_token.outputs.token }}
+      - name: Enforce branch protection
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-branch-protection@heathj/fix-set-apply-gate
+        with:
+          status_check_name: ${{ inputs.status_check_name }}
+          github_token: ${{ steps.generate_token.outputs.token }}
 
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
