@@ -112,7 +112,7 @@ export async function finalize(
     }
 
     const body = [
-      `Apply succeeded — [workflow run](${url})`,
+      `Apply succeeded for \`${pr.headSha.slice(0, 7)}\` — [workflow run](${url})`,
       '',
       mergeStatus,
     ].join('\n');
@@ -131,7 +131,7 @@ export async function finalize(
     });
   } else {
     const body = [
-      `Apply failed — [workflow run](${url})`,
+      `Apply failed for \`${pr.headSha.slice(0, 7)}\` — [workflow run](${url})`,
       '',
       'One or more stacks did not apply cleanly. Fix the issue and run `/apply-and-merge` again.',
     ].join('\n');
@@ -164,7 +164,7 @@ async function findApplyingComment(
   });
 
   const match = comments.find(
-    (c) => c.user?.type === 'Bot' && c.body?.startsWith('Applying'),
+    (c) => c.user?.type === 'Bot' && c.body?.startsWith('Applying '),
   );
   return match?.id ?? null;
 }
@@ -275,10 +275,12 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     });
   }
 
+  const headSha = pr.head.sha.slice(0, 7);
+
   await octokit.rest.issues.createComment({
     ...context.repo,
     issue_number: prNumber,
-    body: `Applying — [workflow run](${runUrl()})`,
+    body: `Applying \`${headSha}\` — [workflow run](${runUrl()})`,
   });
 
   core.info(`Accepted /apply-and-merge from ${commenter}`);
