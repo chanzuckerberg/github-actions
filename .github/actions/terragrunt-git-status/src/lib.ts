@@ -124,7 +124,9 @@ export async function finalize(
       sha: pr.headSha,
       state: 'success',
       context: statusCheckName,
-      description: 'Applied — auto-merge enabled',
+      description: mergeStatus.startsWith('Auto-merge enabled')
+        ? 'Applied — auto-merge enabled'
+        : 'Applied — auto-merge failed (see PR comment)',
       target_url: url,
     });
   } else {
@@ -161,9 +163,8 @@ async function findApplyingComment(
     direction: 'desc',
   });
 
-  const botLogin = 'github-actions[bot]';
   const match = comments.find(
-    (c) => c.user?.login === botLogin && c.body?.startsWith('Applying'),
+    (c) => c.user?.type === 'Bot' && c.body?.startsWith('Applying'),
   );
   return match?.id ?? null;
 }
