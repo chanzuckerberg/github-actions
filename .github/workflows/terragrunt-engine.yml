@@ -190,7 +190,7 @@ jobs:
           client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
           private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Set apply gate
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/fix-set-apply-gate
         with:
           operation: gate
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
@@ -292,7 +292,7 @@ jobs:
       - name: Check stack authority
         id: authority
         if: ${{ inputs.skip_pr_owned }}
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@heathj/fix-set-apply-gate
         with:
           operation: read
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -302,7 +302,7 @@ jobs:
       - name: Claim stack authority
         id: authority_claim
         if: ${{ (inputs.claim_authority || github.event_name == 'issue_comment') && (steps.authority.outputs.proceed != 'false') }}
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@heathj/fix-set-apply-gate
         with:
           operation: claim
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -353,7 +353,7 @@ jobs:
           role-session-name: TerragruntEngineCleanup
       - name: Release stack authority
         if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && github.event_name != 'issue_comment' && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@heathj/fix-set-apply-gate
         with:
           operation: release
           stacks: ${{ format('["{0}"]', matrix.stack) }}
@@ -405,7 +405,7 @@ jobs:
           role-session-name: TerragruntEngineFinalizeCache
       - name: Post status and finalize
         id: result
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/fix-set-apply-gate
         with:
           operation: finalize
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
@@ -414,7 +414,7 @@ jobs:
           github_token: ${{ steps.generate_token.outputs.token }}
       - name: Release authority (all stacks)
         if: ${{ steps.result.outputs.all_succeeded == 'true' }}
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@heathj/fix-set-apply-gate
         with:
           operation: release
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
