@@ -37,13 +37,17 @@ async function run(): Promise<void> {
 
     case 'validate-apply': {
       const approved = await validateApply(octokit);
-      core.setOutput('approved', String(approved));
+      if (!approved) {
+        core.setFailed('Validation rejected /apply-and-merge');
+      }
       break;
     }
 
     case 'validate-unlock': {
       const approved = await validateUnlock(octokit);
-      core.setOutput('approved', String(approved));
+      if (!approved) {
+        core.setFailed('Validation rejected /unlock');
+      }
       break;
     }
 
