@@ -89,48 +89,106 @@ export async function finalize(
   const pr = await fetchPrContext(octokit, prNumber);
   const url = runUrl();
 
-  await octokit.rest.repos.createCommitStatus({
-    ...context.repo,
-    sha: pr.headSha,
-    state: allSucceeded ? 'success' : 'failure',
-    context: statusCheckName,
-    description: allSucceeded
-      ? 'All stacks applied successfully'
-      : 'One or more stacks failed to apply',
-    target_url: url,
-  });
+  const applyingCommentId = await findApplyingComment(octokit, prNumber);
 
   if (allSucceeded) {
-    core.info('All stacks succeeded — enabling auto-merge');
+    let mergeStatus = '';
     try {
       await octokit.graphql(`
         mutation($prId: ID!) {
           enablePullRequestAutoMerge(input: {
             pullRequestId: $prId,
-            mergeMethod: MERGE
+            mergeMethod: SQUASH
           }) {
             pullRequest { autoMergeRequest { enabledAt } }
           }
         }
       `, { prId: pr.nodeId });
+      mergeStatus = 'Auto-merge enabled.';
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       core.warning(`Auto-merge could not be enabled: ${msg}`);
+      mergeStatus = `Auto-merge could not be enabled: ${msg}`;
     }
-  } else {
-    await octokit.rest.issues.createComment({
+
+    const body = [
+      `Apply succeeded for \`${pr.headSha.slice(0, 7)}\` — [workflow run](${url})`,
+      '',
+      mergeStatus,
+    ].join('\n');
+
+    await upsertComment(octokit, prNumber, applyingCommentId, body);
+
+    await octokit.rest.repos.createCommitStatus({
       ...context.repo,
-      issue_number: prNumber,
-      body: [
-        'Apply failed — one or more stacks did not apply cleanly.',
-        `See the [workflow run](${url}) for details.`,
-        '',
-        'Fix the issue and run `/apply-and-merge` again.',
-      ].join('\n'),
+      sha: pr.headSha,
+      state: 'success',
+      context: statusCheckName,
+      description: mergeStatus.startsWith('Auto-merge enabled')
+        ? 'Applied — auto-merge enabled'
+        : 'Applied — auto-merge failed (see PR comment)',
+      target_url: url,
+    });
+  } else {
+    const body = [
+      `Apply failed for \`${pr.headSha.slice(0, 7)}\` — [workflow run](${url})`,
+      '',
+      'One or more stacks did not apply cleanly. Fix the issue and run `/apply-and-merge` again.',
+    ].join('\n');
+
+    await upsertComment(octokit, prNumber, applyingCommentId, body);
+
+    await octokit.rest.repos.createCommitStatus({
+      ...context.repo,
+      sha: pr.headSha,
+      state: 'failure',
+      context: statusCheckName,
+      description: 'Apply failed',
+      target_url: url,
     });
   }
 
   return allSucceeded;
+}
+
+async function findApplyingComment(
+  octokit: Octokit,
+  prNumber: number,
+): Promise<number | null> {
+  const url = runUrl();
+  const { data: comments } = await octokit.rest.issues.listComments({
+    ...context.repo,
+    issue_number: prNumber,
+    per_page: 50,
+    sort: 'created',
+    direction: 'desc',
+  });
+
+  const match = comments.find(
+    (c) => c.user?.type === 'Bot' && c.body?.includes(url),
+  );
+  return match?.id ?? null;
+}
+
+async function upsertComment(
+  octokit: Octokit,
+  prNumber: number,
+  commentId: number | null,
+  body: string,
+): Promise<void> {
+  if (commentId) {
+    await octokit.rest.issues.updateComment({
+      ...context.repo,
+      comment_id: commentId,
+      body,
+    });
+  } else {
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body,
+    });
+  }
 }
 
 function issueCommentContext(): { commenter: string; prNumber: number } | null {
@@ -192,6 +250,14 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     ...context.repo,
     pull_number: prNumber,
   });
+  if (pr.draft) {
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body: 'Cannot apply — the pull request is still a draft. Mark it as ready for review and try again.',
+    });
+    return false;
+  }
   if (pr.mergeable_state === 'dirty' || pr.mergeable === false) {
     await octokit.rest.issues.createComment({
       ...context.repo,
@@ -200,6 +266,32 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     });
     return false;
   }
+
+  const commentId = context.payload.comment?.id;
+  if (commentId) {
+    await octokit.rest.reactions.createForIssueComment({
+      ...context.repo,
+      comment_id: commentId,
+      content: '+1',
+    });
+  }
+
+  const headSha = pr.head.sha.slice(0, 7);
+
+  await octokit.rest.repos.createCommitStatus({
+    ...context.repo,
+    sha: pr.head.sha,
+    state: 'pending',
+    context: 'terragrunt-apply',
+    description: 'Applying...',
+    target_url: runUrl(),
+  });
+
+  await octokit.rest.issues.createComment({
+    ...context.repo,
+    issue_number: prNumber,
+    body: `Applying \`${headSha}\` — [workflow run](${runUrl()})`,
+  });
 
   core.info(`Accepted /apply-and-merge from ${commenter}`);
   return true;

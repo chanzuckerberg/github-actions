@@ -16,6 +16,7 @@
 	".github/actions/install-aws-cli": "0.1.0",
 	".github/actions/terragrunt-release-locks": "0.3.0",
 	".github/actions/terragrunt-stack-authority": "0.2.1",
+	".github/actions/terragrunt-branch-protection": "0.0.1",
 	".github/actions/terragrunt-git-status": "0.2.1",
 	".github/actions/terragrunt-provider-cache": "0.2.0",
 	".github/workflows/terragrunt-engine": "0.2.1"

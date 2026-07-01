@@ -112,15 +112,15 @@ on:
     # The engine discovers secrets by naming convention:
     #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required)
     #   - EXTRA_DEPLOY_KEYS - additional per-repo deploy keys (optional)
-    #   - GH_ACTIONS_HELPER_APP_ID, GH_ACTIONS_HELPER_PK - org-wide GitHub App (required)
+    #   - TERRAGRUNT_BOT_APP_ID, TERRAGRUNT_BOT_PK - org-wide GitHub App (required)
     #   - TF_ENV_<NAME> - exported as env <NAME> (provider SDK credentials)
     #   - TF_VAR_<name> - exported as-is (Terraform input variables)
     secrets:
-      GH_ACTIONS_HELPER_APP_ID:
-        description: "GitHub App ID for the checkout token (org-wide secret)."
+      TERRAGRUNT_BOT_APP_ID:
+        description: "GitHub App ID for the terragrunt-bot token (org-wide secret)."
         required: false
-      GH_ACTIONS_HELPER_PK:
-        description: "GitHub App private key for the checkout token (org-wide secret)."
+      TERRAGRUNT_BOT_PK:
+        description: "GitHub App private key for the terragrunt-bot token (org-wide secret)."
         required: false
       SHARED_INFRA_DEPLOY_KEY:
         description: "ssh-agent key for fetching private Terraform modules (org-wide secret)."
@@ -130,11 +130,8 @@ on:
         required: false
 
 permissions:
-  actions: write
-  contents: write
+  contents: read
   id-token: write
-  pull-requests: write
-  statuses: write
 
 jobs:
   validate-comment:
@@ -142,10 +139,22 @@ jobs:
     if: ${{ github.event_name == 'issue_comment' }}
     timeout-minutes: 5
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Validate /apply-and-merge comment
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
           operation: validate-apply
+          github_token: ${{ steps.generate_token.outputs.token }}
+      - name: Enforce branch protection
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-branch-protection@terragrunt-branch-protection-v0
+        with:
+          status_check_name: ${{ inputs.status_check_name }}
+          github_token: ${{ steps.generate_token.outputs.token }}
 
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
@@ -155,6 +164,12 @@ jobs:
       stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - uses: actions/checkout@v6
       - name: Resolve stacks
         id: stacks
@@ -162,6 +177,7 @@ jobs:
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
+          github_token: ${{ steps.generate_token.outputs.token }}
 
   set-apply-gate:
     runs-on: ${{ inputs.runner }}
@@ -176,12 +192,19 @@ jobs:
       needs.find-changed-stacks.outputs.stacks != '[]'
     timeout-minutes: 5
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Set apply gate
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
           operation: gate
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
           status_check_name: ${{ inputs.status_check_name }}
+          github_token: ${{ steps.generate_token.outputs.token }}
 
   run-all:
     runs-on: ${{ inputs.runner }}
@@ -222,8 +245,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
-          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Get Base Git Ref
         id: ref
         uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1
@@ -370,6 +393,12 @@ jobs:
       (inputs.auto_merge_on_success || github.event_name == 'issue_comment')
     timeout-minutes: 10
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Configure AWS credentials (CI base role)
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -391,6 +420,7 @@ jobs:
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
           status_check_name: ${{ inputs.status_check_name }}
           run_result: ${{ needs.run-all.result }}
+          github_token: ${{ steps.generate_token.outputs.token }}
       - name: Release authority (all stacks)
         if: ${{ steps.result.outputs.all_succeeded == 'true' }}
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
