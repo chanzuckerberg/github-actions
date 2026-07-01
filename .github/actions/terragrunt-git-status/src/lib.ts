@@ -192,6 +192,14 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     ...context.repo,
     pull_number: prNumber,
   });
+  if (pr.draft) {
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body: 'Cannot apply — the pull request is still a draft. Mark it as ready for review and try again.',
+    });
+    return false;
+  }
   if (pr.mergeable_state === 'dirty' || pr.mergeable === false) {
     await octokit.rest.issues.createComment({
       ...context.repo,
