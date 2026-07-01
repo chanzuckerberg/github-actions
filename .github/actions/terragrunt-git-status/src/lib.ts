@@ -278,6 +278,15 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
 
   const headSha = pr.head.sha.slice(0, 7);
 
+  await octokit.rest.repos.createCommitStatus({
+    ...context.repo,
+    sha: pr.head.sha,
+    state: 'pending',
+    context: 'terragrunt-apply',
+    description: 'Applying...',
+    target_url: runUrl(),
+  });
+
   await octokit.rest.issues.createComment({
     ...context.repo,
     issue_number: prNumber,
