@@ -143,7 +143,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Validate /apply-and-merge comment
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/fix-set-apply-gate
         with:
           operation: validate-apply
 
