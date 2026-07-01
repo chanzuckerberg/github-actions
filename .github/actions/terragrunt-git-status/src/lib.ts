@@ -155,6 +155,7 @@ async function findApplyingComment(
   octokit: Octokit,
   prNumber: number,
 ): Promise<number | null> {
+  const url = runUrl();
   const { data: comments } = await octokit.rest.issues.listComments({
     ...context.repo,
     issue_number: prNumber,
@@ -164,7 +165,7 @@ async function findApplyingComment(
   });
 
   const match = comments.find(
-    (c) => c.user?.type === 'Bot' && c.body?.startsWith('Applying '),
+    (c) => c.user?.type === 'Bot' && c.body?.includes(url),
   );
   return match?.id ?? null;
 }
