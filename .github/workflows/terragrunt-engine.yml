@@ -112,15 +112,15 @@ on:
     # The engine discovers secrets by naming convention:
     #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required)
     #   - EXTRA_DEPLOY_KEYS - additional per-repo deploy keys (optional)
-    #   - GH_ACTIONS_HELPER_APP_ID, GH_ACTIONS_HELPER_PK - org-wide GitHub App (required)
+    #   - TERRAGRUNT_BOT_APP_ID, TERRAGRUNT_BOT_PK - org-wide GitHub App (required)
     #   - TF_ENV_<NAME> - exported as env <NAME> (provider SDK credentials)
     #   - TF_VAR_<name> - exported as-is (Terraform input variables)
     secrets:
-      GH_ACTIONS_HELPER_APP_ID:
-        description: "GitHub App ID for the checkout token (org-wide secret)."
+      TERRAGRUNT_BOT_APP_ID:
+        description: "GitHub App ID for the terragrunt-bot token (org-wide secret)."
         required: false
-      GH_ACTIONS_HELPER_PK:
-        description: "GitHub App private key for the checkout token (org-wide secret)."
+      TERRAGRUNT_BOT_PK:
+        description: "GitHub App private key for the terragrunt-bot token (org-wide secret)."
         required: false
       SHARED_INFRA_DEPLOY_KEY:
         description: "ssh-agent key for fetching private Terraform modules (org-wide secret)."
@@ -222,8 +222,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
-          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Get Base Git Ref
         id: ref
         uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1
