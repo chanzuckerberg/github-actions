@@ -209,6 +209,21 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     return false;
   }
 
+  const commentId = context.payload.comment?.id;
+  if (commentId) {
+    await octokit.rest.reactions.createForIssueComment({
+      ...context.repo,
+      comment_id: commentId,
+      content: '+1',
+    });
+  }
+
+  await octokit.rest.issues.createComment({
+    ...context.repo,
+    issue_number: prNumber,
+    body: `Applying — [workflow run](${runUrl()})`,
+  });
+
   core.info(`Accepted /apply-and-merge from ${commenter}`);
   return true;
 }
