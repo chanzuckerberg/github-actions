@@ -142,10 +142,17 @@ jobs:
     if: ${{ github.event_name == 'issue_comment' }}
     timeout-minutes: 5
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Validate /apply-and-merge comment
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/fix-set-apply-gate
         with:
           operation: validate-apply
+          github_token: ${{ steps.generate_token.outputs.token }}
 
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
@@ -176,12 +183,19 @@ jobs:
       needs.find-changed-stacks.outputs.stacks != '[]'
     timeout-minutes: 5
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Set apply gate
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
           operation: gate
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
           status_check_name: ${{ inputs.status_check_name }}
+          github_token: ${{ steps.generate_token.outputs.token }}
 
   run-all:
     runs-on: ${{ inputs.runner }}
@@ -370,6 +384,12 @@ jobs:
       (inputs.auto_merge_on_success || github.event_name == 'issue_comment')
     timeout-minutes: 10
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Configure AWS credentials (CI base role)
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -391,6 +411,7 @@ jobs:
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
           status_check_name: ${{ inputs.status_check_name }}
           run_result: ${{ needs.run-all.result }}
+          github_token: ${{ steps.generate_token.outputs.token }}
       - name: Release authority (all stacks)
         if: ${{ steps.result.outputs.all_succeeded == 'true' }}
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
