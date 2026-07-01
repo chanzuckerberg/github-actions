@@ -159,6 +159,12 @@ jobs:
       stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - uses: actions/checkout@v6
       - name: Resolve stacks
         id: stacks
@@ -166,6 +172,7 @@ jobs:
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
+          github_token: ${{ steps.generate_token.outputs.token }}
 
   set-apply-gate:
     runs-on: ${{ inputs.runner }}
