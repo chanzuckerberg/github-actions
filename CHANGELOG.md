@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.29.3](https://github.com/chanzuckerberg/github-actions/compare/v6.29.2...v6.29.3) (2026-07-02)
+
+
+### BugFixes
+
+* **terragrunt-engine:** harden apply-and-merge flow ([#585](https://github.com/chanzuckerberg/github-actions/issues/585)) ([483867a](https://github.com/chanzuckerberg/github-actions/commit/483867a1456a8d258bbd71f625f6ea11c1b4e082))
+
 ## [6.29.2](https://github.com/chanzuckerberg/github-actions/compare/v6.29.1...v6.29.2) (2026-06-30)
 
 
