@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.29.4](https://github.com/chanzuckerberg/github-actions/compare/v6.29.3...v6.29.4) (2026-07-02)
+
+
+### BugFixes
+
+* **terragrunt-engine:** run set-apply-gate even when no stacks changed ([#587](https://github.com/chanzuckerberg/github-actions/issues/587)) ([b303665](https://github.com/chanzuckerberg/github-actions/commit/b303665218de6de1a9276802775434783043e4cb))
+
 ## [6.29.3](https://github.com/chanzuckerberg/github-actions/compare/v6.29.2...v6.29.3) (2026-07-02)
 
 
