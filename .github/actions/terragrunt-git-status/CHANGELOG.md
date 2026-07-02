@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.2.1...terragrunt-git-status-v0.2.2) (2026-07-02)
+
+
+### BugFixes
+
+* **terragrunt-engine:** harden apply-and-merge flow ([#585](https://github.com/chanzuckerberg/github-actions/issues/585)) ([483867a](https://github.com/chanzuckerberg/github-actions/commit/483867a1456a8d258bbd71f625f6ea11c1b4e082))
+
 ## [0.2.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.2.0...terragrunt-git-status-v0.2.1) (2026-06-30)
 
 
