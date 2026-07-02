@@ -188,8 +188,7 @@ jobs:
       !cancelled() &&
       inputs.set_apply_gate &&
       (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
-      needs.find-changed-stacks.result == 'success' &&
-      needs.find-changed-stacks.outputs.stacks != '[]'
+      needs.find-changed-stacks.result == 'success'
     timeout-minutes: 5
     steps:
       - name: Generate token
