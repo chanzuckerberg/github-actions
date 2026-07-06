@@ -30,9 +30,7 @@ export function hasSharedChanges(files: string[], triggerPaths: string[]): boole
   if (triggerPaths.length === 0) {
     return false;
   }
-  return files.some((f) =>
-    triggerPaths.some((tp) => f === tp || f.startsWith(`${tp}/`)),
-  );
+  return files.some((f) => triggerPaths.some((tp) => f === tp || f.startsWith(`${tp}/`)));
 }
 
 export function enumerateStacks(
