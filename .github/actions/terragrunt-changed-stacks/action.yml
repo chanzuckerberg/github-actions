@@ -15,9 +15,10 @@ inputs:
     default: 'false'
   trigger_all_paths:
     description: >
-      Newline-separated paths (e.g. terraform/modules). If any changed file
-      falls under one of these, ALL stacks are returned. Use for shared code
-      (local modules, scripts) that stacks depend on.
+      Newline-separated shared-code paths (e.g. terraform/modules). When files
+      under these paths change, the action scans each stack's .tf files for
+      module source references and returns only the stacks that depend on the
+      changed modules.
     required: false
     default: ''
   github_token:

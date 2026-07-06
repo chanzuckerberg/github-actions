@@ -26,11 +26,84 @@ export function stacksFromChangedFiles(files: string[], bases: string[]): string
   return [...new Set(stacks)];
 }
 
-export function hasSharedChanges(files: string[], triggerPaths: string[]): boolean {
-  if (triggerPaths.length === 0) {
+/**
+ * Map changed files to the module names they belong to. A module is one
+ * directory below a trigger path (e.g. terraform/modules/vpc/main.tf yields
+ * "vpc" when the trigger path is "terraform/modules").
+ */
+export function extractChangedModules(files: string[], triggerPaths: string[]): string[] {
+  const modules = new Set<string>();
+  for (const f of files) {
+    for (const tp of triggerPaths) {
+      if (f.startsWith(`${tp}/`)) {
+        const moduleName = f.slice(tp.length + 1).split('/')[0];
+        if (moduleName) {
+          modules.add(moduleName);
+        }
+      }
+    }
+  }
+  return [...modules];
+}
+
+const SOURCE_RE = /source\s*=\s*"([^"]+)"/g;
+
+/**
+ * Return true if any .tf file in a stack's component directories contains a
+ * module source ending in `/modules/<name>` for one of the given module names.
+ */
+export function stackDependsOnModules(
+  stackDir: string,
+  moduleNames: string[],
+  listDir: (dir: string) => string[] | null,
+  readFile: (path: string) => string | null,
+): boolean {
+  const suffixes = moduleNames.map((n) => `/modules/${n}`);
+  const topEntries = listDir(stackDir);
+  if (!topEntries) {
     return false;
   }
-  return files.some((f) => triggerPaths.some((tp) => f === tp || f.startsWith(`${tp}/`)));
+
+  const dirsToScan = [stackDir, ...topEntries.map((e) => `${stackDir}/${e}`)];
+  for (const dir of dirsToScan) {
+    const entries = listDir(dir);
+    if (!entries) {
+      continue;
+    }
+    for (const entry of entries) {
+      if (!entry.endsWith('.tf')) {
+        continue;
+      }
+      const content = readFile(`${dir}/${entry}`);
+      if (!content) {
+        continue;
+      }
+      SOURCE_RE.lastIndex = 0;
+      let match;
+      while ((match = SOURCE_RE.exec(content)) !== null) {
+        const source = match[1];
+        if (suffixes.some((s) => source.endsWith(s))) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * From the full set of stacks, return only those whose .tf files reference at
+ * least one of the given module names.
+ */
+export function findDependentStacks(
+  allStacks: string[],
+  moduleNames: string[],
+  listDir: (dir: string) => string[] | null,
+  readFile: (path: string) => string | null,
+): string[] {
+  return allStacks.filter((stack) =>
+    stackDependsOnModules(stack, moduleNames, listDir, readFile),
+  );
 }
 
 export function enumerateStacks(

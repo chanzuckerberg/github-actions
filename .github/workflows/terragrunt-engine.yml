@@ -61,9 +61,10 @@ on:
           terraform/accounts
       trigger_all_paths:
         description: |
-          Newline-separated paths. If any changed file falls under one of these,
-          ALL stacks are returned. Use for shared code (local modules, scripts)
-          that stacks depend on. Defaults to the fogg layout.
+          Newline-separated shared-code paths (e.g. terraform/modules). When files
+          under these paths change, the action scans each stack's .tf files for
+          module source references and returns only the stacks that depend on the
+          changed modules. Defaults to the fogg layout.
         required: false
         type: string
         default: terraform/modules

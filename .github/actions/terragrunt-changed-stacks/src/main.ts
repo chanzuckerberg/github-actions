@@ -5,21 +5,35 @@ import * as path from 'path';
 import { findChangedFiles } from '../../find-changed-files/src/findChangedFiles';
 import {
   enumerateStacks,
-  hasSharedChanges,
+  extractChangedModules,
+  findDependentStacks,
   parseBases,
   stacksFromChangedFiles,
 } from './lib';
 
-function enumerateAllStacks(bases: string[]): string[] {
-  return enumerateStacks(bases, (base) => {
-    if (!fs.existsSync(base)) {
-      return null;
-    }
-    return fs.readdirSync(base).filter((name) => {
-      const fullPath = path.join(base, name);
-      return fs.statSync(fullPath).isDirectory();
-    });
+function listDirEntries(dir: string): string[] | null {
+  if (!fs.existsSync(dir)) {
+    return null;
+  }
+  return fs.readdirSync(dir).filter((name) => {
+    const fullPath = path.join(dir, name);
+    return fs.statSync(fullPath).isDirectory();
   });
+}
+
+function listAllEntries(dir: string): string[] | null {
+  if (!fs.existsSync(dir)) {
+    return null;
+  }
+  return fs.readdirSync(dir);
+}
+
+function readFileContent(filePath: string): string | null {
+  try {
+    return fs.readFileSync(filePath, 'utf-8');
+  } catch {
+    return null;
+  }
 }
 
 export async function run(): Promise<void> {
@@ -29,16 +43,22 @@ export async function run(): Promise<void> {
 
   let stacks: string[];
   if (allStacks) {
-    stacks = enumerateAllStacks(bases);
+    stacks = enumerateStacks(bases, listDirEntries);
   } else {
     const token = core.getInput('github_token', { required: true });
     const result = await findChangedFiles(token);
 
-    if (hasSharedChanges(result.allModifiedFiles, triggerPaths)) {
-      core.info('Shared dependency changed — returning all stacks');
-      stacks = enumerateAllStacks(bases);
+    const directStacks = stacksFromChangedFiles(result.allModifiedFiles, bases);
+    const changedModules = extractChangedModules(result.allModifiedFiles, triggerPaths);
+
+    if (changedModules.length > 0) {
+      core.info(`Changed modules: ${changedModules.join(', ')}`);
+      const allEnumerated = enumerateStacks(bases, listDirEntries);
+      const dependent = findDependentStacks(allEnumerated, changedModules, listAllEntries, readFileContent);
+      core.info(`Dependent stacks: ${JSON.stringify(dependent)}`);
+      stacks = [...new Set([...directStacks, ...dependent])];
     } else {
-      stacks = stacksFromChangedFiles(result.allModifiedFiles, bases);
+      stacks = directStacks;
     }
   }
 
