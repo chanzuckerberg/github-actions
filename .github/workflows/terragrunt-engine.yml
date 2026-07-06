@@ -61,12 +61,12 @@ on:
           terraform/accounts
       trigger_all_paths:
         description: |
-          Newline-separated paths (e.g. terraform/modules). If any changed file
-          falls under one of these, ALL stacks are returned. Use for shared code
-          (local modules, scripts) that stacks depend on.
+          Newline-separated paths. If any changed file falls under one of these,
+          ALL stacks are returned. Use for shared code (local modules, scripts)
+          that stacks depend on. Defaults to the fogg layout.
         required: false
         type: string
-        default: ''
+        default: terraform/modules
       claim_authority:
         description: >
           If true, claim authority for each stack before applying. Fails the job if
