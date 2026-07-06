@@ -59,6 +59,14 @@ on:
         default: |
           terraform/envs
           terraform/accounts
+      trigger_all_paths:
+        description: |
+          Newline-separated paths (e.g. terraform/modules). If any changed file
+          falls under one of these, ALL stacks are returned. Use for shared code
+          (local modules, scripts) that stacks depend on.
+        required: false
+        type: string
+        default: ''
       claim_authority:
         description: >
           If true, claim authority for each stack before applying. Fails the job if
@@ -177,6 +185,7 @@ jobs:
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
+          trigger_all_paths: ${{ inputs.trigger_all_paths }}
           github_token: ${{ steps.generate_token.outputs.token }}
 
   set-apply-gate:

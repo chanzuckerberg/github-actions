@@ -1,5 +1,6 @@
 import {
   enumerateStacks,
+  hasSharedChanges,
   parseBases,
   stackForFile,
   stacksFromChangedFiles,
@@ -56,5 +57,32 @@ describe('enumerateStacks', () => {
     expect(
       enumerateStacks(['terraform/envs', 'terraform/accounts'], listDir),
     ).toEqual(['terraform/envs/dev', 'terraform/envs/prod']);
+  });
+});
+
+describe('hasSharedChanges', () => {
+  it('returns true when a changed file is under a trigger path', () => {
+    const files = ['terraform/modules/vpc/main.tf'];
+    expect(hasSharedChanges(files, ['terraform/modules'])).toBe(true);
+  });
+
+  it('returns false when no changed files match', () => {
+    const files = ['terraform/envs/dev/eks/main.tf', 'docs/x.md'];
+    expect(hasSharedChanges(files, ['terraform/modules'])).toBe(false);
+  });
+
+  it('returns false when trigger paths are empty', () => {
+    const files = ['terraform/modules/vpc/main.tf'];
+    expect(hasSharedChanges(files, [])).toBe(false);
+  });
+
+  it('matches an exact trigger path', () => {
+    const files = ['terraform/modules'];
+    expect(hasSharedChanges(files, ['terraform/modules'])).toBe(true);
+  });
+
+  it('does not false-match a prefix that is not a directory boundary', () => {
+    const files = ['terraform/modules-extra/foo.tf'];
+    expect(hasSharedChanges(files, ['terraform/modules'])).toBe(false);
   });
 });

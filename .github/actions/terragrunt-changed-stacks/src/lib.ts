@@ -26,6 +26,15 @@ export function stacksFromChangedFiles(files: string[], bases: string[]): string
   return [...new Set(stacks)];
 }
 
+export function hasSharedChanges(files: string[], triggerPaths: string[]): boolean {
+  if (triggerPaths.length === 0) {
+    return false;
+  }
+  return files.some((f) =>
+    triggerPaths.some((tp) => f === tp || f.startsWith(`${tp}/`)),
+  );
+}
+
 export function enumerateStacks(
   bases: string[],
   listDir: (base: string) => string[] | null,
