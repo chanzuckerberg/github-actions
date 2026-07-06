@@ -78,10 +78,8 @@ export function stackDependsOnModules(
       if (!content) {
         continue;
       }
-      SOURCE_RE.lastIndex = 0;
-      let match;
-      while ((match = SOURCE_RE.exec(content)) !== null) {
-        const source = match[1];
+      for (const m of content.matchAll(SOURCE_RE)) {
+        const source = m[1];
         if (suffixes.some((s) => source.endsWith(s))) {
           return true;
         }
@@ -101,9 +99,7 @@ export function findDependentStacks(
   listDir: (dir: string) => string[] | null,
   readFile: (path: string) => string | null,
 ): string[] {
-  return allStacks.filter((stack) =>
-    stackDependsOnModules(stack, moduleNames, listDir, readFile),
-  );
+  return allStacks.filter((stack) => stackDependsOnModules(stack, moduleNames, listDir, readFile));
 }
 
 export function enumerateStacks(

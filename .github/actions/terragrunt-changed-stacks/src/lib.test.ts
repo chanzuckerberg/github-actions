@@ -106,8 +106,7 @@ describe('stackDependsOnModules', () => {
       if (dir === 'terraform/envs/dev/cloud-env') return ['main.tf'];
       return null;
     };
-    const readFile = (p: string): string | null =>
-      p === 'terraform/envs/dev/cloud-env/main.tf' ? tfContent : null;
+    const readFile = (p: string): string | null => (p === 'terraform/envs/dev/cloud-env/main.tf' ? tfContent : null);
 
     expect(stackDependsOnModules('terraform/envs/dev', ['vpc'], listDir, readFile)).toBe(true);
   });
@@ -118,8 +117,7 @@ describe('stackDependsOnModules', () => {
       if (dir === 'terraform/envs/dev/eks') return ['main.tf'];
       return null;
     };
-    const readFile = (p: string): string | null =>
-      p === 'terraform/envs/dev/eks/main.tf' ? unrelatedContent : null;
+    const readFile = (p: string): string | null => (p === 'terraform/envs/dev/eks/main.tf' ? unrelatedContent : null);
 
     expect(stackDependsOnModules('terraform/envs/dev', ['vpc'], listDir, readFile)).toBe(false);
   });
@@ -129,8 +127,7 @@ describe('stackDependsOnModules', () => {
       if (dir === 'terraform/envs/dev') return ['main.tf'];
       return null;
     };
-    const readFile = (p: string): string | null =>
-      p === 'terraform/envs/dev/main.tf' ? tfContent : null;
+    const readFile = (p: string): string | null => (p === 'terraform/envs/dev/main.tf' ? tfContent : null);
 
     expect(stackDependsOnModules('terraform/envs/dev', ['vpc'], listDir, readFile)).toBe(true);
   });
@@ -164,8 +161,7 @@ describe('findDependentStacks', () => {
       return null;
     };
     const readFile = (p: string): string | null => {
-      if (p.includes('dev') || p.includes('prod'))
-        return 'module "vpc" {\n  source = "../../../modules/vpc"\n}';
+      if (p.includes('dev') || p.includes('prod')) return 'module "vpc" {\n  source = "../../../modules/vpc"\n}';
       return 'module "eks" {\n  source = "git@github.com:org/cztack//aws-eks-cluster"\n}';
     };
 
