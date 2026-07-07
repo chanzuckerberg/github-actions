@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.30.0](https://github.com/chanzuckerberg/github-actions/compare/v6.29.4...v6.30.0) (2026-07-07)
+
+
+### Features
+
+* **terragrunt-changed-stacks:** add trigger_all_paths for shared dependency detection ([#589](https://github.com/chanzuckerberg/github-actions/issues/589)) ([3a3c6e2](https://github.com/chanzuckerberg/github-actions/commit/3a3c6e2b7796cfbf419329ac7bd71933a6247964))
+
 ## [6.29.4](https://github.com/chanzuckerberg/github-actions/compare/v6.29.3...v6.29.4) (2026-07-02)
 
 
