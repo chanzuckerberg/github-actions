@@ -59,6 +59,15 @@ on:
         default: |
           terraform/envs
           terraform/accounts
+      trigger_all_paths:
+        description: |
+          Newline-separated shared-code paths (e.g. terraform/modules). When files
+          under these paths change, the action scans each stack's .tf files for
+          module source references and returns only the stacks that depend on the
+          changed modules. Defaults to the fogg layout.
+        required: false
+        type: string
+        default: terraform/modules
       claim_authority:
         description: >
           If true, claim authority for each stack before applying. Fails the job if
@@ -177,6 +186,7 @@ jobs:
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
+          trigger_all_paths: ${{ inputs.trigger_all_paths }}
           github_token: ${{ steps.generate_token.outputs.token }}
 
   set-apply-gate:

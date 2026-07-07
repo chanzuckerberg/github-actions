@@ -13,6 +13,14 @@ inputs:
     description: If 'true', enumerate all stacks regardless of what changed.
     required: false
     default: 'false'
+  trigger_all_paths:
+    description: >
+      Newline-separated shared-code paths (e.g. terraform/modules). When files
+      under these paths change, the action scans each stack's .tf files for
+      module source references and returns only the stacks that depend on the
+      changed modules.
+    required: false
+    default: ''
   github_token:
     description: Token used for change detection via the GitHub API.
     required: false
