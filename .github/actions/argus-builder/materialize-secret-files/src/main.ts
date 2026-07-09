@@ -6,11 +6,8 @@ import * as path from 'path';
 
 // Wire format produced by Go SecretFileMatrixSpec in core/shared/go/ci/matrix.go.
 // Keep in sync when adding new spec types.
-//
-// Path is repo-root-relative. The `context` field is accepted but ignored
-// for backward compatibility during the CLI/action rollout transition.
 export type SecretFileSpec =
-  | { id: string; type: 'path'; path: string; context?: string }
+  | { id: string; type: 'path'; path: string }
   | { id: string; type: 'raw'; from_secret: string }
   | { id: string; type: 'template'; from_secret: string[]; template: string };
 

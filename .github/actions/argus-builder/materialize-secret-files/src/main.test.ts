@@ -74,13 +74,6 @@ describe('materializeSpec', () => {
       expect(result).toBe(`f=${path.join('repo', 'a/b')}`);
     });
 
-    it('ignores context field from old CLI for backward compatibility', () => {
-      const spec: SecretFileSpec = {
-        id: 'f', type: 'path', path: 'a/b', context: './old-context',
-      };
-      const result = materializeSpec(spec, 'img', 'repo', opts);
-      expect(result).toBe(`f=${path.join('repo', 'a/b')}`);
-    });
   });
 
   describe('type: raw', () => {
