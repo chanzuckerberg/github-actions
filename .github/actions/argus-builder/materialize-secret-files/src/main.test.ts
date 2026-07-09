@@ -73,7 +73,6 @@ describe('materializeSpec', () => {
       const result = materializeSpec(spec, 'img', 'repo', opts);
       expect(result).toBe(`f=${path.join('repo', 'a/b')}`);
     });
-
   });
 
   describe('type: raw', () => {
