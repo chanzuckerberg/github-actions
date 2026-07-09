@@ -78,6 +78,30 @@ runs:
       uses: docker/login-action@v4
       with:
         registry: ${{ inputs.registry }}
+    - name: Calculate Branch and Base Names
+      id: refs
+      uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@v6
+    - name: Calculate cache-to and cache-from
+      id: cache
+      uses: actions/github-script@v8
+      env:
+        EXTRA_CACHE_BRANCHES: ${{ inputs.extra_cache_branches }}
+      with:
+        script: |
+          let caches = [
+            "${{ steps.refs.outputs.headRef }}",
+            ...process.env.EXTRA_CACHE_BRANCHES.split(",").filter(Boolean),
+          ]
+          .map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
+          .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:cache-branch-${ref}`);
+
+          console.log(`Will use cached images from ${JSON.stringify(caches, null, 2)}`);
+
+          if (caches.length === 0) {
+            throw new Error("No cache branches found");
+          }
+          core.setOutput("cacheFrom", caches.join('\r\n'));
+          core.setOutput("cacheTo", caches[0])
     - name: Build and push
       uses: docker/build-push-action@v7
       with:
@@ -87,7 +111,10 @@ runs:
         load: ${{ inputs.load }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        no-cache: true
+        cache-from: |
+          ${{ steps.cache.outputs.cacheFrom }}
+        cache-to: |
+          ${{ steps.cache.outputs.cacheTo }},mode=max
         build-args: |
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret-files }}
