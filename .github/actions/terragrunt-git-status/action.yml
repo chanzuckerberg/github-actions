@@ -1,0 +1,44 @@
+name: Terragrunt Git Status
+description: >
+  Manage the apply-gate commit status and auto-merge for the Terragrunt engine.
+  Operations:
+    gate         — post "pending" if stacks changed, "success" if none (plan caller).
+    finalize     — post the aggregate apply result, enable auto-merge on success,
+                   and comment on failure (apply caller).
+    validate-apply  — validate write access, approval, and mergeability for an
+                      /apply comment. Returns approved boolean.
+    validate-unlock — validate write access for an /unlock comment.
+                      Returns approved boolean.
+
+inputs:
+  operation:
+    description: 'One of: gate, finalize, validate-apply, validate-unlock'
+    required: true
+  stacks:
+    description: 'JSON array of stack paths (e.g. ''["terraform/envs/dev"]''). Required for gate and finalize.'
+    required: false
+    default: '[]'
+  status_check_name:
+    description: 'Name of the commit status used as the apply merge gate.'
+    required: false
+    default: terragrunt-apply
+  run_result:
+    description: >
+      Aggregate result of the matrix run (success, failure, cancelled, skipped).
+      Required for the finalize operation.
+    required: false
+    default: ''
+  github_token:
+    description: 'GitHub token for API calls.'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  all_succeeded:
+    description: '"true" if all stacks succeeded, "false" otherwise. Set by finalize.'
+  approved:
+    description: '"true" if validation passed, "false" otherwise. Set by validate-apply and validate-unlock.'
+
+runs:
+  using: node24
+  main: dist/index.js

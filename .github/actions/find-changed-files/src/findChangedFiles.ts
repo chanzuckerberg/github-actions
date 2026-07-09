@@ -20,6 +20,15 @@ export async function findChangedFiles(githubToken: string, sinceCommitSha: stri
     const changedFilePaths = await getChangedFilesInPRSinceCommit(gitClient, repo, owner, prNumber, sinceCommitSha);
     core.info(`Triggered by pull_request event, found changed files in PR: ${JSON.stringify(changedFilePaths, null, 2)}`);
     return { allModifiedFiles: changedFilePaths };
+  } if (github.context.eventName === 'issue_comment') {
+    const prNumber = github.context.payload.issue?.number;
+    if (!prNumber || !github.context.payload.issue?.pull_request) {
+      throw new Error('issue_comment event is not associated with a pull request');
+    }
+
+    const changedFilePaths = await getChangedFilesInPR(gitClient, repo, owner, prNumber);
+    core.info(`Triggered by issue_comment event, found changed files in PR #${prNumber}: ${JSON.stringify(changedFilePaths, null, 2)}`);
+    return { allModifiedFiles: changedFilePaths };
   } if (github.context.eventName === 'push') {
     core.debug(`Push event detected ${JSON.stringify(github.context.payload, null, 2)}`);
     const commitSha = github.context.sha;

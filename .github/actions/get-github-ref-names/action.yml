@@ -52,6 +52,14 @@ runs:
             // so point both refs at it.
             head = context.payload.repository.default_branch;
             base = context.payload.repository.default_branch;
+          } else if (eventName === "issue_comment") {
+            const prNumber = context.payload.issue?.number;
+            if (!prNumber || !context.payload.issue?.pull_request) {
+              core.setFailed("issue_comment event is not on a pull request");
+              return;
+            }
+            head = `refs/pull/${prNumber}/merge`;
+            base = context.payload.repository.default_branch;
           } else {
             core.setFailed(`EventName ${eventName} not supported`);
             return;

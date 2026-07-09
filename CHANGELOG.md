@@ -1,5 +1,76 @@
 # Changelog
 
+## [6.30.0](https://github.com/chanzuckerberg/github-actions/compare/v6.29.4...v6.30.0) (2026-07-07)
+
+
+### Features
+
+* **terragrunt-changed-stacks:** add trigger_all_paths for shared dependency detection ([#589](https://github.com/chanzuckerberg/github-actions/issues/589)) ([3a3c6e2](https://github.com/chanzuckerberg/github-actions/commit/3a3c6e2b7796cfbf419329ac7bd71933a6247964))
+
+## [6.29.4](https://github.com/chanzuckerberg/github-actions/compare/v6.29.3...v6.29.4) (2026-07-02)
+
+
+### BugFixes
+
+* **terragrunt-engine:** run set-apply-gate even when no stacks changed ([#587](https://github.com/chanzuckerberg/github-actions/issues/587)) ([b303665](https://github.com/chanzuckerberg/github-actions/commit/b303665218de6de1a9276802775434783043e4cb))
+
+## [6.29.3](https://github.com/chanzuckerberg/github-actions/compare/v6.29.2...v6.29.3) (2026-07-02)
+
+
+### BugFixes
+
+* **terragrunt-engine:** harden apply-and-merge flow ([#585](https://github.com/chanzuckerberg/github-actions/issues/585)) ([483867a](https://github.com/chanzuckerberg/github-actions/commit/483867a1456a8d258bbd71f625f6ea11c1b4e082))
+
+## [6.29.2](https://github.com/chanzuckerberg/github-actions/compare/v6.29.1...v6.29.2) (2026-06-30)
+
+
+### BugFixes
+
+* **terragrunt-engine:** add !cancelled() to set-apply-gate condition ([#582](https://github.com/chanzuckerberg/github-actions/issues/582)) ([6eae80d](https://github.com/chanzuckerberg/github-actions/commit/6eae80d127de433f25e07b7f3567b5f01c9f249f))
+
+## [6.29.1](https://github.com/chanzuckerberg/github-actions/compare/v6.29.0...v6.29.1) (2026-06-30)
+
+
+### BugFixes
+
+* **terragrunt-engine:** break dependency chain through skipped validate-comment job ([#580](https://github.com/chanzuckerberg/github-actions/issues/580)) ([38c1396](https://github.com/chanzuckerberg/github-actions/commit/38c1396fda5c9ab235e34b91a160ad50baa2eb53))
+
+## [6.29.0](https://github.com/chanzuckerberg/github-actions/compare/v6.28.0...v6.29.0) (2026-06-30)
+
+
+### Features
+
+* **get-github-ref-names:** support issue_comment events ([#577](https://github.com/chanzuckerberg/github-actions/issues/577)) ([ef6e01a](https://github.com/chanzuckerberg/github-actions/commit/ef6e01a072f6cb5e4ac5553027ad2ecc4b223a8e))
+* **terragrunt-git-status:** add comment-gate operation and remove legacy actions ([#579](https://github.com/chanzuckerberg/github-actions/issues/579)) ([ba48111](https://github.com/chanzuckerberg/github-actions/commit/ba481115687747005ed7abd417bbc7c6a5a61d21))
+
+## [6.28.0](https://github.com/chanzuckerberg/github-actions/compare/v6.27.2...v6.28.0) (2026-06-29)
+
+
+### Features
+
+* **terragrunt-engine:** add finalize job and apply-gate status seeding ([#575](https://github.com/chanzuckerberg/github-actions/issues/575)) ([62252e6](https://github.com/chanzuckerberg/github-actions/commit/62252e6b8fe18c7839adf0240def88ce6c87fad8))
+
+## [6.27.2](https://github.com/chanzuckerberg/github-actions/compare/v6.27.1...v6.27.2) (2026-06-29)
+
+
+### BugFixes
+
+* **terragrunt-engine:** use cache role for all stack-authority operations ([#573](https://github.com/chanzuckerberg/github-actions/issues/573)) ([19e3cb8](https://github.com/chanzuckerberg/github-actions/commit/19e3cb85b97b3ed81aaa5eecab6a28354ef4d2b0))
+
+## [6.27.1](https://github.com/chanzuckerberg/github-actions/compare/v6.27.0...v6.27.1) (2026-06-29)
+
+
+### BugFixes
+
+* repin the stack authority github action ([#571](https://github.com/chanzuckerberg/github-actions/issues/571)) ([c6b33d7](https://github.com/chanzuckerberg/github-actions/commit/c6b33d715f8ee1c1c57b257f17dc8cedb9da8c74))
+
+## [6.27.0](https://github.com/chanzuckerberg/github-actions/compare/v6.26.3...v6.27.0) (2026-06-26)
+
+
+### Features
+
+* add stack-authority action and generalize backend discovery ([#568](https://github.com/chanzuckerberg/github-actions/issues/568)) ([771c77d](https://github.com/chanzuckerberg/github-actions/commit/771c77df3bf6a04f88a27adaf0e987b776e4ce57))
+
 ## [6.26.3](https://github.com/chanzuckerberg/github-actions/compare/v6.26.2...v6.26.3) (2026-06-26)
 
 

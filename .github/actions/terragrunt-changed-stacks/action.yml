@@ -1,0 +1,35 @@
+name: Find Changed Terragrunt Stacks
+description: >
+  Resolve the list of Terragrunt stacks to operate on. With all_stacks=true,
+  enumerates every stack one level below each configured base path. Otherwise,
+  finds the files changed in the triggering pull_request or push and maps each
+  to its stack. A stack is one directory below a base path.
+
+inputs:
+  stack_paths:
+    description: Newline-separated base paths. A stack is one directory below each.
+    required: true
+  all_stacks:
+    description: If 'true', enumerate all stacks regardless of what changed.
+    required: false
+    default: 'false'
+  trigger_all_paths:
+    description: >
+      Newline-separated shared-code paths (e.g. terraform/modules). When files
+      under these paths change, the action scans each stack's .tf files for
+      module source references and returns only the stacks that depend on the
+      changed modules.
+    required: false
+    default: ''
+  github_token:
+    description: Token used for change detection via the GitHub API.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  stacks:
+    description: JSON array of stack directories (e.g. ["terraform/envs/dev-central"]).
+
+runs:
+  using: node24
+  main: dist/index.js

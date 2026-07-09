@@ -2,10 +2,6 @@ name: Terragrunt Engine
 
 # Reusable Terragrunt plan/apply engine. Repos call this with a thin caller
 # workflow (see chanzuckerberg/argus-infra-stacks for the reference).
-#
-# This is the parity port of the argus-infra-stacks terragrunt.yml: same
-# plan/apply behavior, with the previously hardcoded values exposed as inputs.
-# Authority/locking and the merge gate are added in later PRs.
 
 on:
   workflow_call:
@@ -63,19 +59,77 @@ on:
         default: |
           terraform/envs
           terraform/accounts
+      trigger_all_paths:
+        description: |
+          Newline-separated shared-code paths (e.g. terraform/modules). When files
+          under these paths change, the action scans each stack's .tf files for
+          module source references and returns only the stacks that depend on the
+          changed modules. Defaults to the fogg layout.
+        required: false
+        type: string
+        default: terraform/modules
+      claim_authority:
+        description: >
+          If true, claim authority for each stack before applying. Fails the job if
+          a stack is owned by another PR. Used by the /apply-and-merge workflow.
+        required: false
+        type: boolean
+        default: false
+      skip_pr_owned:
+        description: >
+          Read each stack's authority record before running. For apply actions, skip
+          any stack owned by a PR (with a warning). For plan actions, annotate but
+          always proceed. Safe to leave on — plans are never blocked.
+        required: false
+        type: boolean
+        default: true
+      release_authority:
+        description: >
+          If true, release authority (reset to main) for each stack after a successful
+          apply. Used by the /apply-and-merge workflow after all stacks succeed.
+        required: false
+        type: boolean
+        default: false
+      auto_merge_on_success:
+        description: >
+          If true, a finalize job runs after all matrix legs complete. On full success
+          it posts a green commit status, releases authority for all stacks, and enables
+          GitHub native auto-merge on the PR. On any failure it posts a red status and
+          comments on the PR. Used by the /apply-and-merge workflow.
+        required: false
+        type: boolean
+        default: false
+      set_apply_gate:
+        description: >
+          If true, set the apply-gate commit status right after stack discovery.
+          Posts "pending" if stacks changed (merge blocked until /apply-and-merge succeeds) or
+          "success" if none changed (docs-only PRs pass through). Used by the plan workflow.
+        required: false
+        type: boolean
+        default: false
+      status_check_name:
+        description: "Name of the commit status used as the apply merge gate."
+        required: false
+        type: string
+        default: terragrunt-apply
+      authority_table:
+        description: "DynamoDB table for authority records. Defaults to the shared fleet-wide state-lock table."
+        required: false
+        type: string
+        default: core-platform-infra-prod-prod-argus-infra-stacks-state-lock
     # Callers should use `secrets: inherit` to pass org/repo secrets by convention.
     # The engine discovers secrets by naming convention:
     #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required)
     #   - EXTRA_DEPLOY_KEYS - additional per-repo deploy keys (optional)
-    #   - GH_ACTIONS_HELPER_APP_ID, GH_ACTIONS_HELPER_PK - org-wide GitHub App (required)
+    #   - TERRAGRUNT_BOT_APP_ID, TERRAGRUNT_BOT_PK - org-wide GitHub App (required)
     #   - TF_ENV_<NAME> - exported as env <NAME> (provider SDK credentials)
     #   - TF_VAR_<name> - exported as-is (Terraform input variables)
     secrets:
-      GH_ACTIONS_HELPER_APP_ID:
-        description: "GitHub App ID for the checkout token (org-wide secret)."
+      TERRAGRUNT_BOT_APP_ID:
+        description: "GitHub App ID for the terragrunt-bot token (org-wide secret)."
         required: false
-      GH_ACTIONS_HELPER_PK:
-        description: "GitHub App private key for the checkout token (org-wide secret)."
+      TERRAGRUNT_BOT_PK:
+        description: "GitHub App private key for the terragrunt-bot token (org-wide secret)."
         required: false
       SHARED_INFRA_DEPLOY_KEY:
         description: "ssh-agent key for fetching private Terraform modules (org-wide secret)."
@@ -85,34 +139,94 @@ on:
         required: false
 
 permissions:
-  actions: write
-  contents: write
+  contents: read
   id-token: write
-  pull-requests: read
 
 jobs:
+  validate-comment:
+    runs-on: ${{ inputs.runner }}
+    if: ${{ github.event_name == 'issue_comment' }}
+    timeout-minutes: 5
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+      - name: Validate /apply-and-merge comment
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        with:
+          operation: validate-apply
+          github_token: ${{ steps.generate_token.outputs.token }}
+      - name: Enforce branch protection
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-branch-protection@terragrunt-branch-protection-v0
+        with:
+          status_check_name: ${{ inputs.status_check_name }}
+          github_token: ${{ steps.generate_token.outputs.token }}
+
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
+    needs: validate-comment
+    if: ${{ !cancelled() && (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') }}
     outputs:
       stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - uses: actions/checkout@v6
       - name: Resolve stacks
         id: stacks
-        uses: chanzuckerberg/github-actions/.github/actions/find-changed-terragrunt-stacks@find-changed-terragrunt-stacks-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-changed-stacks@terragrunt-changed-stacks-v0
         with:
           stack_paths: ${{ inputs.stack_paths }}
           all_stacks: ${{ inputs.all_stacks }}
+          trigger_all_paths: ${{ inputs.trigger_all_paths }}
+          github_token: ${{ steps.generate_token.outputs.token }}
+
+  set-apply-gate:
+    runs-on: ${{ inputs.runner }}
+    needs:
+      - find-changed-stacks
+      - validate-comment
+    if: >-
+      !cancelled() &&
+      inputs.set_apply_gate &&
+      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
+      needs.find-changed-stacks.result == 'success'
+    timeout-minutes: 5
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+      - name: Set apply gate
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        with:
+          operation: gate
+          stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
+          status_check_name: ${{ inputs.status_check_name }}
+          github_token: ${{ steps.generate_token.outputs.token }}
 
   run-all:
     runs-on: ${{ inputs.runner }}
-    needs: find-changed-stacks
+    needs: [validate-comment, find-changed-stacks]
     strategy:
       fail-fast: false
       matrix:
         stack: ${{ fromJson(needs.find-changed-stacks.outputs.stacks) }}
-    if: ${{ needs.find-changed-stacks.outputs.stacks != '[]' }}
+    if: >-
+      !cancelled() &&
+      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
+      needs.find-changed-stacks.result == 'success' &&
+      needs.find-changed-stacks.outputs.stacks != '[]'
     env:
       TG_PROVIDER_CACHE: "1"
       TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
@@ -140,8 +254,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
-          private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Get Base Git Ref
         id: ref
         uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1
@@ -178,23 +292,6 @@ jobs:
           terraform_version: ${{ inputs.terraform_version }}
       - name: Install AWS CLI
         uses: chanzuckerberg/github-actions/.github/actions/install-aws-cli@install-aws-cli-v0
-      - name: Create local module symlinks
-        run: |
-          # Terragrunt 1.0.0 always creates a 2-level-deep .terragrunt-cache dir even for
-          # local-only units, which breaks relative module paths like ../../../modules.
-          # Creating a `modules` symlink at each component dir makes ../../../modules resolve
-          # correctly from within the cache (cache/../../../modules -> component/modules -> terraform/modules).
-          # No-op for repos without a terraform/modules directory.
-          MODULES_ABS="$(pwd)/terraform/modules"
-          if [ ! -d "$MODULES_ABS" ]; then
-            echo "No terraform/modules directory; skipping module symlinks."
-            exit 0
-          fi
-          while IFS= read -r -d '' comp; do
-            if [ ! -d "$comp/modules" ] || [ -L "$comp/modules" ]; then
-              ln -sfn "$MODULES_ABS" "$comp/modules"
-            fi
-          done < <(find "${{ matrix.stack }}" -mindepth 1 -maxdepth 1 -type d -print0)
       - name: Configure AWS credentials (cache role, role chaining)
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -209,6 +306,26 @@ jobs:
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
           provider-cache-key: ${{ env.PROVIDER_CACHE_KEY }}
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
+          stack-root: ${{ matrix.stack }}
+      - name: Check stack authority
+        id: authority
+        if: ${{ inputs.skip_pr_owned }}
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        with:
+          operation: read
+          stacks: ${{ format('["{0}"]', matrix.stack) }}
+          skip_if_owned: ${{ contains(inputs.action, 'apply') }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
+      - name: Claim stack authority
+        id: authority_claim
+        if: ${{ (inputs.claim_authority || github.event_name == 'issue_comment') && (steps.authority.outputs.proceed != 'false') }}
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        with:
+          operation: claim
+          stacks: ${{ format('["{0}"]', matrix.stack) }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
       - name: Configure AWS credentials (CI base role)
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -217,12 +334,14 @@ jobs:
           role-session-name: TerragruntEngine
           unset-current-credentials: true
       - name: export terraform provider secrets
-        uses: chanzuckerberg/github-actions/.github/actions/export-terraform-provider-secrets@export-terraform-provider-secrets-v0
+        if: ${{ steps.authority.outputs.proceed != 'false' }}
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-secrets@terragrunt-provider-secrets-v0
         env:
           ALL_SECRETS: ${{ toJSON(secrets) }}
       - name: Terragrunt ${{ inputs.action }}
         working-directory: ${{ matrix.stack }}
         id: tgaction
+        if: ${{ steps.authority.outputs.proceed != 'false' }}
         timeout-minutes: 90
         run: |
           # Pipefail ensures that a terragrunt failure is reported by the Github Action.
@@ -237,7 +356,7 @@ jobs:
       - name: Store Outputs
         uses: actions/upload-artifact@v7
         id: store
-        if: (success() || failure())
+        if: ${{ (success() || failure()) && steps.authority.outputs.proceed != 'false' }}
         with:
           name: ${{ steps.tgaction.outputs.current_env }}-${{ steps.tgaction.outputs.action_trimmed }}-${{ github.sha }}
           path: |
@@ -250,6 +369,14 @@ jobs:
           role-to-assume: ${{ inputs.cache_role_arn }}
           role-chaining: true
           role-session-name: TerragruntEngineCleanup
+      - name: Release stack authority
+        if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && github.event_name != 'issue_comment' && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        with:
+          operation: release
+          stacks: ${{ format('["{0}"]', matrix.stack) }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
       - name: Upload Provider Cache to S3
         if: always()
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@terragrunt-provider-cache-v0
@@ -260,6 +387,54 @@ jobs:
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
       - name: Release Terragrunt Locks (Cleanup)
         if: always()
-        uses: chanzuckerberg/github-actions/.github/actions/release-terraform-locks@release-terraform-locks-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-release-locks@terragrunt-release-locks-v0
         with:
           stack-root: ${{ matrix.stack }}
+
+  finalize:
+    runs-on: ${{ inputs.runner }}
+    needs: [validate-comment, find-changed-stacks, run-all]
+    if: >-
+      always() &&
+      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
+      needs.find-changed-stacks.result == 'success' &&
+      needs.find-changed-stacks.outputs.stacks != '[]' &&
+      (inputs.auto_merge_on_success || github.event_name == 'issue_comment')
+    timeout-minutes: 10
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngineFinalize
+      - name: Configure AWS credentials (cache role, role chaining)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.cache_role_arn }}
+          role-chaining: true
+          role-session-name: TerragruntEngineFinalizeCache
+      - name: Post status and finalize
+        id: result
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        with:
+          operation: finalize
+          stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
+          status_check_name: ${{ inputs.status_check_name }}
+          run_result: ${{ needs.run-all.result }}
+          github_token: ${{ steps.generate_token.outputs.token }}
+      - name: Release authority (all stacks)
+        if: ${{ steps.result.outputs.all_succeeded == 'true' }}
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        with:
+          operation: release
+          stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
