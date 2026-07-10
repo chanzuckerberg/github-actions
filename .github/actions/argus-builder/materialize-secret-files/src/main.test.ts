@@ -57,21 +57,21 @@ describe('materializeSpec', () => {
   beforeEach(() => { written.length = 0; });
 
   describe('type: path', () => {
-    it('returns id=<repoName>/<context>/<path> without writing any file', () => {
+    it('returns id=<repoName>/<path> without writing any file', () => {
       const spec: SecretFileSpec = {
-        id: 'npmrc', type: 'path', path: '.npmrc.template', context: './src/frontend',
+        id: 'npmrc', type: 'path', path: '.npmrc.template',
       };
       const result = materializeSpec(spec, 'frontend', 'my-repo', opts);
-      expect(result).toBe(`npmrc=${path.join('my-repo', './src/frontend', '.npmrc.template')}`);
+      expect(result).toBe(`npmrc=${path.join('my-repo', '.npmrc.template')}`);
       expect(written).toHaveLength(0);
     });
 
     it('uses path.join so the result is OS-normalised', () => {
       const spec: SecretFileSpec = {
-        id: 'f', type: 'path', path: 'a/b', context: './ctx',
+        id: 'f', type: 'path', path: 'a/b',
       };
       const result = materializeSpec(spec, 'img', 'repo', opts);
-      expect(result).toBe(`f=${path.join('repo', './ctx', 'a/b')}`);
+      expect(result).toBe(`f=${path.join('repo', 'a/b')}`);
     });
   });
 
@@ -169,7 +169,7 @@ describe('materializeAll', () => {
   it('joins multiple spec results with newlines', () => {
     const specs: SecretFileSpec[] = [
       {
-        id: 'a', type: 'path', path: '.file', context: '.',
+        id: 'a', type: 'path', path: '.file',
       },
       { id: 'b', type: 'raw', from_secret: 'NPM_TOKEN' },
     ];

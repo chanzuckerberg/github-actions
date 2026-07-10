@@ -7,7 +7,7 @@ import * as path from 'path';
 // Wire format produced by Go SecretFileMatrixSpec in core/shared/go/ci/matrix.go.
 // Keep in sync when adding new spec types.
 export type SecretFileSpec =
-  | { id: string; type: 'path'; path: string; context: string }
+  | { id: string; type: 'path'; path: string }
   | { id: string; type: 'raw'; from_secret: string }
   | { id: string; type: 'template'; from_secret: string[]; template: string };
 
@@ -54,9 +54,9 @@ export function materializeSpec(
   } = opts;
 
   if (spec.type === 'path') {
-    // Literal file path relative to the build context. The docker-build action
+    // Literal file path relative to the repo root. The docker-build action
     // checks out the repo to <repo-name>/, so we prefix with that.
-    return `${spec.id}=${path.join(repoName, spec.context, spec.path)}`;
+    return `${spec.id}=${path.join(repoName, spec.path)}`;
   }
 
   if (spec.type === 'raw') {
