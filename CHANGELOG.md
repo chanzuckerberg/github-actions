@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.30.1](https://github.com/chanzuckerberg/github-actions/compare/v6.30.0...v6.30.1) (2026-07-10)
+
+
+### BugFixes
+
+* **materialize-secret-files:** use repo-root-relative paths for path type ([#591](https://github.com/chanzuckerberg/github-actions/issues/591)) ([43c0dcd](https://github.com/chanzuckerberg/github-actions/commit/43c0dcd03f46ad43b46c2c8a65d225b9f57de21f))
+
 ## [6.30.0](https://github.com/chanzuckerberg/github-actions/compare/v6.29.4...v6.30.0) (2026-07-07)
 
 
