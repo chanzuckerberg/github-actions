@@ -2,7 +2,8 @@ name: Terragrunt Git Status
 description: >
   Manage the apply-gate commit status and auto-merge for the Terragrunt engine.
   Operations:
-    gate         — post "pending" if stacks changed, "success" if none (plan caller).
+    gate         — post "pending" if stacks changed, "success" if none, and
+                   upsert a command-help comment when stacks changed (plan caller).
     finalize     — post the aggregate apply result, enable auto-merge on success,
                    and comment on failure (apply caller).
     validate-apply  — validate write access, approval, and mergeability for an

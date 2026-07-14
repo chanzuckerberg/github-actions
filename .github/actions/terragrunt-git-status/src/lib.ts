@@ -35,6 +35,78 @@ function runUrl(): string {
   return `${base}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 }
 
+// Hidden marker used to find and update the engine's help comment in place so
+// it is posted once per PR rather than duplicated on every push.
+const helpMarker = '<!-- terragrunt-engine:help -->';
+
+// helpCommentBody renders the informational comment listing every way a user
+// can interact with the Terragrunt engine on a PR. Keep this table current
+// whenever a slash command or label trigger is added or changed.
+function helpCommentBody(statusCheckName: string): string {
+  return [
+    helpMarker,
+    '## Terragrunt engine',
+    '',
+    'This PR changes one or more Terraform stacks. Plans run automatically '
+      + `on every push, and the \`${statusCheckName}\` status check blocks `
+      + 'merge until the changes are applied.',
+    '',
+    '### Slash commands',
+    '',
+    'Comment on this PR to trigger these actions.',
+    '',
+    '| Command | What it does |',
+    '| --- | --- |',
+    '| `/apply-and-merge` | Runs `terragrunt apply` on every changed stack, '
+      + 'then enables squash auto-merge once all stacks apply cleanly. '
+      + 'Requires write access, at least one approval, no merge conflicts, '
+      + 'and a non-draft PR. |',
+    '',
+    '### How it works',
+    '',
+    '- Each changed stack is locked to this PR while it applies, so two PRs '
+      + 'cannot apply the same stack at the same time.',
+    `- The \`${statusCheckName}\` check stays pending until \`/apply-and-merge\` `
+      + 'succeeds. A PR that changes no Terraform stacks passes it automatically.',
+    '- If an apply fails, fix the issue, push, and run `/apply-and-merge` again.',
+    '',
+  ].join('\n');
+}
+
+async function upsertHelpComment(
+  octokit: Octokit,
+  prNumber: number,
+  statusCheckName: string,
+): Promise<void> {
+  const { data: comments } = await octokit.rest.issues.listComments({
+    ...context.repo,
+    issue_number: prNumber,
+    per_page: 100,
+  });
+
+  const existing = comments.find(
+    (c) => c.user?.type === 'Bot' && c.body?.includes(helpMarker),
+  );
+  const body = helpCommentBody(statusCheckName);
+
+  if (existing) {
+    await octokit.rest.issues.updateComment({
+      ...context.repo,
+      comment_id: existing.id,
+      body,
+    });
+    core.info(`Updated help comment ${existing.id}`);
+    return;
+  }
+
+  await octokit.rest.issues.createComment({
+    ...context.repo,
+    issue_number: prNumber,
+    body,
+  });
+  core.info('Posted help comment');
+}
+
 export async function gate(
   octokit: Octokit,
   stacks: string[],
@@ -65,6 +137,12 @@ export async function gate(
       ? `Seeded pending status on ${pr.headSha.slice(0, 7)}`
       : `Seeded success status on ${pr.headSha.slice(0, 7)} (no stacks changed)`,
   );
+
+  // Post the command help comment only when the engine is relevant to this PR
+  // (i.e. it changes at least one stack), so docs-only PRs stay quiet.
+  if (hasStacks) {
+    await upsertHelpComment(octokit, prNumber, statusCheckName);
+  }
 }
 
 export async function finalize(
