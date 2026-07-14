@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.30.2](https://github.com/chanzuckerberg/github-actions/compare/v6.30.1...v6.30.2) (2026-07-14)
+
+
+### BugFixes
+
+* **terragrunt-changed-stacks:** skip file entries when resolving module-dependent stacks ([#593](https://github.com/chanzuckerberg/github-actions/issues/593)) ([be2c435](https://github.com/chanzuckerberg/github-actions/commit/be2c4357ad44b2ca0eac86ecbc40aa871e020e3a))
+
 ## [6.30.1](https://github.com/chanzuckerberg/github-actions/compare/v6.30.0...v6.30.1) (2026-07-10)
 
 

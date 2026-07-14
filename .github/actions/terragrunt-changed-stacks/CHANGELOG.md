@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-changed-stacks-v0.3.0...terragrunt-changed-stacks-v0.3.1) (2026-07-14)
+
+
+### BugFixes
+
+* **terragrunt-changed-stacks:** skip file entries when resolving module-dependent stacks ([#593](https://github.com/chanzuckerberg/github-actions/issues/593)) ([be2c435](https://github.com/chanzuckerberg/github-actions/commit/be2c4357ad44b2ca0eac86ecbc40aa871e020e3a))
+
 ## [0.3.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-changed-stacks-v0.2.1...terragrunt-changed-stacks-v0.3.0) (2026-07-07)
 
 
