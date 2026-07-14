@@ -62,6 +62,9 @@ function helpCommentBody(statusCheckName: string): string {
       + 'then enables squash auto-merge once all stacks apply cleanly. '
       + 'Requires write access, at least one approval, no merge conflicts, '
       + 'and a non-draft PR. |',
+    '| `/unlock` | Force-releases stuck Terraform state locks for the '
+      + 'stacks changed by this PR. Requires write access. Use only when a '
+      + 'previous run left a lock behind. |',
     '',
     '### How it works',
     '',
