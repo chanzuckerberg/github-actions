@@ -45,7 +45,8 @@ const helpMarker = '<!-- terragrunt-engine:help -->';
 function helpCommentBody(statusCheckName: string): string {
   return [
     helpMarker,
-    '## Terragrunt engine',
+    '<details>',
+    '<summary><b>Terragrunt engine</b> — commands and how it works</summary>',
     '',
     'This PR changes one or more Terraform stacks. Plans run automatically '
       + `on every push, and the \`${statusCheckName}\` status check blocks `
@@ -69,6 +70,8 @@ function helpCommentBody(statusCheckName: string): string {
     `- The \`${statusCheckName}\` check stays pending until \`/apply-and-merge\` `
       + 'succeeds. A PR that changes no Terraform stacks passes it automatically.',
     '- If an apply fails, fix the issue, push, and run `/apply-and-merge` again.',
+    '',
+    '</details>',
     '',
   ].join('\n');
 }
