@@ -22,7 +22,7 @@ function listDirEntries(dir: string): string[] | null {
 }
 
 function listAllEntries(dir: string): string[] | null {
-  if (!fs.existsSync(dir)) {
+  if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
     return null;
   }
   return fs.readdirSync(dir);
