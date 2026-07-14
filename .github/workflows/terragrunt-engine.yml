@@ -155,7 +155,7 @@ jobs:
           client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
           private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Validate /apply-and-merge comment
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/terragrunt-engine-help-comment-test
         with:
           operation: validate-apply
           github_token: ${{ steps.generate_token.outputs.token }}
@@ -208,7 +208,7 @@ jobs:
           client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
           private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Set apply gate
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/terragrunt-engine-help-comment-test
         with:
           operation: gate
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
@@ -423,7 +423,7 @@ jobs:
           role-session-name: TerragruntEngineFinalizeCache
       - name: Post status and finalize
         id: result
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/terragrunt-engine-help-comment-test
         with:
           operation: finalize
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
