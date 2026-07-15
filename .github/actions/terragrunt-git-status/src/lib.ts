@@ -84,7 +84,7 @@ async function upsertHelpComment(
   prNumber: number,
   statusCheckName: string,
 ): Promise<void> {
-  const { data: comments } = await octokit.rest.issues.listComments({
+  const comments = await octokit.paginate(octokit.rest.issues.listComments, {
     ...context.repo,
     issue_number: prNumber,
     per_page: 100,
