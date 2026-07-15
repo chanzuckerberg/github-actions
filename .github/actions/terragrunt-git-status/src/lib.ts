@@ -226,8 +226,6 @@ export async function finalize(
   const pr = await fetchPrContext(octokit, prNumber);
   const url = runUrl();
 
-  const applyingCommentId = await findApplyingComment(octokit, prNumber);
-
   if (allSucceeded) {
     let mergeStatus = '';
     try {
@@ -249,12 +247,16 @@ export async function finalize(
     }
 
     const body = [
-      `Apply succeeded for \`${pr.headSha.slice(0, 7)}\` — [workflow run](${url})`,
+      `${quoteTrigger()}Apply succeeded for \`${pr.headSha.slice(0, 7)}\` — [workflow run](${url})`,
       '',
       mergeStatus,
     ].join('\n');
 
-    await upsertComment(octokit, prNumber, applyingCommentId, body);
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body,
+    });
 
     await octokit.rest.repos.createCommitStatus({
       ...context.repo,
@@ -268,12 +270,16 @@ export async function finalize(
     });
   } else {
     const body = [
-      `Apply failed for \`${pr.headSha.slice(0, 7)}\` — [workflow run](${url})`,
+      `${quoteTrigger()}Apply failed for \`${pr.headSha.slice(0, 7)}\` — [workflow run](${url})`,
       '',
       `One or more stacks did not apply cleanly. Fix the issue and run \`${botMention} apply-and-merge\` again.`,
     ].join('\n');
 
-    await upsertComment(octokit, prNumber, applyingCommentId, body);
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body,
+    });
 
     await octokit.rest.repos.createCommitStatus({
       ...context.repo,
@@ -288,44 +294,22 @@ export async function finalize(
   return allSucceeded;
 }
 
-async function findApplyingComment(
-  octokit: Octokit,
-  prNumber: number,
-): Promise<number | null> {
-  const url = runUrl();
-  const { data: comments } = await octokit.rest.issues.listComments({
-    ...context.repo,
-    issue_number: prNumber,
-    per_page: 50,
-    sort: 'created',
-    direction: 'desc',
-  });
-
-  const match = comments.find(
-    (c) => c.user?.type === 'Bot' && c.body?.includes(url),
-  );
-  return match?.id ?? null;
-}
-
-async function upsertComment(
-  octokit: Octokit,
-  prNumber: number,
-  commentId: number | null,
-  body: string,
-): Promise<void> {
-  if (commentId) {
-    await octokit.rest.issues.updateComment({
-      ...context.repo,
-      comment_id: commentId,
-      body,
-    });
-  } else {
-    await octokit.rest.issues.createComment({
-      ...context.repo,
-      issue_number: prNumber,
-      body,
-    });
+// quoteTrigger renders the triggering comment as a blockquote so the bot's
+// reply clearly attributes the request to the original commenter rather than
+// looking like an edit of their comment. Returns an empty string for
+// non-comment events (e.g. the scheduled apply-all path) where there is no
+// comment to quote.
+function quoteTrigger(): string {
+  const commenter = context.payload.comment?.user?.login;
+  const commentBody = context.payload.comment?.body?.trim();
+  if (!commenter || !commentBody) {
+    return '';
   }
+  const quoted = commentBody
+    .split('\n')
+    .map((line) => `> ${line}`)
+    .join('\n');
+  return `> @${commenter} commented:\n>\n${quoted}\n\n`;
 }
 
 function issueCommentContext(): { commenter: string; prNumber: number } | null {
@@ -354,7 +338,7 @@ async function requireWriteAccess(
   await octokit.rest.issues.createComment({
     ...context.repo,
     issue_number: prNumber,
-    body: `\`${botMention} ${command}\` requires write access.`,
+    body: `${quoteTrigger()}\`${botMention} ${command}\` requires write access.`,
   });
   return false;
 }
@@ -378,7 +362,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     await octokit.rest.issues.createComment({
       ...context.repo,
       issue_number: prNumber,
-      body: `\`${botMention} apply-and-merge\` requires at least one approval.`,
+      body: `${quoteTrigger()}\`${botMention} apply-and-merge\` requires at least one approval.`,
     });
     return false;
   }
@@ -391,7 +375,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     await octokit.rest.issues.createComment({
       ...context.repo,
       issue_number: prNumber,
-      body: 'Cannot apply — the pull request is still a draft. Mark it as ready for review and try again.',
+      body: `${quoteTrigger()}Cannot apply — the pull request is still a draft. Mark it as ready for review and try again.`,
     });
     return false;
   }
@@ -399,7 +383,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     await octokit.rest.issues.createComment({
       ...context.repo,
       issue_number: prNumber,
-      body: 'Cannot apply — the branch has conflicts with the base branch. Resolve them and try again.',
+      body: `${quoteTrigger()}Cannot apply — the branch has conflicts with the base branch. Resolve them and try again.`,
     });
     return false;
   }
@@ -427,7 +411,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
   await octokit.rest.issues.createComment({
     ...context.repo,
     issue_number: prNumber,
-    body: `Applying \`${headSha}\` — [workflow run](${runUrl()})`,
+    body: `${quoteTrigger()}Applying \`${headSha}\` — [workflow run](${runUrl()})`,
   });
 
   core.info(`Accepted apply-and-merge from ${commenter}`);
@@ -457,7 +441,7 @@ export async function validateUnlock(octokit: Octokit): Promise<boolean> {
   await octokit.rest.issues.createComment({
     ...context.repo,
     issue_number: prNumber,
-    body: `Releasing Terraform state locks for the changed stacks — [workflow run](${runUrl()})`,
+    body: `${quoteTrigger()}Releasing Terraform state locks for the changed stacks — [workflow run](${runUrl()})`,
   });
 
   core.info(`Accepted unlock from ${commenter}`);
@@ -471,8 +455,8 @@ async function postUnknownCommandComment(
 ): Promise<void> {
   const lines = [
     requested
-      ? `Unknown command \`${botMention} ${requested}\`.`
-      : `No command found after \`${botMention}\`.`,
+      ? `${quoteTrigger()}Unknown command \`${botMention} ${requested}\`.`
+      : `${quoteTrigger()}No command found after \`${botMention}\`.`,
     '',
     'Available commands:',
     '',
