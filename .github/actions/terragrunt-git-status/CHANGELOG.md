@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.2.2...terragrunt-git-status-v0.3.0) (2026-07-20)
+
+
+### Features
+
+* **terragrunt-engine:** dispatch [@terragrunt-bot](https://github.com/terragrunt-bot) PR commands ([#595](https://github.com/chanzuckerberg/github-actions/issues/595)) ([ebdb6e0](https://github.com/chanzuckerberg/github-actions/commit/ebdb6e06f3c1c9285b496b2c3b26948d014e5de0))
+
 ## [0.2.2](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.2.1...terragrunt-git-status-v0.2.2) (2026-07-02)
 
 

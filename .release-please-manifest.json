@@ -2,7 +2,7 @@
 	".github/actions/happy-cleanup": "1.10.0",
 	".github/actions/conventional-commits": "1.9.0",
 	".github/actions/docker-build-push": "1.13.0",
-	".": "6.30.2",
+	".": "6.31.0",
 	".github/actions/install-happy": "1.8.0",
 	".github/actions/deploy-happy-stack": "2.3.0",
 	".github/actions/get-github-ref-names": "1.9.0",
@@ -17,7 +17,7 @@
 	".github/actions/terragrunt-release-locks": "0.3.0",
 	".github/actions/terragrunt-stack-authority": "0.2.2",
 	".github/actions/terragrunt-branch-protection": "0.0.2",
-	".github/actions/terragrunt-git-status": "0.2.2",
+	".github/actions/terragrunt-git-status": "0.3.0",
 	".github/actions/terragrunt-provider-cache": "0.2.0",
 	".github/workflows/terragrunt-engine": "0.2.1"
 }
