@@ -71,7 +71,7 @@ on:
       claim_authority:
         description: >
           If true, claim authority for each stack before applying. Fails the job if
-          a stack is owned by another PR. Used by the /apply-and-merge workflow.
+          a stack is owned by another PR. Used by the @terragrunt-bot apply-and-merge command.
         required: false
         type: boolean
         default: false
@@ -86,7 +86,7 @@ on:
       release_authority:
         description: >
           If true, release authority (reset to main) for each stack after a successful
-          apply. Used by the /apply-and-merge workflow after all stacks succeed.
+          apply. Used by the @terragrunt-bot apply-and-merge command after all stacks succeed.
         required: false
         type: boolean
         default: false
@@ -95,14 +95,14 @@ on:
           If true, a finalize job runs after all matrix legs complete. On full success
           it posts a green commit status, releases authority for all stacks, and enables
           GitHub native auto-merge on the PR. On any failure it posts a red status and
-          comments on the PR. Used by the /apply-and-merge workflow.
+          comments on the PR. Used by the @terragrunt-bot apply-and-merge command.
         required: false
         type: boolean
         default: false
       set_apply_gate:
         description: >
           If true, set the apply-gate commit status right after stack discovery.
-          Posts "pending" if stacks changed (merge blocked until /apply-and-merge succeeds) or
+          Posts "pending" if stacks changed (merge blocked until @terragrunt-bot apply-and-merge succeeds) or
           "success" if none changed (docs-only PRs pass through). Used by the plan workflow.
         required: false
         type: boolean
@@ -143,10 +143,16 @@ permissions:
   id-token: write
 
 jobs:
-  validate-comment:
+  # Single entry point for PR comments. Parses "@terragrunt-bot <command>",
+  # validates it, and exposes the resolved command so the jobs below route to
+  # the right work. Unknown or help commands are handled entirely here (the
+  # action posts the comment) and leave every downstream job skipped.
+  dispatch:
     runs-on: ${{ inputs.runner }}
     if: ${{ github.event_name == 'issue_comment' }}
     timeout-minutes: 5
+    outputs:
+      command: ${{ steps.dispatch.outputs.command }}
     steps:
       - name: Generate token
         id: generate_token
@@ -154,12 +160,15 @@ jobs:
         with:
           client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
           private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
-      - name: Validate /apply-and-merge comment
+      - name: Dispatch @terragrunt-bot command
+        id: dispatch
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
-          operation: validate-apply
+          operation: dispatch
+          status_check_name: ${{ inputs.status_check_name }}
           github_token: ${{ steps.generate_token.outputs.token }}
       - name: Enforce branch protection
+        if: ${{ steps.dispatch.outputs.command == 'apply-and-merge' }}
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-branch-protection@terragrunt-branch-protection-v0
         with:
           status_check_name: ${{ inputs.status_check_name }}
@@ -167,8 +176,13 @@ jobs:
 
   find-changed-stacks:
     runs-on: ${{ inputs.runner }}
-    needs: validate-comment
-    if: ${{ !cancelled() && (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') }}
+    needs: dispatch
+    if: >-
+      !cancelled() &&
+      (needs.dispatch.result == 'success' || needs.dispatch.result == 'skipped') &&
+      (github.event_name != 'issue_comment' ||
+        needs.dispatch.outputs.command == 'apply-and-merge' ||
+        needs.dispatch.outputs.command == 'unlock')
     outputs:
       stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
@@ -193,11 +207,11 @@ jobs:
     runs-on: ${{ inputs.runner }}
     needs:
       - find-changed-stacks
-      - validate-comment
+      - dispatch
     if: >-
       !cancelled() &&
       inputs.set_apply_gate &&
-      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
+      (needs.dispatch.result == 'success' || needs.dispatch.result == 'skipped') &&
       needs.find-changed-stacks.result == 'success'
     timeout-minutes: 5
     steps:
@@ -217,16 +231,18 @@ jobs:
 
   run-all:
     runs-on: ${{ inputs.runner }}
-    needs: [validate-comment, find-changed-stacks]
+    needs: [dispatch, find-changed-stacks]
     strategy:
       fail-fast: false
       matrix:
         stack: ${{ fromJson(needs.find-changed-stacks.outputs.stacks) }}
     if: >-
       !cancelled() &&
-      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
+      (needs.dispatch.result == 'success' || needs.dispatch.result == 'skipped') &&
       needs.find-changed-stacks.result == 'success' &&
-      needs.find-changed-stacks.outputs.stacks != '[]'
+      needs.find-changed-stacks.outputs.stacks != '[]' &&
+      (github.event_name != 'issue_comment' ||
+        needs.dispatch.outputs.command == 'apply-and-merge')
     env:
       TG_PROVIDER_CACHE: "1"
       TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
@@ -391,15 +407,68 @@ jobs:
         with:
           stack-root: ${{ matrix.stack }}
 
+  unlock:
+    runs-on: ${{ inputs.runner }}
+    needs: [dispatch, find-changed-stacks]
+    if: >-
+      !cancelled() &&
+      github.event_name == 'issue_comment' &&
+      needs.dispatch.result == 'success' &&
+      needs.dispatch.outputs.command == 'unlock' &&
+      needs.find-changed-stacks.result == 'success' &&
+      needs.find-changed-stacks.outputs.stacks != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJson(needs.find-changed-stacks.outputs.stacks) }}
+    timeout-minutes: 15
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+      - name: Get Base Git Ref
+        id: ref
+        uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.ref.outputs.headRef || 'refs/heads/main' }}
+          token: ${{ steps.generate_token.outputs.token || github.token }}
+      # OIDC entry point: establishes CI-role credentials so the cache role
+      # (which holds DynamoDB access and is not assumable via OIDC directly)
+      # can be assumed via role chaining below.
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngineUnlock
+      - name: Configure AWS credentials (cache role, role chaining)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.cache_role_arn }}
+          role-chaining: true
+          role-session-name: TerragruntEngineUnlockCache
+      - name: Release Terragrunt Locks
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-release-locks@terragrunt-release-locks-v0
+        with:
+          stack-root: ${{ matrix.stack }}
+
   finalize:
     runs-on: ${{ inputs.runner }}
-    needs: [validate-comment, find-changed-stacks, run-all]
+    needs: [dispatch, find-changed-stacks, run-all]
     if: >-
       always() &&
-      (needs.validate-comment.result == 'success' || needs.validate-comment.result == 'skipped') &&
+      (needs.dispatch.result == 'success' || needs.dispatch.result == 'skipped') &&
       needs.find-changed-stacks.result == 'success' &&
       needs.find-changed-stacks.outputs.stacks != '[]' &&
-      (inputs.auto_merge_on_success || github.event_name == 'issue_comment')
+      (inputs.auto_merge_on_success ||
+        (github.event_name == 'issue_comment' &&
+          needs.dispatch.outputs.command == 'apply-and-merge'))
     timeout-minutes: 10
     steps:
       - name: Generate token

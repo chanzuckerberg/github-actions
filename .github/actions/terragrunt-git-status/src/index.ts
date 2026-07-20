@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import {
-  gate, finalize, validateApply, validateUnlock,
+  gate, finalize, validateApply, validateUnlock, dispatch,
 } from './lib';
 
 async function run(): Promise<void> {
@@ -38,7 +38,7 @@ async function run(): Promise<void> {
     case 'validate-apply': {
       const approved = await validateApply(octokit);
       if (!approved) {
-        core.setFailed('Validation rejected /apply-and-merge');
+        core.setFailed('Validation rejected apply-and-merge');
       }
       break;
     }
@@ -46,13 +46,22 @@ async function run(): Promise<void> {
     case 'validate-unlock': {
       const approved = await validateUnlock(octokit);
       if (!approved) {
-        core.setFailed('Validation rejected /unlock');
+        core.setFailed('Validation rejected unlock');
+      }
+      break;
+    }
+
+    case 'dispatch': {
+      const result = await dispatch(octokit, statusCheckName);
+      core.setOutput('command', result.command);
+      if (!result.ok) {
+        core.setFailed(`Validation rejected ${result.command}`);
       }
       break;
     }
 
     default:
-      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize, validate-apply, validate-unlock`);
+      throw new Error(`Unknown operation: ${operation}. Must be one of: gate, finalize, validate-apply, validate-unlock, dispatch`);
   }
 }
 
