@@ -162,7 +162,7 @@ jobs:
           private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Dispatch @terragrunt-bot command
         id: dispatch
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/terragrunt-engine-dispatch-test
         with:
           operation: dispatch
           status_check_name: ${{ inputs.status_check_name }}
@@ -222,7 +222,7 @@ jobs:
           client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
           private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
       - name: Set apply gate
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/terragrunt-engine-dispatch-test
         with:
           operation: gate
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
@@ -492,7 +492,7 @@ jobs:
           role-session-name: TerragruntEngineFinalizeCache
       - name: Post status and finalize
         id: result
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@heathj/terragrunt-engine-dispatch-test
         with:
           operation: finalize
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
