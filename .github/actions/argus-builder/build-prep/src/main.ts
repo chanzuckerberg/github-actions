@@ -45,7 +45,7 @@ const imagesInputSchema = {
       },
       branches_include: { type: 'array', items: { type: 'string' } },
       branches_ignore: { type: 'array', items: { type: 'string' } },
-      compression: { type: 'string', enum: ['gzip', 'zstd', 'estargz', 'uncompressed'] },
+      compression: { type: 'string', enum: ['gzip', 'zstd', 'estargz'] },
       compression_level: { type: 'string' },
       force_compression: { type: 'boolean' },
     },

@@ -38,7 +38,7 @@ inputs:
     required: false
     default: ""
   compression:
-    description: "Layer compression algorithm (gzip, zstd, estargz, uncompressed). Empty keeps the default (gzip)."
+    description: "Layer compression algorithm (gzip, zstd, estargz). Empty keeps the default (gzip)."
     required: false
     default: ""
   compression_level:
