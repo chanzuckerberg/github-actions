@@ -122,7 +122,7 @@ runs:
         COMPRESSION_LEVEL: ${{ inputs.compression_level }}
         FORCE_COMPRESSION: ${{ inputs.force_compression }}
       run: |
-        out="type=image,push=true,compression=${COMPRESSION},compression-level=${COMPRESSION_LEVEL},force-compression=${FORCE_COMPRESSION}"
+        out="type=registry,compression=${COMPRESSION},compression-level=${COMPRESSION_LEVEL},force-compression=${FORCE_COMPRESSION}"
         echo "spec=${out}" >> "$GITHUB_OUTPUT"
     - name: Build and push
       uses: docker/build-push-action@v7
