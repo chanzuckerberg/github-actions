@@ -37,6 +37,18 @@ inputs:
     description: "Comma delimited list of extra cache branches to use after the current branch the build is happening on"
     required: false
     default: ""
+  compression:
+    description: "Layer compression algorithm (gzip, zstd, estargz, uncompressed). Empty keeps the default (gzip)."
+    required: false
+    default: ""
+  compression_level:
+    description: "Compression level (0-9 for gzip/estargz, 0-22 for zstd). Empty keeps the algorithm default."
+    required: false
+    default: ""
+  force_compression:
+    description: "Re-compress cached layers with the chosen algorithm (true/false). Empty keeps the default (false)."
+    required: false
+    default: ""
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -102,12 +114,31 @@ runs:
           }
           core.setOutput("cacheFrom", caches.join('\r\n'));
           core.setOutput("cacheTo", caches[0])
+    - name: Compute image output
+      id: output
+      shell: bash
+      env:
+        COMPRESSION: ${{ inputs.compression }}
+        COMPRESSION_LEVEL: ${{ inputs.compression_level }}
+        FORCE_COMPRESSION: ${{ inputs.force_compression }}
+      run: |
+        out="type=image,push=true"
+        if [[ -n "$COMPRESSION" ]]; then
+          out="${out},compression=${COMPRESSION}"
+          if [[ -n "$COMPRESSION_LEVEL" ]]; then
+            out="${out},compression-level=${COMPRESSION_LEVEL}"
+          fi
+          if [[ "$FORCE_COMPRESSION" == "true" ]]; then
+            out="${out},force-compression=true"
+          fi
+        fi
+        echo "spec=${out}" >> "$GITHUB_OUTPUT"
     - name: Build and push
       uses: docker/build-push-action@v7
       with:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
-        push: true
+        outputs: ${{ steps.output.outputs.spec }}
         load: ${{ inputs.load }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
