@@ -122,8 +122,10 @@ runs:
         COMPRESSION_LEVEL: ${{ inputs.compression_level }}
         FORCE_COMPRESSION: ${{ inputs.force_compression }}
       run: |
-        out="type=registry,compression=${COMPRESSION},compression-level=${COMPRESSION_LEVEL},force-compression=${FORCE_COMPRESSION}"
-        echo "spec=${out}" >> "$GITHUB_OUTPUT"
+        c="${COMPRESSION:-gzip}"
+        cl="${COMPRESSION_LEVEL:-3}"
+        fc="${FORCE_COMPRESSION:-false}"
+        echo "spec=type=registry,compression=${c},compression-level=${cl},force-compression=${fc}" >> "$GITHUB_OUTPUT"
     - name: Build and push
       uses: docker/build-push-action@v7
       with:
