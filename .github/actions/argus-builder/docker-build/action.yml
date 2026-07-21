@@ -53,13 +53,13 @@ inputs:
     required: false
     default: "false"
   compression:
-    description: "Layer compression algorithm (gzip, zstd, estargz). Empty uses the default (gzip)."
+    description: "Layer compression algorithm (gzip, zstd, estargz)."
     required: false
-    default: ""
+    default: "gzip"
   compression_level:
-    description: "Compression level (0-9 for gzip/estargz, 0-22 for zstd). Empty uses the algorithm default."
+    description: "Compression level (0-9 for gzip/estargz, 0-22 for zstd)."
     required: false
-    default: ""
+    default: "3"
   force_compression:
     description: "Re-compress cached layers with the chosen algorithm."
     required: false

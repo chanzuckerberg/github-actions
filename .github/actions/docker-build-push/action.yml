@@ -38,13 +38,13 @@ inputs:
     required: false
     default: ""
   compression:
-    description: "Layer compression algorithm (gzip, zstd, estargz). Empty keeps the default (gzip)."
+    description: "Layer compression algorithm (gzip, zstd, estargz)."
     required: false
-    default: ""
+    default: "gzip"
   compression_level:
-    description: "Compression level (0-9 for gzip/estargz, 0-22 for zstd). Empty keeps the algorithm default."
+    description: "Compression level (0-9 for gzip/estargz, 0-22 for zstd)."
     required: false
-    default: ""
+    default: "3"
   force_compression:
     description: "Re-compress cached layers with the chosen algorithm."
     required: false
@@ -122,16 +122,7 @@ runs:
         COMPRESSION_LEVEL: ${{ inputs.compression_level }}
         FORCE_COMPRESSION: ${{ inputs.force_compression }}
       run: |
-        out="type=image,push=true"
-        if [[ -n "$COMPRESSION" ]]; then
-          out="${out},compression=${COMPRESSION}"
-          if [[ -n "$COMPRESSION_LEVEL" ]]; then
-            out="${out},compression-level=${COMPRESSION_LEVEL}"
-          fi
-          if [[ "$FORCE_COMPRESSION" == "true" ]]; then
-            out="${out},force-compression=true"
-          fi
-        fi
+        out="type=image,push=true,compression=${COMPRESSION},compression-level=${COMPRESSION_LEVEL},force-compression=${FORCE_COMPRESSION}"
         echo "spec=${out}" >> "$GITHUB_OUTPUT"
     - name: Build and push
       uses: docker/build-push-action@v7
