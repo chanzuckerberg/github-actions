@@ -61,9 +61,9 @@ inputs:
     required: false
     default: ""
   force_compression:
-    description: "Re-compress cached layers with the chosen algorithm (true/false). Empty leaves the default (false)."
+    description: "Re-compress cached layers with the chosen algorithm."
     required: false
-    default: ""
+    default: "false"
 
 outputs:
   image_uri:
