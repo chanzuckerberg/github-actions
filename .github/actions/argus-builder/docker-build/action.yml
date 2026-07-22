@@ -52,6 +52,18 @@ inputs:
     description: "DEPRECATED"
     required: false
     default: "false"
+  compression:
+    description: "Layer compression algorithm (gzip, zstd, estargz)."
+    required: false
+    default: "zstd"
+  compression_level:
+    description: "Compression level (0-9 for gzip/estargz, 0-22 for zstd)."
+    required: false
+    default: "3"
+  force_compression:
+    description: "Re-compress cached layers with the chosen algorithm."
+    required: false
+    default: "true"
 
 outputs:
   image_uri:
@@ -145,6 +157,9 @@ runs:
         secret-files: ${{ inputs.secret_files }}
         load: "false"
         extra_cache_branches: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
+        compression: ${{ inputs.compression }}
+        compression_level: ${{ inputs.compression_level }}
+        force_compression: ${{ inputs.force_compression }}
     - name: Job summary
       uses: actions/github-script@v9
       env:

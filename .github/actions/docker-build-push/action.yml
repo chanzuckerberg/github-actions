@@ -37,6 +37,18 @@ inputs:
     description: "Comma delimited list of extra cache branches to use after the current branch the build is happening on"
     required: false
     default: ""
+  compression:
+    description: "Layer compression algorithm (gzip, zstd, estargz)."
+    required: false
+    default: "zstd"
+  compression_level:
+    description: "Compression level (0-9 for gzip/estargz, 0-22 for zstd)."
+    required: false
+    default: "3"
+  force_compression:
+    description: "Re-compress cached layers with the chosen algorithm."
+    required: false
+    default: "true"
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -102,12 +114,24 @@ runs:
           }
           core.setOutput("cacheFrom", caches.join('\r\n'));
           core.setOutput("cacheTo", caches[0])
+    - name: Compute image output
+      id: output
+      shell: bash
+      env:
+        COMPRESSION: ${{ inputs.compression }}
+        COMPRESSION_LEVEL: ${{ inputs.compression_level }}
+        FORCE_COMPRESSION: ${{ inputs.force_compression }}
+      run: |
+        c="${COMPRESSION:-zstd}"
+        cl="${COMPRESSION_LEVEL:-3}"
+        fc="${FORCE_COMPRESSION:-true}"
+        echo "spec=type=registry,compression=${c},compression-level=${cl},force-compression=${fc}" >> "$GITHUB_OUTPUT"
     - name: Build and push
       uses: docker/build-push-action@v7
       with:
         file: ${{ inputs.dockerfile }}
         context: ${{ inputs.context }}
-        push: true
+        outputs: ${{ steps.output.outputs.spec }}
         load: ${{ inputs.load }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
