@@ -48,7 +48,7 @@ inputs:
   force_compression:
     description: "Re-compress cached layers with the chosen algorithm."
     required: false
-    default: "false"
+    default: "true"
 outputs:
   tags:
     description: "The tags we built and pushed"
@@ -124,7 +124,7 @@ runs:
       run: |
         c="${COMPRESSION:-gzip}"
         cl="${COMPRESSION_LEVEL:-3}"
-        fc="${FORCE_COMPRESSION:-false}"
+        fc="${FORCE_COMPRESSION:-true}"
         echo "spec=type=registry,compression=${c},compression-level=${cl},force-compression=${fc}" >> "$GITHUB_OUTPUT"
     - name: Build and push
       uses: docker/build-push-action@v7
