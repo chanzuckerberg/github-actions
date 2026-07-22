@@ -140,7 +140,7 @@ runs:
         RELEASE_PLEASE_BRANCHES=$(git ls-remote --heads origin 'release-please*' | awk -F'/' '{print $NF}' | tr '\n' ',' || true)
         echo "RELEASE_PLEASE_BRANCHES=${RELEASE_PLEASE_BRANCHES}" >> $GITHUB_OUTPUT
     - name: Build And Push
-      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@heathj/zstd-compression
+      uses: chanzuckerberg/github-actions/.github/actions/docker-build-push@v6
       with:
         dockerfile: ${{ github.event.repository.name }}/${{ inputs.dockerfile }}
         context: ${{ github.event.repository.name }}/${{ inputs.context }}
