@@ -40,7 +40,7 @@ inputs:
   compression:
     description: "Layer compression algorithm (gzip, zstd, estargz)."
     required: false
-    default: "gzip"
+    default: "zstd"
   compression_level:
     description: "Compression level (0-9 for gzip/estargz, 0-22 for zstd)."
     required: false
@@ -122,7 +122,7 @@ runs:
         COMPRESSION_LEVEL: ${{ inputs.compression_level }}
         FORCE_COMPRESSION: ${{ inputs.force_compression }}
       run: |
-        c="${COMPRESSION:-gzip}"
+        c="${COMPRESSION:-zstd}"
         cl="${COMPRESSION_LEVEL:-3}"
         fc="${FORCE_COMPRESSION:-true}"
         echo "spec=type=registry,compression=${c},compression-level=${cl},force-compression=${fc}" >> "$GITHUB_OUTPUT"
