@@ -45,6 +45,9 @@ const imagesInputSchema = {
       },
       branches_include: { type: 'array', items: { type: 'string' } },
       branches_ignore: { type: 'array', items: { type: 'string' } },
+      compression: { type: 'string', enum: ['gzip', 'zstd', 'estargz'] },
+      compression_level: { type: 'string' },
+      force_compression: { type: 'boolean' },
     },
     required: ['context', 'dockerfile'],
   },
@@ -60,6 +63,9 @@ type ImageInput = {
   path_filters?: string[] | string[][]
   branches_include?: string[]
   branches_ignore?: string[]
+  compression?: string
+  compression_level?: string
+  force_compression?: boolean
 };
 
 type Inputs = {
@@ -207,6 +213,9 @@ export function processImagesInput(images: Record<string, ImageInput>, changedFi
       build_args: buildArgs,
       secret_files: secretFiles,
       argus_root: argusRoot,
+      compression: image.compression || '',
+      compression_level: image.compression_level || '',
+      force_compression: image.force_compression || false,
       files_matched: filesMatched,
       branch_matched: branchMatched,
       should_build: filesMatched && branchMatched,

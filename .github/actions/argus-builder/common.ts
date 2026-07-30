@@ -9,6 +9,9 @@ export type ProcessedImage = {
   build_args: string
   secret_files: string
   argus_root: string
+  compression: string
+  compression_level: string
+  force_compression: boolean
   files_matched: boolean
   branch_matched: boolean
   should_build: boolean

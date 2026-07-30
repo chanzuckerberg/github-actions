@@ -196,5 +196,8 @@ jobs:
           image_tag: ${{ matrix.image.tag }}
           additional_tags: ${{ matrix.image.additional_tags }}
           commit_sha: ${{ needs.resolve.outputs.trigger_sha }}
+          compression: ${{ matrix.image.compression }}
+          compression_level: ${{ matrix.image.compression_level }}
+          force_compression: ${{ matrix.image.force_compression }}
           github_app_id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
           github_private_key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
