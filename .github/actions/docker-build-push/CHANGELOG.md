@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.13.0...docker-build-push-v1.14.0) (2026-07-30)
+
+
+### Features
+
+* **argus-builder:** add per-image zstd layer compression ([#598](https://github.com/chanzuckerberg/github-actions/issues/598)) ([9f9687c](https://github.com/chanzuckerberg/github-actions/commit/9f9687cbbf8bace5bd7e4f636597e33bec6afbf4))
+
 ## [1.13.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.12.0...docker-build-push-v1.13.0) (2026-06-10)
 
 
