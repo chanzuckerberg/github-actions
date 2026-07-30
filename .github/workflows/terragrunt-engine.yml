@@ -117,10 +117,21 @@ on:
         required: false
         type: string
         default: core-platform-infra-prod-prod-argus-infra-stacks-state-lock
+      modules_via_app_token:
+        description: >
+          Fetch private Terraform modules over HTTPS using an org-scoped
+          terragrunt-bot token instead of SSH deploy keys. Requires the app to be
+          installed on every repo the modules come from. Opt-in while repos still
+          rely on SHARED_INFRA_DEPLOY_KEY and EXTRA_DEPLOY_KEYS.
+        required: false
+        type: boolean
+        default: false
     # Callers should use `secrets: inherit` to pass org/repo secrets by convention.
     # The engine discovers secrets by naming convention:
-    #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required)
-    #   - EXTRA_DEPLOY_KEYS - additional per-repo deploy keys (optional)
+    #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required
+    #     unless modules_via_app_token is set)
+    #   - EXTRA_DEPLOY_KEYS - additional per-repo deploy keys (optional, and
+    #     unnecessary when modules_via_app_token is set)
     #   - TERRAGRUNT_BOT_APP_ID, TERRAGRUNT_BOT_PK - org-wide GitHub App (required)
     #   - TF_ENV_<NAME> - exported as env <NAME> (provider SDK credentials)
     #   - TF_VAR_<name> - exported as-is (Terraform input variables)
@@ -253,10 +264,8 @@ jobs:
         run: |
           mkdir -p ~/.ssh/
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-      # TODO: requiring a per-repo SSH deploy key just to fetch private Terraform
-      # modules is painful to set up for every adopting repo. Replace this with a
-      # better mechanism (e.g. a GitHub App token scoped to read the module repos,
-      # or a shared modules source) so onboarding does not need per-repo SSH keys.
+      # Superseded by modules_via_app_token for repos that opt in. Kept for the
+      # repos still fetching modules with SHARED_INFRA_DEPLOY_KEY / EXTRA_DEPLOY_KEYS.
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.10.0
         with:
@@ -280,6 +289,27 @@ jobs:
         with:
           ref: ${{ steps.ref.outputs.headRef || 'refs/heads/main' }}
           token: ${{ steps.generate_token.outputs.token || github.token }}
+      # An owner-scoped token reaches every repo the app is installed on, unlike
+      # the repo-scoped token above which only covers the calling repo.
+      - name: Generate module-read token
+        id: module_token
+        if: inputs.modules_via_app_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          owner: ${{ github.repository_owner }}
+      # Rewriting the URL rather than the module sources means repos keep their
+      # existing git@github.com: sources and need no deploy keys.
+      - name: Route private module fetches through the app token
+        if: inputs.modules_via_app_token
+        env:
+          MODULE_TOKEN: ${{ steps.module_token.outputs.token }}
+        run: |
+          for prefix in "ssh://git@github.com/" "git@github.com:" "git://github.com/"; do
+            git config --global --add \
+              url."https://x-access-token:${MODULE_TOKEN}@github.com/".insteadOf "$prefix"
+          done
       # OIDC entry point: establishes CI-role credentials in the environment.
       # The cache-role step below uses role-chaining to assume the cache role
       # FROM these credentials (the cache role is not assumable via OIDC
