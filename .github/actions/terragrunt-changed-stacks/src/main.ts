@@ -38,22 +38,23 @@ function readFileContent(filePath: string): string | null {
 
 export async function run(): Promise<void> {
   const bases = parseBases(core.getInput('stack_paths', { required: true }));
+  const stackDirs = parseBases(core.getInput('stack_dirs'));
   const allStacks = core.getBooleanInput('all_stacks');
   const triggerPaths = parseBases(core.getInput('trigger_all_paths'));
 
   let stacks: string[];
   if (allStacks) {
-    stacks = enumerateStacks(bases, listDirEntries);
+    stacks = enumerateStacks(bases, listDirEntries, stackDirs);
   } else {
     const token = core.getInput('github_token', { required: true });
     const result = await findChangedFiles(token);
 
-    const directStacks = stacksFromChangedFiles(result.allModifiedFiles, bases);
+    const directStacks = stacksFromChangedFiles(result.allModifiedFiles, bases, stackDirs);
     const changedModules = extractChangedModules(result.allModifiedFiles, triggerPaths);
 
     if (changedModules.length > 0) {
       core.info(`Changed modules: ${changedModules.join(', ')}`);
-      const allEnumerated = enumerateStacks(bases, listDirEntries);
+      const allEnumerated = enumerateStacks(bases, listDirEntries, stackDirs);
       const dependent = findDependentStacks(allEnumerated, changedModules, listAllEntries, readFileContent);
       core.info(`Dependent stacks: ${JSON.stringify(dependent)}`);
       stacks = [...new Set([...directStacks, ...dependent])];

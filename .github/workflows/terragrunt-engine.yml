@@ -59,6 +59,14 @@ on:
         default: |
           terraform/envs
           terraform/accounts
+      stack_dirs:
+        description: |
+          Newline-separated stack directories named outright, for stacks that are not
+          one directory below a base path. Set this to terraform/global to bring the
+          fogg global stack under the engine.
+        required: false
+        type: string
+        default: ""
       trigger_all_paths:
         description: |
           Newline-separated shared-code paths (e.g. terraform/modules). When files
@@ -191,6 +199,7 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-changed-stacks@terragrunt-changed-stacks-v0
         with:
           stack_paths: ${{ inputs.stack_paths }}
+          stack_dirs: ${{ inputs.stack_dirs }}
           all_stacks: ${{ inputs.all_stacks }}
           trigger_all_paths: ${{ inputs.trigger_all_paths }}
           github_token: ${{ steps.generate_token.outputs.token }}

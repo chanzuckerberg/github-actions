@@ -2,6 +2,9 @@
 // A "stack" is one directory below a configured base path. For the fogg layout,
 // env stacks aggregate their component subdirs and account stacks sit directly
 // under the base, but this logic makes no fogg-specific assumptions.
+//
+// Stacks can also be named outright via stackDirs, for a stack that is not one
+// directory below anything (e.g. terraform/global).
 
 export function parseBases(stackPaths: string): string[] {
   return stackPaths
@@ -10,7 +13,13 @@ export function parseBases(stackPaths: string): string[] {
     .filter(Boolean);
 }
 
-export function stackForFile(file: string, bases: string[]): string | null {
+export function stackForFile(file: string, bases: string[], stackDirs: string[] = []): string | null {
+  // A named stack wins over base-path depth so it still resolves when it sits
+  // under one of the bases.
+  const named = stackDirs.find((d) => file === d || file.startsWith(`${d}/`));
+  if (named) {
+    return named;
+  }
   const base = bases.find((b) => file === b || file.startsWith(`${b}/`));
   if (!base) {
     return null;
@@ -19,9 +28,13 @@ export function stackForFile(file: string, bases: string[]): string | null {
   return file.split('/').slice(0, depth).join('/');
 }
 
-export function stacksFromChangedFiles(files: string[], bases: string[]): string[] {
+export function stacksFromChangedFiles(
+  files: string[],
+  bases: string[],
+  stackDirs: string[] = [],
+): string[] {
   const stacks = files
-    .map((f) => stackForFile(f, bases))
+    .map((f) => stackForFile(f, bases, stackDirs))
     .filter((s): s is string => s !== null);
   return [...new Set(stacks)];
 }
@@ -105,10 +118,12 @@ export function findDependentStacks(
 export function enumerateStacks(
   bases: string[],
   listDir: (base: string) => string[] | null,
+  stackDirs: string[] = [],
 ): string[] {
-  const stacks = bases.flatMap((base) => {
+  const discovered = bases.flatMap((base) => {
     const entries = listDir(base);
     return entries ? entries.map((name) => `${base}/${name}`) : [];
   });
-  return [...new Set(stacks)];
+  const named = stackDirs.filter((d) => listDir(d) !== null);
+  return [...new Set([...discovered, ...named])];
 }
