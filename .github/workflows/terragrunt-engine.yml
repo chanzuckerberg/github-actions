@@ -62,11 +62,12 @@ on:
       stack_dirs:
         description: |
           Newline-separated stack directories named outright, for stacks that are not
-          one directory below a base path. Set this to terraform/global to bring the
-          fogg global stack under the engine.
+          one directory below a base path. Defaults to the fogg global stack. A named
+          stack that does not exist in the repo is skipped, so this is inert for repos
+          without one.
         required: false
         type: string
-        default: ""
+        default: terraform/global
       trigger_all_paths:
         description: |
           Newline-separated shared-code paths (e.g. terraform/modules). When files
