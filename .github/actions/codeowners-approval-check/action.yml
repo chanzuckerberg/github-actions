@@ -1,0 +1,40 @@
+name: 'CODEOWNERS Approval Check'
+description: >
+  Passes only when every changed file that matches a CODEOWNERS rule is either
+  authored by a code owner or has an APPROVED review from a code owner. Team
+  owners (@org/team) are expanded to members via an org-scoped token.
+author: 'CZI'
+
+inputs:
+  github-token:
+    description: 'Token used to read PR files and reviews (needs pull-requests: read).'
+    required: false
+    default: ${{ github.token }}
+  org-token:
+    description: >
+      GitHub App installation token with organization Members:read. Used only to
+      expand @org/team CODEOWNERS entries into their member logins.
+    required: true
+  org:
+    description: 'Organization whose teams are expanded. Defaults to the repository owner.'
+    required: false
+    default: ${{ github.repository_owner }}
+  codeowners-path:
+    description: 'Path to the CODEOWNERS file within the repository.'
+    required: false
+    default: '.github/CODEOWNERS'
+  dismiss_stale_approvals:
+    description: >
+      When true, only count an APPROVED review if it was submitted on the PR's
+      current head SHA (approvals on earlier commits are ignored). When false,
+      the latest APPROVED review counts regardless of commit.
+    required: false
+    default: 'false'
+
+runs:
+  using: 'node24'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
