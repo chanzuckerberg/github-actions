@@ -26,20 +26,20 @@ on:
         type: string
         default: us-west-2
       ci_role_arn:
-        description: "IAM role the engine assumes to run Terragrunt (OIDC). Defaults to the fleet-wide argus-infra-stacks CI role."
+        description: "IAM role the engine assumes to run Terragrunt (OIDC). Defaults to the org-wide terragrunt-engine CI role, which trusts every chanzuckerberg repo."
         required: false
         type: string
-        default: arn:aws:iam::416703108729:role/argus-infra-stacks-ci
+        default: arn:aws:iam::416703108729:role/terragrunt-engine-ci
       cache_role_arn:
         description: "IAM role (assumed via role chaining) for the provider-cache S3 bucket and lock cleanup. Defaults to the fleet-wide argus tfe-si role."
         required: false
         type: string
         default: arn:aws:iam::533267185808:role/tfe-si
       provider_cache_bucket:
-        description: "S3 bucket holding the shared Terraform provider cache tarball. Defaults to the fleet-wide argus bucket."
+        description: "S3 bucket holding the shared Terraform provider cache tarball. Defaults to the shared terragrunt-engine state bucket."
         required: false
         type: string
-        default: core-platform-infra-prod-prod-argus-infra-stacks-state
+        default: terragrunt-engine-state
       terraform_version:
         description: "Terraform version to install."
         required: false
@@ -113,10 +113,10 @@ on:
         type: string
         default: terragrunt-apply
       authority_table:
-        description: "DynamoDB table for authority records. Defaults to the shared fleet-wide state-lock table."
+        description: "DynamoDB table for authority records. Defaults to the shared terragrunt-engine state-lock table."
         required: false
         type: string
-        default: core-platform-infra-prod-prod-argus-infra-stacks-state-lock
+        default: terragrunt-engine-state-lock
     # Callers should use `secrets: inherit` to pass org/repo secrets by convention.
     # The engine discovers secrets by naming convention:
     #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required)
