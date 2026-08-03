@@ -59,6 +59,15 @@ on:
         default: |
           terraform/envs
           terraform/accounts
+      stack_dirs:
+        description: |
+          Newline-separated stack directories named outright, for stacks that are not
+          one directory below a base path. Defaults to the fogg global stack. A named
+          stack that does not exist in the repo is skipped, so this is inert for repos
+          without one.
+        required: false
+        type: string
+        default: terraform/global
       trigger_all_paths:
         description: |
           Newline-separated shared-code paths (e.g. terraform/modules). When files
@@ -119,8 +128,6 @@ on:
         default: terragrunt-engine-state-lock
     # Callers should use `secrets: inherit` to pass org/repo secrets by convention.
     # The engine discovers secrets by naming convention:
-    #   - SHARED_INFRA_DEPLOY_KEY - org-wide shared-infra deploy key (required)
-    #   - EXTRA_DEPLOY_KEYS - additional per-repo deploy keys (optional)
     #   - TERRAGRUNT_BOT_APP_ID, TERRAGRUNT_BOT_PK - org-wide GitHub App (required)
     #   - TF_ENV_<NAME> - exported as env <NAME> (provider SDK credentials)
     #   - TF_VAR_<name> - exported as-is (Terraform input variables)
@@ -130,12 +137,6 @@ on:
         required: false
       TERRAGRUNT_BOT_PK:
         description: "GitHub App private key for the terragrunt-bot token (org-wide secret)."
-        required: false
-      SHARED_INFRA_DEPLOY_KEY:
-        description: "ssh-agent key for fetching private Terraform modules (org-wide secret)."
-        required: false
-      EXTRA_DEPLOY_KEYS:
-        description: "Additional ssh-agent keys (newline-separated PEMs) for repos needing more than the shared key."
         required: false
 
 permissions:
@@ -199,6 +200,7 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-changed-stacks@terragrunt-changed-stacks-v0
         with:
           stack_paths: ${{ inputs.stack_paths }}
+          stack_dirs: ${{ inputs.stack_dirs }}
           all_stacks: ${{ inputs.all_stacks }}
           trigger_all_paths: ${{ inputs.trigger_all_paths }}
           github_token: ${{ steps.generate_token.outputs.token }}
@@ -249,23 +251,6 @@ jobs:
       # Cache key is always derived from the calling repo: terraform/<owner>/<repo>/...
       PROVIDER_CACHE_KEY: ${{ format('terraform/{0}/provider-cache/providers.tar.gz', github.repository) }}
     steps:
-      - name: Github SSH known hosts
-        run: |
-          mkdir -p ~/.ssh/
-          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-      # TODO: requiring a per-repo SSH deploy key just to fetch private Terraform
-      # modules is painful to set up for every adopting repo. Replace this with a
-      # better mechanism (e.g. a GitHub App token scoped to read the module repos,
-      # or a shared modules source) so onboarding does not need per-repo SSH keys.
-      - name: Install SSH key
-        uses: webfactory/ssh-agent@v0.10.0
-        with:
-          # ssh-agent loads newline-separated keys: the shared deploy key plus
-          # any extra per-repo keys. An absent secret expands to an empty line,
-          # which the action ignores.
-          ssh-private-key: |
-            ${{ secrets.SHARED_INFRA_DEPLOY_KEY }}
-            ${{ secrets.EXTRA_DEPLOY_KEYS }}
       - name: Generate token
         id: generate_token
         uses: actions/create-github-app-token@v3
@@ -280,6 +265,25 @@ jobs:
         with:
           ref: ${{ steps.ref.outputs.headRef || 'refs/heads/main' }}
           token: ${{ steps.generate_token.outputs.token || github.token }}
+      # An owner-scoped token reaches every repo the app is installed on, unlike
+      # the repo-scoped token above which only covers the calling repo.
+      - name: Generate module-read token
+        id: module_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          owner: ${{ github.repository_owner }}
+      # Rewriting the URL rather than the module sources means repos keep their
+      # existing git@github.com: sources and need no deploy keys.
+      - name: Route private module fetches through the app token
+        env:
+          MODULE_TOKEN: ${{ steps.module_token.outputs.token }}
+        run: |
+          for prefix in "ssh://git@github.com/" "git@github.com:" "git://github.com/"; do
+            git config --global --add \
+              url."https://x-access-token:${MODULE_TOKEN}@github.com/".insteadOf "$prefix"
+          done
       # OIDC entry point: establishes CI-role credentials in the environment.
       # The cache-role step below uses role-chaining to assume the cache role
       # FROM these credentials (the cache role is not assumable via OIDC
