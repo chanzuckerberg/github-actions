@@ -35,6 +35,26 @@ describe('stackForFile', () => {
   it('returns null for files outside any base', () => {
     expect(stackForFile('README.md', bases)).toBeNull();
   });
+
+  it('maps a file in a named stack to that stack', () => {
+    expect(stackForFile('terraform/global/main.tf', bases, ['terraform/global'])).toBe(
+      'terraform/global',
+    );
+  });
+
+  it('maps the named stack directory itself', () => {
+    expect(stackForFile('terraform/global', bases, ['terraform/global'])).toBe('terraform/global');
+  });
+
+  it('prefers a named stack over base-path depth when it sits under a base', () => {
+    expect(
+      stackForFile('terraform/envs/global/thing/main.tf', bases, ['terraform/envs/global']),
+    ).toBe('terraform/envs/global');
+  });
+
+  it('does not false-match a named stack on a partial directory name', () => {
+    expect(stackForFile('terraform/global-extra/main.tf', bases, ['terraform/global'])).toBeNull();
+  });
 });
 
 describe('stacksFromChangedFiles', () => {
@@ -51,6 +71,14 @@ describe('stacksFromChangedFiles', () => {
       'terraform/envs/prod',
     ]);
   });
+
+  it('includes a named stack alongside discovered ones', () => {
+    const files = ['terraform/envs/dev/eks/main.tf', 'terraform/global/main.tf'];
+    expect(stacksFromChangedFiles(files, ['terraform/envs'], ['terraform/global'])).toEqual([
+      'terraform/envs/dev',
+      'terraform/global',
+    ]);
+  });
 });
 
 describe('enumerateStacks', () => {
@@ -59,6 +87,25 @@ describe('enumerateStacks', () => {
     expect(
       enumerateStacks(['terraform/envs', 'terraform/accounts'], listDir),
     ).toEqual(['terraform/envs/dev', 'terraform/envs/prod']);
+  });
+
+  it('appends named stacks that exist', () => {
+    const listDir = (dir: string): string[] | null => {
+      if (dir === 'terraform/envs') return ['dev'];
+      if (dir === 'terraform/global') return ['main.tf'];
+      return null;
+    };
+    expect(enumerateStacks(['terraform/envs'], listDir, ['terraform/global'])).toEqual([
+      'terraform/envs/dev',
+      'terraform/global',
+    ]);
+  });
+
+  it('skips a named stack that does not exist', () => {
+    const listDir = (dir: string): string[] | null => (dir === 'terraform/envs' ? ['dev'] : null);
+    expect(enumerateStacks(['terraform/envs'], listDir, ['terraform/global'])).toEqual([
+      'terraform/envs/dev',
+    ]);
   });
 });
 

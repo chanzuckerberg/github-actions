@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-changed-stacks-v0.3.1...terragrunt-changed-stacks-v0.4.0) (2026-08-03)
+
+
+### Features
+
+* **terragrunt-engine:** fetch private modules with a GitHub App token ([#600](https://github.com/chanzuckerberg/github-actions/issues/600)) ([93cce45](https://github.com/chanzuckerberg/github-actions/commit/93cce45cf16eab87c812fcdde249e38b61f02d2f))
+
 ## [0.3.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-changed-stacks-v0.3.0...terragrunt-changed-stacks-v0.3.1) (2026-07-14)
 
 
