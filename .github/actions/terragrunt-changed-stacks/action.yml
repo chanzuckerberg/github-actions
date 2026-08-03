@@ -3,12 +3,20 @@ description: >
   Resolve the list of Terragrunt stacks to operate on. With all_stacks=true,
   enumerates every stack one level below each configured base path. Otherwise,
   finds the files changed in the triggering pull_request or push and maps each
-  to its stack. A stack is one directory below a base path.
+  to its stack. A stack is one directory below a base path, or any directory
+  named outright in stack_dirs.
 
 inputs:
   stack_paths:
     description: Newline-separated base paths. A stack is one directory below each.
     required: true
+  stack_dirs:
+    description: >
+      Newline-separated stack directories named outright, for stacks that are not
+      one directory below a base path (e.g. terraform/global). A named stack takes
+      precedence over base-path resolution.
+    required: false
+    default: ''
   all_stacks:
     description: If 'true', enumerate all stacks regardless of what changed.
     required: false
