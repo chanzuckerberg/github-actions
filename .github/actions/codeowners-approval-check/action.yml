@@ -1,13 +1,17 @@
 name: 'CODEOWNERS Approval Check'
 description: >
-  Passes only when every changed file that matches a CODEOWNERS rule is either
-  authored by a code owner or has an APPROVED review from a code owner. Team
-  owners (@org/team) are expanded to members via an org-scoped token.
+  Reports a commit status that is green only when every changed file matching a
+  CODEOWNERS rule is authored by a code owner or has an APPROVED review from a
+  code owner. Team owners (@org/team) are expanded to members via an org-scoped
+  token. The verdict is published as a single commit status (context below), not
+  the job's pass/fail, so it collapses to one latest-wins entry on the PR.
 author: 'CZI'
 
 inputs:
   github-token:
-    description: 'Token used to read PR files and reviews (needs pull-requests: read).'
+    description: >
+      Token used to read PR files/reviews and to write the commit status. The
+      calling workflow must grant `pull-requests: read` and `statuses: write`.
     required: false
     default: ${{ github.token }}
   org-token:
@@ -23,6 +27,13 @@ inputs:
     description: 'Path to the CODEOWNERS file within the repository.'
     required: false
     default: '.github/CODEOWNERS'
+  status-context:
+    description: >
+      The commit status context (name) to publish. This is what a branch
+      protection rule should require. Keep it stable so every run updates the
+      same status.
+    required: false
+    default: 'codeowners-approval'
   dismiss_stale_approvals:
     description: >
       When true, only count an APPROVED review if it was submitted on the PR's
