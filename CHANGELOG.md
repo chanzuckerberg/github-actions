@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.34.0](https://github.com/chanzuckerberg/github-actions/compare/v6.33.0...v6.34.0) (2026-08-05)
+
+
+### Features
+
+* **codeowners-approval-check:** add CODEOWNERS approval status check action ([#602](https://github.com/chanzuckerberg/github-actions/issues/602)) ([81eab2c](https://github.com/chanzuckerberg/github-actions/commit/81eab2c05f419545bbf0f55fa4e27eb8e1ae13a3))
+
 ## [6.33.0](https://github.com/chanzuckerberg/github-actions/compare/v6.32.0...v6.33.0) (2026-08-03)
 
 
