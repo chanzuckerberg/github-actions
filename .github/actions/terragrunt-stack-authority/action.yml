@@ -26,10 +26,10 @@ inputs:
     default: 'false'
   authority_table:
     description: >
-      DynamoDB table name for authority records. Defaults to the shared fleet-wide
-      state-lock table.
+      DynamoDB table name for authority records. Defaults to the shared
+      terragrunt-engine state-lock table.
     required: false
-    default: core-platform-infra-prod-prod-argus-infra-stacks-state-lock
+    default: terragrunt-engine-state-lock
   aws_region:
     description: 'AWS region of the DynamoDB table.'
     required: false
