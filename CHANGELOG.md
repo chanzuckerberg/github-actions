@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.35.0](https://github.com/chanzuckerberg/github-actions/compare/v6.34.0...v6.35.0) (2026-08-05)
+
+
+### Features
+
+* **terragrunt-engine:** default to the shared platform resources ([#604](https://github.com/chanzuckerberg/github-actions/issues/604)) ([63b1157](https://github.com/chanzuckerberg/github-actions/commit/63b1157c9aad73aa7630e2450f9e0f2e8f535eab))
+
 ## [6.34.0](https://github.com/chanzuckerberg/github-actions/compare/v6.33.0...v6.34.0) (2026-08-05)
 
 

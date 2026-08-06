@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-stack-authority-v0.2.2...terragrunt-stack-authority-v0.3.0) (2026-08-05)
+
+
+### Features
+
+* **terragrunt-engine:** default to the shared platform resources ([#604](https://github.com/chanzuckerberg/github-actions/issues/604)) ([63b1157](https://github.com/chanzuckerberg/github-actions/commit/63b1157c9aad73aa7630e2450f9e0f2e8f535eab))
+
 ## [0.2.2](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-stack-authority-v0.2.1...terragrunt-stack-authority-v0.2.2) (2026-07-02)
 
 
