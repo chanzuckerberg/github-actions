@@ -3,7 +3,7 @@ import { context, getOctokit } from '@actions/github';
 import { matchOwnedFiles, parseCodeowners } from './codeowners';
 import { authorOwnsAll, decide } from './decide';
 import {
-  getApprovers, listChangedFiles, readCodeownersAtBase, TeamExpander,
+  deletesCodeowners, getApprovers, listChangedFiles, readCodeownersAtBase, TeamExpander,
 } from './github';
 import { Decision, FileOwnership } from './types';
 
@@ -118,10 +118,26 @@ async function run(): Promise<void> {
   const orgOctokit = getOctokit(orgToken);
 
   try {
-    const codeownersText = await readCodeownersAtBase(octokit, owner, repo, codeownersPath, baseSha);
+    // Independent reads: fetch CODEOWNERS (base ref) and the PR's changed files
+    // in parallel. Reading CODEOWNERS at the base throws if it is absent there,
+    // which is intentional -- a repo with no CODEOWNERS should fail loudly.
+    const [codeownersText, changedFiles] = await Promise.all([
+      readCodeownersAtBase(octokit, owner, repo, codeownersPath, baseSha),
+      listChangedFiles(octokit, owner, repo, pullNumber),
+    ]);
+
+    // Fail if this PR deletes or moves CODEOWNERS. Because we evaluate the file
+    // from the base ref, such a deletion would otherwise pass and silently
+    // disable ownership enforcement going forward.
+    if (deletesCodeowners(changedFiles, codeownersPath)) {
+      const description = `This PR removes or moves ${codeownersPath}`;
+      core.warning(`CODEOWNERS approval check failed: ${description}.`);
+      await setStatus(octokit, owner, repo, headSha, statusContext, 'failure', description);
+      return;
+    }
+
     const entries = parseCodeowners(codeownersText);
-    const changedFiles = await listChangedFiles(octokit, owner, repo, pullNumber);
-    const ownedFiles = matchOwnedFiles(changedFiles, entries);
+    const ownedFiles = matchOwnedFiles(changedFiles.map((file) => file.filename), entries);
 
     core.info(
       `${changedFiles.length} changed file(s); ${ownedFiles.length} matched a CODEOWNERS rule.`,
@@ -145,8 +161,11 @@ async function run(): Promise<void> {
       })),
     );
 
-    // Fast path: if the author owns every owned file we can pass without
-    // fetching reviews at all.
+    // Fast path: if the author owns every owned file we can pass without the
+    // extra reviews API call. `decide` recomputes this to set
+    // `authorOwnsEverything`, but that is an O(files) in-memory pass with no
+    // I/O -- kept separate so `decide` stays pure and self-contained for tests,
+    // while this call gates the network fetch.
     const approvers = authorOwnsAll(files, author)
       ? []
       : await getApprovers(octokit, owner, repo, pullNumber, { dismissStale, headSha });
