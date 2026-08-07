@@ -44,20 +44,49 @@ export async function readCodeownersAtBase(
   return response.data as unknown as string;
 }
 
-/** Repo-root-relative paths of every file changed by the PR. */
+/** A file changed by the PR, with enough metadata to detect deletions/renames. */
+export interface ChangedFile {
+  /** Repo-root-relative path. */
+  filename: string;
+  /** added | removed | modified | renamed | copied | changed | unchanged. */
+  status: string;
+  /** For renames, the path the file had before. */
+  previousFilename?: string;
+}
+
+/** Every file changed by the PR, with its status. */
 export async function listChangedFiles(
   octokit: Octokit,
   owner: string,
   repo: string,
   pullNumber: number,
-): Promise<string[]> {
+): Promise<ChangedFile[]> {
   const files = await octokit.paginate(octokit.rest.pulls.listFiles, {
     owner,
     repo,
     pull_number: pullNumber,
     per_page: 100,
   });
-  return files.map((file) => file.filename);
+  return files.map((file) => ({
+    filename: file.filename,
+    status: file.status,
+    previousFilename: file.previous_filename,
+  }));
+}
+
+/**
+ * Whether this PR removes the CODEOWNERS file from its canonical path (a direct
+ * deletion or a rename away from it).
+ *
+ * The check evaluates CODEOWNERS from the base ref, so a PR that deletes it in
+ * the head would otherwise pass silently and quietly disable ownership
+ * enforcement for future changes. Treat that as a failure instead.
+ */
+export function deletesCodeowners(files: ChangedFile[], codeownersPath: string): boolean {
+  return files.some((file) => (
+    (file.status === 'removed' && file.filename === codeownersPath)
+    || (file.status === 'renamed' && file.previousFilename === codeownersPath)
+  ));
 }
 
 export interface ApproverOptions {
