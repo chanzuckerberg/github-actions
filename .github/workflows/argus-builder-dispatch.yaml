@@ -196,6 +196,12 @@ jobs:
           image_tag: ${{ matrix.image.tag }}
           additional_tags: ${{ matrix.image.additional_tags }}
           commit_sha: ${{ needs.resolve.outputs.trigger_sha }}
+          # Build the exact commit the resolve job pinned (and tagged from), not
+          # the branch tip. On a re-run after the branch advanced, the default
+          # github.sha checkout would build a different commit than image_tag
+          # reflects; pinning to trigger_sha keeps source, tag, and COMMIT_SHA
+          # consistent.
+          ref: ${{ needs.resolve.outputs.trigger_sha }}
           compression: ${{ matrix.image.compression }}
           compression_level: ${{ matrix.image.compression_level }}
           force_compression: ${{ matrix.image.force_compression }}
