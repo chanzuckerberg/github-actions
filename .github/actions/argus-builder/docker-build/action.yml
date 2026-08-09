@@ -31,7 +31,10 @@ inputs:
     required: false
     default: ""
   commit_sha:
-    description: "Full commit SHA passed as COMMIT_SHA build arg"
+    description: >-
+      Full commit SHA to build. Used both as the checkout ref (so the built
+      source matches the commit the caller derived image_tag from) and as the
+      COMMIT_SHA build arg. Defaults to the workflow's github.sha when empty.
     required: false
     default: ""
   github_app_id:
@@ -75,6 +78,7 @@ runs:
   steps:
     - uses: actions/checkout@v6
       with:
+        ref: ${{ inputs.commit_sha }}
         clean: ${{ inputs.clean_checkout }}
         fetch-depth: 1
         path: ${{ github.event.repository.name }}
