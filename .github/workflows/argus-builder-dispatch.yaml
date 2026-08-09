@@ -195,13 +195,10 @@ jobs:
           secret_files: ${{ steps.secrets.outputs.secret_files }}
           image_tag: ${{ matrix.image.tag }}
           additional_tags: ${{ matrix.image.additional_tags }}
+          # trigger_sha is the commit the resolve job pinned and derived
+          # image_tag from. docker-build checks this out (not the branch tip),
+          # so source, image tag, and COMMIT_SHA stay consistent across re-runs.
           commit_sha: ${{ needs.resolve.outputs.trigger_sha }}
-          # Build the exact commit the resolve job pinned (and tagged from), not
-          # the branch tip. On a re-run after the branch advanced, the default
-          # github.sha checkout would build a different commit than image_tag
-          # reflects; pinning to trigger_sha keeps source, tag, and COMMIT_SHA
-          # consistent.
-          ref: ${{ needs.resolve.outputs.trigger_sha }}
           compression: ${{ matrix.image.compression }}
           compression_level: ${{ matrix.image.compression_level }}
           force_compression: ${{ matrix.image.force_compression }}
