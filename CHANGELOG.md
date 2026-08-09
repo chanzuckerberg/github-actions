@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.35.1](https://github.com/chanzuckerberg/github-actions/compare/v6.35.0...v6.35.1) (2026-08-09)
+
+
+### BugFixes
+
+* **argus-builder:** push only Argus-computed tags to avoid env image collision ([#609](https://github.com/chanzuckerberg/github-actions/issues/609)) ([65c5a04](https://github.com/chanzuckerberg/github-actions/commit/65c5a041ccdf1e83a040ad5dc1d41740b3d5b13d))
+
+
+### Misc
+
+* **codeowners-approval-check:** fail on CODEOWNERS deletion and parallelize reads ([#607](https://github.com/chanzuckerberg/github-actions/issues/607)) ([3133cc1](https://github.com/chanzuckerberg/github-actions/commit/3133cc16c71cfe7a6032279f3c55023c6f815d45))
+
 ## [6.35.0](https://github.com/chanzuckerberg/github-actions/compare/v6.34.0...v6.35.0) (2026-08-05)
 
 
