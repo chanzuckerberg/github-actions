@@ -149,6 +149,12 @@ runs:
         custom_tag: |
           ${{ inputs.image_tag }}
           ${{ inputs.additional_tags }}
+        # Argus computes the complete tag set (image_tag + additional_tags,
+        # including env-specific sha-<sha>-<env> tags). The built-in metadata
+        # rules would also stamp an unsuffixed sha-<sha> tag on every build,
+        # which makes env-specific builds (rdev/staging) overwrite the default
+        # image in the shared ECR repo. Push only the tags Argus provides.
+        disable_default_tags: "true"
         platforms: ${{ inputs.platform }}
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}
