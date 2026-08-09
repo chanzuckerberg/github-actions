@@ -22,6 +22,17 @@ inputs:
     description: "Tag(s) to apply to the built image. If you supply a multi-line string, each line will be applied as a tag."
     required: false
     default: ""
+  disable_sha_tags:
+    description: >-
+      When "true", skip the built-in commit-SHA tag rules (type=sha short and
+      long, both prefixed with sha-). All other built-in rules (branch-, pr-,
+      semver) and custom_tag are unaffected. Use this when the caller supplies
+      its own SHA-based tags via custom_tag (e.g. the Argus builder, which
+      derives env-specific sha-<sha>-<env> tags) and must not have an
+      env-agnostic sha- tag auto-added that would overwrite a sibling image in
+      a shared repository.
+    required: false
+    default: "false"
   secret-files:
     description: "A list of files to be copied into the build context."
     required: false
@@ -73,19 +84,34 @@ runs:
       with:
         driver-opts: |
           image=533267185808.dkr.ecr.us-west-2.amazonaws.com/docker.io/central/moby/buildkit:v0.25.0
+    - name: Compute metadata tag rules
+      id: tag_rules
+      shell: bash
+      env:
+        DISABLE_SHA_TAGS: ${{ inputs.disable_sha_tags }}
+        CUSTOM_TAG: ${{ inputs.custom_tag }}
+      run: |
+        tags=""
+        tags+="type=ref,event=branch,prefix=branch-"$'\n'
+        tags+="type=ref,event=pr,prefix=pr-"$'\n'
+        tags+="type=semver,pattern={{version}}"$'\n'
+        tags+="type=semver,pattern={{major}}.{{minor}}"$'\n'
+        if [ "${DISABLE_SHA_TAGS}" != "true" ]; then
+          tags+="type=sha,prefix=sha-"$'\n'
+          tags+="type=sha,format=long,prefix=sha-"$'\n'
+        fi
+        tags+="${CUSTOM_TAG}"
+        {
+          echo "tags<<__TAG_RULES_EOF__"
+          printf '%s\n' "$tags"
+          echo "__TAG_RULES_EOF__"
+        } >> "$GITHUB_OUTPUT"
     - name: Docker meta
       id: meta
       uses: docker/metadata-action@v6
       with:
         images: ${{ inputs.registry }}/${{ inputs.name }}
-        tags: |
-          type=ref,event=branch,prefix=branch-
-          type=ref,event=pr,prefix=pr-
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=sha,prefix=sha-
-          type=sha,format=long,prefix=sha-
-          ${{ inputs.custom_tag }}
+        tags: ${{ steps.tag_rules.outputs.tags }}
     - name: Login to ECR
       uses: docker/login-action@v4
       with:
