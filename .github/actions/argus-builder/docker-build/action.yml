@@ -149,12 +149,13 @@ runs:
         custom_tag: |
           ${{ inputs.image_tag }}
           ${{ inputs.additional_tags }}
-        # Argus computes the complete tag set (image_tag + additional_tags,
-        # including env-specific sha-<sha>-<env> tags). The built-in metadata
-        # rules would also stamp an unsuffixed sha-<sha> tag on every build,
-        # which makes env-specific builds (rdev/staging) overwrite the default
-        # image in the shared ECR repo. Push only the tags Argus provides.
-        disable_default_tags: "true"
+        # Argus supplies its own SHA-based tags via image_tag/additional_tags
+        # (including env-specific sha-<sha>-<env> tags). Suppress the built-in
+        # type=sha tags, which are env-agnostic (sha-<sha>) and would make
+        # env-specific builds (rdev/staging) overwrite the default image in the
+        # shared ECR repo. Other metadata rules (branch-/pr-/semver) are left
+        # intact but don't fire on the orchestrator's workflow_dispatch builds.
+        disable_sha_tags: "true"
         platforms: ${{ inputs.platform }}
         build_args: |
           IMAGE_TAG=${{ inputs.image_tag }}

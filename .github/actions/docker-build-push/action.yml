@@ -22,13 +22,15 @@ inputs:
     description: "Tag(s) to apply to the built image. If you supply a multi-line string, each line will be applied as a tag."
     required: false
     default: ""
-  disable_default_tags:
+  disable_sha_tags:
     description: >-
-      When "true", skip the built-in metadata-action tag rules (branch-, pr-,
-      semver, and sha-/sha-long) and push ONLY the tags supplied via custom_tag.
-      Use this when the caller computes the complete tag set itself (e.g. the
-      Argus builder, which derives env-specific sha tags) and must not have an
-      unsuffixed sha- tag auto-added.
+      When "true", skip the built-in commit-SHA tag rules (type=sha short and
+      long, both prefixed with sha-). All other built-in rules (branch-, pr-,
+      semver) and custom_tag are unaffected. Use this when the caller supplies
+      its own SHA-based tags via custom_tag (e.g. the Argus builder, which
+      derives env-specific sha-<sha>-<env> tags) and must not have an
+      env-agnostic sha- tag auto-added that would overwrite a sibling image in
+      a shared repository.
     required: false
     default: "false"
   secret-files:
@@ -86,15 +88,15 @@ runs:
       id: tag_rules
       shell: bash
       env:
-        DISABLE_DEFAULT_TAGS: ${{ inputs.disable_default_tags }}
+        DISABLE_SHA_TAGS: ${{ inputs.disable_sha_tags }}
         CUSTOM_TAG: ${{ inputs.custom_tag }}
       run: |
         tags=""
-        if [ "${DISABLE_DEFAULT_TAGS}" != "true" ]; then
-          tags+="type=ref,event=branch,prefix=branch-"$'\n'
-          tags+="type=ref,event=pr,prefix=pr-"$'\n'
-          tags+="type=semver,pattern={{version}}"$'\n'
-          tags+="type=semver,pattern={{major}}.{{minor}}"$'\n'
+        tags+="type=ref,event=branch,prefix=branch-"$'\n'
+        tags+="type=ref,event=pr,prefix=pr-"$'\n'
+        tags+="type=semver,pattern={{version}}"$'\n'
+        tags+="type=semver,pattern={{major}}.{{minor}}"$'\n'
+        if [ "${DISABLE_SHA_TAGS}" != "true" ]; then
           tags+="type=sha,prefix=sha-"$'\n'
           tags+="type=sha,format=long,prefix=sha-"$'\n'
         fi
