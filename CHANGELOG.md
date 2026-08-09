@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.35.2](https://github.com/chanzuckerberg/github-actions/compare/v6.35.1...v6.35.2) (2026-08-09)
+
+
+### BugFixes
+
+* **argus-builder:** build the resolved commit (use commit_sha as checkout ref) ([#610](https://github.com/chanzuckerberg/github-actions/issues/610)) ([62bf51c](https://github.com/chanzuckerberg/github-actions/commit/62bf51c9b58f9d4199eb429fbebb438784202a97))
+
 ## [6.35.1](https://github.com/chanzuckerberg/github-actions/compare/v6.35.0...v6.35.1) (2026-08-09)
 
 
