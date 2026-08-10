@@ -44,3 +44,20 @@ describe('matchOwnedFiles', () => {
     expect(matched[1].owners).toEqual(['@docs-owner']);
   });
 });
+
+describe('matchOwnedFiles with a global catch-all', () => {
+  const entries = parseCodeowners('* @root\n/src/ @src-team\n');
+
+  it('applies the catch-all to files no more specific rule matches', () => {
+    expect(matchOwnedFiles(['README.md'], entries)[0].owners).toEqual(['@root']);
+  });
+
+  it('prefers a later, more specific rule over the earlier catch-all', () => {
+    expect(matchOwnedFiles(['src/app.ts'], entries)[0].owners).toEqual(['@src-team']);
+  });
+
+  it('leaves no file unowned when a catch-all is present', () => {
+    const matched = matchOwnedFiles(['a', 'src/b'], entries);
+    expect(matched).toHaveLength(2);
+  });
+});
