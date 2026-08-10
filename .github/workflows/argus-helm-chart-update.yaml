@@ -35,7 +35,7 @@ jobs:
           PLATFORM_BASE_URL: ${{ inputs.argus_base_url }}
       - name: Process apps outputs
         id: process_apps_outputs
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             core.group("Retrieved apps from Argus", () => {
@@ -94,7 +94,7 @@ jobs:
           private-key: ${{ secrets.GH_ACTIONS_HELPER_PK }}
       - name: Check chart path
         id: check_chart_path
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -126,7 +126,7 @@ jobs:
       - name: Find chart repository URL
         id: find_chart_url
         if: steps.check_chart_path.outputs.chart_exists == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -151,7 +151,7 @@ jobs:
       - name: Write updatecli manifest
         id: write_manifest
         if: steps.check_chart_path.outputs.chart_exists == 'true' && steps.find_chart_url.outputs.repository_found == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
