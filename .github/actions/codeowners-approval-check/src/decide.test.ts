@@ -77,6 +77,28 @@ describe('decide', () => {
     expect(result.passed).toBe(true);
     expect(result.authorOwnsEverything).toBe(false);
   });
+
+  it('fails listing only the uncovered file when coverage is mixed', () => {
+    const result = decide({
+      author: 'zoe',
+      approvers: ['bob'], // owns a.ts but not b.ts
+      files: [file('a.ts', ['bob']), file('b.ts', ['carol'])],
+    });
+    expect(result.passed).toBe(false);
+    expect(result.uncovered.map((f) => f.path)).toEqual(['b.ts']);
+  });
+
+  it('treats a file whose owners resolve to no logins (e.g. an email owner) as uncovered', () => {
+    const result = decide({
+      author: 'alice',
+      approvers: ['alice', 'bob'],
+      files: [{
+        path: 'x.ts', pattern: 'x.ts', ownerTokens: ['dev@example.com'], ownerLogins: [],
+      }],
+    });
+    expect(result.passed).toBe(false);
+    expect(result.uncovered.map((f) => f.path)).toEqual(['x.ts']);
+  });
 });
 
 describe('authorOwnsAll', () => {
