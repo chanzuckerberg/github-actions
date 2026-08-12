@@ -14,9 +14,16 @@ inputs:
   stacks:
     description: >
       JSON array of stack paths (e.g. '["terraform/envs/dev-central"]').
-      Required for read, claim, release. Ignored for reap (reap scans by repo prefix).
+      Required for read and claim. For release, omit (or pass []) to release
+      every stack owned by the current PR. Ignored for reap.
     required: false
     default: '[]'
+  pr_number:
+    description: >
+      PR number for claim and release. When empty, read from the GitHub event
+      payload (pull_request.number or issue.number).
+    required: false
+    default: ''
   skip_if_owned:
     description: >
       If true, the read operation sets proceed=false and fails the action when a

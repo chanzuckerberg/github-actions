@@ -7,17 +7,20 @@ import {
   claim,
   release,
   releaseByPr,
+  resolvePrNumber,
   scanClaims,
 } from './lib';
 
-function getPrNumber(): string {
+function readEvent(): {
+  pull_request?: { number?: number };
+  issue?: { number?: number };
+} {
   const eventPath = process.env.GITHUB_EVENT_PATH;
-  if (!eventPath) return '';
+  if (!eventPath) return {};
   try {
-    const event = JSON.parse(fs.readFileSync(eventPath, 'utf-8'));
-    return String(event.pull_request?.number ?? event.issue?.number ?? '');
+    return JSON.parse(fs.readFileSync(eventPath, 'utf-8'));
   } catch {
-    return '';
+    return {};
   }
 }
 
@@ -25,7 +28,7 @@ async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
   const stacksRaw = core.getInput('stacks') || '[]';
   const repo = process.env.GITHUB_REPOSITORY!;
-  const prNumber = getPrNumber();
+  const prNumber = resolvePrNumber(core.getInput('pr_number'), readEvent());
   const prSha = process.env.GITHUB_SHA || '';
   const actor = process.env.GITHUB_ACTOR || '';
   const table = core.getInput('authority_table', { required: true });

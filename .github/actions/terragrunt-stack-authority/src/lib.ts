@@ -42,6 +42,16 @@ export function authorityKey(repo: string, stack: string): string {
   return `authority/${repo}/${stack}`;
 }
 
+export function resolvePrNumber(
+  fromInput: string,
+  event: { pull_request?: { number?: number }; issue?: { number?: number } },
+): string {
+  if (fromInput) {
+    return fromInput;
+  }
+  return String(event.pull_request?.number ?? event.issue?.number ?? '');
+}
+
 export function makeClient(region: string): DynamoDBClient {
   return new DynamoDBClient({ region });
 }
