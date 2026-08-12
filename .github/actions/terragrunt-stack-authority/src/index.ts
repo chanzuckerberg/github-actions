@@ -69,7 +69,9 @@ async function run(): Promise<void> {
 
         if (owner === 'pr' && rec?.prNumber) {
           if (skipIfOwned && rec.prNumber !== prNumber) {
-            core.warning(`Skipping ${stack} — owned by PR #${rec.prNumber}`);
+            core.error(
+              `${stack}: owned by PR #${rec.prNumber} — cannot proceed`,
+            );
             proceed = false;
           } else if (skipIfOwned && rec.prNumber === prNumber) {
             core.info(`${stack} is owned by this PR (#${prNumber}) — proceeding`);
@@ -83,6 +85,11 @@ async function run(): Promise<void> {
 
       core.setOutput('results', JSON.stringify(results));
       core.setOutput('proceed', String(proceed));
+      if (!proceed) {
+        core.setFailed(
+          'One or more stacks are owned by another PR and cannot be applied',
+        );
+      }
       break;
     }
 
