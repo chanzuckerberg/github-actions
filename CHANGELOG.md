@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.36.0](https://github.com/chanzuckerberg/github-actions/compare/v6.35.2...v6.36.0) (2026-08-12)
+
+
+### Features
+
+* **terragrunt-engine:** respect CODEOWNERS for apply-and-merge ([#619](https://github.com/chanzuckerberg/github-actions/issues/619)) ([5d5dc94](https://github.com/chanzuckerberg/github-actions/commit/5d5dc94dc15e73fbc1765f70773d31bd49cff174))
+
+
+### Misc
+
+* bump actions/github-script from 8 to 9 ([#539](https://github.com/chanzuckerberg/github-actions/issues/539)) ([9897391](https://github.com/chanzuckerberg/github-actions/commit/98973912dc143e5c00fba5481e2f3ca6642c8c12))
+
 ## [6.35.2](https://github.com/chanzuckerberg/github-actions/compare/v6.35.1...v6.35.2) (2026-08-09)
 
 
