@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.3.0...terragrunt-git-status-v0.4.0) (2026-08-12)
+
+
+### Features
+
+* **terragrunt-engine:** respect CODEOWNERS for apply-and-merge ([#619](https://github.com/chanzuckerberg/github-actions/issues/619)) ([5d5dc94](https://github.com/chanzuckerberg/github-actions/commit/5d5dc94dc15e73fbc1765f70773d31bd49cff174))
+
 ## [0.3.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.2.2...terragrunt-git-status-v0.3.0) (2026-07-20)
 
 
