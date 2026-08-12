@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.36.1](https://github.com/chanzuckerberg/github-actions/compare/v6.36.0...v6.36.1) (2026-08-12)
+
+
+### BugFixes
+
+* **terragrunt-engine:** fail locked applies and enforce CODEOWNERS on null reviewDecision ([#621](https://github.com/chanzuckerberg/github-actions/issues/621)) ([d878755](https://github.com/chanzuckerberg/github-actions/commit/d878755c9d04aac0f99ce4aafba51cf7ffc06c18))
+
 ## [6.36.0](https://github.com/chanzuckerberg/github-actions/compare/v6.35.2...v6.36.0) (2026-08-12)
 
 
