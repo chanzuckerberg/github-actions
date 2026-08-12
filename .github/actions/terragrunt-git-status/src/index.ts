@@ -8,6 +8,7 @@ async function run(): Promise<void> {
   const operation = core.getInput('operation', { required: true });
   const stacksRaw = core.getInput('stacks', { required: true });
   const statusCheckName = core.getInput('status_check_name') || 'terragrunt-apply';
+  const codeownersPath = core.getInput('codeowners_path');
 
   let stacks: string[];
   try {
@@ -36,7 +37,7 @@ async function run(): Promise<void> {
     }
 
     case 'validate-apply': {
-      const approved = await validateApply(octokit);
+      const approved = await validateApply(octokit, codeownersPath);
       if (!approved) {
         core.setFailed('Validation rejected apply-and-merge');
       }
@@ -52,7 +53,7 @@ async function run(): Promise<void> {
     }
 
     case 'dispatch': {
-      const result = await dispatch(octokit, statusCheckName);
+      const result = await dispatch(octokit, statusCheckName, codeownersPath);
       core.setOutput('command', result.command);
       if (!result.ok) {
         core.setFailed(`Validation rejected ${result.command}`);

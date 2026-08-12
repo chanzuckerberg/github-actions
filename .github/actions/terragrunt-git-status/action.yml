@@ -11,8 +11,9 @@ description: >
                    the "command" output. Posts a helper comment for unknown
                    commands and validates recognized ones.
     validate-apply  — validate write access, branch-protection reviewDecision
-                      (with a CODEOWNERS fallback when that field is null), and
-                      mergeability for an apply-and-merge comment. Returns approved boolean.
+                      (with a CODEOWNERS fallback when that field is null and
+                      code-owner reviews are required), and mergeability for an
+                      apply-and-merge comment. Returns approved boolean.
     validate-unlock — validate write access for an unlock comment.
                       Returns approved boolean.
 
@@ -32,6 +33,12 @@ inputs:
     description: >
       Aggregate result of the matrix run (success, failure, cancelled, skipped).
       Required for the finalize operation.
+    required: false
+    default: ''
+  codeowners_path:
+    description: >
+      Path to CODEOWNERS within the repo. When empty, tries GitHub's standard
+      locations in order: .github/CODEOWNERS, CODEOWNERS, docs/CODEOWNERS.
     required: false
     default: ''
   github_token:

@@ -121,6 +121,14 @@ on:
         required: false
         type: string
         default: terragrunt-apply
+      codeowners_path:
+        description: >
+          Path to CODEOWNERS within the repo for the apply-and-merge review gate.
+          When empty, tries GitHub's standard locations in order:
+          .github/CODEOWNERS, CODEOWNERS, docs/CODEOWNERS.
+        required: false
+        type: string
+        default: ''
       authority_table:
         description: "DynamoDB table for authority records. Defaults to the shared terragrunt-engine state-lock table."
         required: false
@@ -168,6 +176,7 @@ jobs:
         with:
           operation: dispatch
           status_check_name: ${{ inputs.status_check_name }}
+          codeowners_path: ${{ inputs.codeowners_path }}
           github_token: ${{ steps.generate_token.outputs.token }}
       - name: Enforce branch protection
         if: ${{ steps.dispatch.outputs.command == 'apply-and-merge' }}

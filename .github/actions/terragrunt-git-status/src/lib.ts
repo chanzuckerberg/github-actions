@@ -358,6 +358,11 @@ interface ReviewDecisionResult {
       reviewDecision: string | null;
       baseRefOid: string;
       headRefOid: string;
+      baseRef: {
+        branchProtectionRule: {
+          requiresCodeOwnerReviews: boolean;
+        } | null;
+      } | null;
       reviewRequests: {
         nodes: Array<{
           requestedReviewer:
@@ -390,7 +395,10 @@ function reviewerHandle(
 
 export type ReviewGateRoute = 'allow' | 'block-changes' | 'block-review' | 'codeowners';
 
-export function reviewGateRoute(reviewDecision: string | null): ReviewGateRoute {
+export function reviewGateRoute(
+  reviewDecision: string | null,
+  requiresCodeOwnerReviews: boolean,
+): ReviewGateRoute {
   if (reviewDecision === 'APPROVED') {
     return 'allow';
   }
@@ -400,10 +408,25 @@ export function reviewGateRoute(reviewDecision: string | null): ReviewGateRoute 
   if (reviewDecision === 'REVIEW_REQUIRED') {
     return 'block-review';
   }
-  return 'codeowners';
+  if (requiresCodeOwnerReviews) {
+    return 'codeowners';
+  }
+  return 'allow';
 }
 
-const codeownersPath = '.github/CODEOWNERS';
+export const defaultCodeownersPaths = [
+  '.github/CODEOWNERS',
+  'CODEOWNERS',
+  'docs/CODEOWNERS',
+];
+
+export function codeownersPathsToTry(configured: string): string[] {
+  const trimmed = configured.trim();
+  if (trimmed) {
+    return [trimmed];
+  }
+  return defaultCodeownersPaths;
+}
 
 export async function evaluateCodeownersCoverage(
   octokit: Octokit,
@@ -412,24 +435,34 @@ export async function evaluateCodeownersCoverage(
   prNumber: number,
   baseSha: string,
   headSha: string,
+  codeownersPath = '',
 ): Promise<{ passed: boolean; uncoveredPaths: string[]; totalOwnedFiles: number }> {
-  let codeownersText: string;
-  try {
-    codeownersText = await readCodeownersAtBase(
-      octokit,
-      owner,
-      repo,
-      codeownersPath,
-      baseSha,
-    );
-  } catch (error: unknown) {
-    const { status } = error as { status?: number };
-    if (status === 404) {
-      core.info(`No ${codeownersPath} on the base ref — nothing to enforce`);
-      return { passed: true, uncoveredPaths: [], totalOwnedFiles: 0 };
+  const paths = codeownersPathsToTry(codeownersPath);
+  let codeownersText: string | null = null;
+  let resolvedPath = '';
+
+  for (const path of paths) {
+    try {
+      codeownersText = await readCodeownersAtBase(octokit, owner, repo, path, baseSha);
+      resolvedPath = path;
+      break;
+    } catch (error: unknown) {
+      const { status } = error as { status?: number };
+      if (status === 404) {
+        continue;
+      }
+      throw error;
     }
-    throw error;
   }
+
+  if (codeownersText === null) {
+    core.info(
+      `No CODEOWNERS found at ${paths.join(', ')} on the base ref — nothing to enforce`,
+    );
+    return { passed: true, uncoveredPaths: [], totalOwnedFiles: 0 };
+  }
+
+  core.info(`Evaluating CODEOWNERS from ${resolvedPath}`);
 
   const changedFiles = await listChangedFiles(octokit, owner, repo, prNumber);
   const ownedFiles = matchOwnedFiles(
@@ -467,6 +500,7 @@ export async function evaluateCodeownersCoverage(
 async function requireReviewDecision(
   octokit: Octokit,
   prNumber: number,
+  codeownersPath: string,
 ): Promise<boolean> {
   const { repository } = await octokit.graphql<ReviewDecisionResult>(`
     query($owner: String!, $repo: String!, $number: Int!) {
@@ -475,6 +509,11 @@ async function requireReviewDecision(
           reviewDecision
           baseRefOid
           headRefOid
+          baseRef {
+            branchProtectionRule {
+              requiresCodeOwnerReviews
+            }
+          }
           reviewRequests(first: 20) {
             nodes {
               requestedReviewer {
@@ -505,9 +544,12 @@ async function requireReviewDecision(
     latestOpinionatedReviews,
     baseRefOid,
     headRefOid,
+    baseRef,
   } = repository.pullRequest;
 
-  const route = reviewGateRoute(reviewDecision);
+  const requiresCodeOwnerReviews = baseRef?.branchProtectionRule?.requiresCodeOwnerReviews
+    ?? false;
+  const route = reviewGateRoute(reviewDecision, requiresCodeOwnerReviews);
 
   if (route === 'allow') {
     return true;
@@ -552,6 +594,7 @@ async function requireReviewDecision(
     prNumber,
     baseRefOid,
     headRefOid,
+    codeownersPath,
   );
 
   if (coverage.passed) {
@@ -567,7 +610,10 @@ async function requireReviewDecision(
   return false;
 }
 
-export async function validateApply(octokit: Octokit): Promise<boolean> {
+export async function validateApply(
+  octokit: Octokit,
+  codeownersPath = '',
+): Promise<boolean> {
   const ctx = issueCommentContext();
   if (!ctx) {
     return false;
@@ -578,7 +624,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     return false;
   }
 
-  if (!(await requireReviewDecision(octokit, prNumber))) {
+  if (!(await requireReviewDecision(octokit, prNumber, codeownersPath))) {
     return false;
   }
 
@@ -695,6 +741,7 @@ async function postUnknownCommandComment(
 export async function dispatch(
   octokit: Octokit,
   statusCheckName: string,
+  codeownersPath = '',
 ): Promise<{ command: string; ok: boolean }> {
   const body = context.payload.comment?.body ?? '';
   const prNumber = context.payload.issue?.number;
@@ -716,7 +763,7 @@ export async function dispatch(
       return { command: 'help', ok: true };
     }
     case 'apply-and-merge': {
-      const ok = await validateApply(octokit);
+      const ok = await validateApply(octokit, codeownersPath);
       return { command: 'apply-and-merge', ok };
     }
     case 'unlock': {

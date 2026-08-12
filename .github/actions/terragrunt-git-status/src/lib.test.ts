@@ -1,22 +1,45 @@
 import { matchOwnedFiles, parseCodeowners } from 'codeowners-approval-check-action/src/codeowners';
 import { decide } from 'codeowners-approval-check-action/src/decide';
-import { reviewGateRoute } from './lib';
+import { codeownersPathsToTry, reviewGateRoute } from './lib';
 
 describe('reviewGateRoute', () => {
   it('allows when GitHub reports APPROVED', () => {
-    expect(reviewGateRoute('APPROVED')).toBe('allow');
+    expect(reviewGateRoute('APPROVED', false)).toBe('allow');
+    expect(reviewGateRoute('APPROVED', true)).toBe('allow');
   });
 
   it('blocks CHANGES_REQUESTED via reviewDecision', () => {
-    expect(reviewGateRoute('CHANGES_REQUESTED')).toBe('block-changes');
+    expect(reviewGateRoute('CHANGES_REQUESTED', true)).toBe('block-changes');
   });
 
   it('blocks REVIEW_REQUIRED via reviewDecision (classic require-X)', () => {
-    expect(reviewGateRoute('REVIEW_REQUIRED')).toBe('block-review');
+    expect(reviewGateRoute('REVIEW_REQUIRED', false)).toBe('block-review');
   });
 
-  it('falls back to CODEOWNERS when reviewDecision is null', () => {
-    expect(reviewGateRoute(null)).toBe('codeowners');
+  it('falls back to CODEOWNERS only when code-owner reviews are required', () => {
+    expect(reviewGateRoute(null, true)).toBe('codeowners');
+  });
+
+  it('allows null reviewDecision when code-owner reviews are not required', () => {
+    expect(reviewGateRoute(null, false)).toBe('allow');
+  });
+});
+
+describe('codeownersPathsToTry', () => {
+  it('uses the configured path when set', () => {
+    expect(codeownersPathsToTry('docs/CODEOWNERS')).toEqual(['docs/CODEOWNERS']);
+  });
+
+  it('tries GitHub standard locations when unset', () => {
+    expect(codeownersPathsToTry('')).toEqual([
+      '.github/CODEOWNERS',
+      'CODEOWNERS',
+      'docs/CODEOWNERS',
+    ]);
+  });
+
+  it('trims whitespace around a configured path', () => {
+    expect(codeownersPathsToTry('  docs/CODEOWNERS  ')).toEqual(['docs/CODEOWNERS']);
   });
 });
 
