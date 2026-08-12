@@ -86,8 +86,8 @@ on:
         default: false
       skip_pr_owned:
         description: >
-          Read each stack's authority record before running. For apply actions, skip
-          any stack owned by a PR (with a warning). For plan actions, annotate but
+          Read each stack's authority record before running. For apply actions, fail
+          the job when a stack is owned by another PR. For plan actions, annotate but
           always proceed. Safe to leave on — plans are never blocked.
         required: false
         type: boolean
@@ -161,6 +161,7 @@ jobs:
         with:
           client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
           private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          owner: ${{ github.repository_owner }}
       - name: Dispatch @terragrunt-bot command
         id: dispatch
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0

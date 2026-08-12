@@ -1,5 +1,14 @@
 import * as core from '@actions/core';
 import { getOctokit, context } from '@actions/github';
+import { matchOwnedFiles, parseCodeowners } from 'codeowners-approval-check-action/src/codeowners';
+import { decide } from 'codeowners-approval-check-action/src/decide';
+import {
+  getApprovers,
+  listChangedFiles,
+  readCodeownersAtBase,
+  TeamExpander,
+} from 'codeowners-approval-check-action/src/github';
+import { FileOwnership } from 'codeowners-approval-check-action/src/types';
 
 type Octokit = ReturnType<typeof getOctokit>;
 
@@ -110,8 +119,8 @@ function helpCommentBody(statusCheckName: string): string {
     '| --- | --- |',
     `| \`${botMention} apply-and-merge\` | Runs \`terragrunt apply\` on every `
       + 'changed stack, then enables squash auto-merge once all stacks apply '
-      + 'cleanly. Requires write access, any code-owner review required by '
-      + 'branch protection, no merge conflicts, and a non-draft PR. |',
+      + 'cleanly. Requires write access, any approvals required by branch '
+      + 'protection or CODEOWNERS, no merge conflicts, and a non-draft PR. |',
     `| \`${botMention} unlock\` | Force-releases stuck Terraform state locks `
       + 'for the stacks changed by this PR. Requires write access. Use only '
       + 'when a previous run left a lock behind. |',
@@ -347,6 +356,8 @@ interface ReviewDecisionResult {
   repository: {
     pullRequest: {
       reviewDecision: string | null;
+      baseRefOid: string;
+      headRefOid: string;
       reviewRequests: {
         nodes: Array<{
           requestedReviewer:
@@ -377,6 +388,82 @@ function reviewerHandle(
   return `@${reviewer.combinedSlug}`;
 }
 
+export type ReviewGateRoute = 'allow' | 'block-changes' | 'block-review' | 'codeowners';
+
+export function reviewGateRoute(reviewDecision: string | null): ReviewGateRoute {
+  if (reviewDecision === 'APPROVED') {
+    return 'allow';
+  }
+  if (reviewDecision === 'CHANGES_REQUESTED') {
+    return 'block-changes';
+  }
+  if (reviewDecision === 'REVIEW_REQUIRED') {
+    return 'block-review';
+  }
+  return 'codeowners';
+}
+
+const codeownersPath = '.github/CODEOWNERS';
+
+export async function evaluateCodeownersCoverage(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+  prNumber: number,
+  baseSha: string,
+  headSha: string,
+): Promise<{ passed: boolean; uncoveredPaths: string[]; totalOwnedFiles: number }> {
+  let codeownersText: string;
+  try {
+    codeownersText = await readCodeownersAtBase(
+      octokit,
+      owner,
+      repo,
+      codeownersPath,
+      baseSha,
+    );
+  } catch (error: unknown) {
+    const { status } = error as { status?: number };
+    if (status === 404) {
+      core.info(`No ${codeownersPath} on the base ref — nothing to enforce`);
+      return { passed: true, uncoveredPaths: [], totalOwnedFiles: 0 };
+    }
+    throw error;
+  }
+
+  const changedFiles = await listChangedFiles(octokit, owner, repo, prNumber);
+  const ownedFiles = matchOwnedFiles(
+    changedFiles.map((file) => file.filename),
+    parseCodeowners(codeownersText),
+  );
+
+  if (ownedFiles.length === 0) {
+    core.info('No changed files matched a CODEOWNERS rule with owners');
+    return { passed: true, uncoveredPaths: [], totalOwnedFiles: 0 };
+  }
+
+  const expander = new TeamExpander(octokit);
+  const files: FileOwnership[] = await Promise.all(
+    ownedFiles.map(async (owned) => ({
+      path: owned.path,
+      pattern: owned.pattern,
+      ownerTokens: owned.owners,
+      ownerLogins: await expander.expandOwners(owned.owners, owner),
+    })),
+  );
+
+  const approvers = await getApprovers(octokit, owner, repo, prNumber, {
+    dismissStale: false,
+    headSha,
+  });
+  const decision = decide({ author: '', approvers, files });
+  return {
+    passed: decision.passed,
+    uncoveredPaths: decision.uncovered.map((file) => file.path),
+    totalOwnedFiles: decision.totalOwnedFiles,
+  };
+}
+
 async function requireReviewDecision(
   octokit: Octokit,
   prNumber: number,
@@ -386,6 +473,8 @@ async function requireReviewDecision(
       repository(owner: $owner, name: $repo) {
         pullRequest(number: $number) {
           reviewDecision
+          baseRefOid
+          headRefOid
           reviewRequests(first: 20) {
             nodes {
               requestedReviewer {
@@ -410,35 +499,70 @@ async function requireReviewDecision(
     number: prNumber,
   });
 
-  const { reviewDecision, reviewRequests, latestOpinionatedReviews } = repository.pullRequest;
+  const {
+    reviewDecision,
+    reviewRequests,
+    latestOpinionatedReviews,
+    baseRefOid,
+    headRefOid,
+  } = repository.pullRequest;
 
-  if (reviewDecision === null || reviewDecision === 'APPROVED') {
+  const route = reviewGateRoute(reviewDecision);
+
+  if (route === 'allow') {
     return true;
   }
 
-  let body: string;
-  if (reviewDecision === 'CHANGES_REQUESTED') {
+  if (route === 'block-changes') {
     const authors = latestOpinionatedReviews.nodes
       .filter((r) => r.state === 'CHANGES_REQUESTED' && r.author)
       .map((r) => `@${r.author!.login}`);
-    body = `${quoteTrigger()}\`${botMention} apply-and-merge\` is blocked while a review requests changes.`;
+    let body = `${quoteTrigger()}\`${botMention} apply-and-merge\` is blocked while a review requests changes.`;
     if (authors.length > 0) {
       body += ` Requested by: ${authors.join(', ')}.`;
     }
-  } else {
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body,
+    });
+    return false;
+  }
+
+  if (route === 'block-review') {
     const reviewers = reviewRequests.nodes
       .map((n) => reviewerHandle(n.requestedReviewer))
       .filter((h): h is string => h !== null);
-    body = `${quoteTrigger()}\`${botMention} apply-and-merge\` needs a code-owner approval before it can run.`;
+    let body = `${quoteTrigger()}\`${botMention} apply-and-merge\` needs an approval before it can run.`;
     if (reviewers.length > 0) {
       body += ` Waiting on: ${reviewers.join(', ')}.`;
     }
+    await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body,
+    });
+    return false;
   }
 
+  const coverage = await evaluateCodeownersCoverage(
+    octokit,
+    context.repo.owner,
+    context.repo.repo,
+    prNumber,
+    baseRefOid,
+    headRefOid,
+  );
+
+  if (coverage.passed) {
+    return true;
+  }
+
+  const paths = coverage.uncoveredPaths.map((path) => `\`${path}\``).join(', ');
   await octokit.rest.issues.createComment({
     ...context.repo,
     issue_number: prNumber,
-    body,
+    body: `${quoteTrigger()}\`${botMention} apply-and-merge\` needs a code-owner approval before it can run. Uncovered file(s): ${paths}.`,
   });
   return false;
 }
