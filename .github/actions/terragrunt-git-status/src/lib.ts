@@ -110,8 +110,8 @@ function helpCommentBody(statusCheckName: string): string {
     '| --- | --- |',
     `| \`${botMention} apply-and-merge\` | Runs \`terragrunt apply\` on every `
       + 'changed stack, then enables squash auto-merge once all stacks apply '
-      + 'cleanly. Requires write access, at least one approval, no merge '
-      + 'conflicts, and a non-draft PR. |',
+      + 'cleanly. Requires write access, any code-owner review required by '
+      + 'branch protection, no merge conflicts, and a non-draft PR. |',
     `| \`${botMention} unlock\` | Force-releases stuck Terraform state locks `
       + 'for the stacks changed by this PR. Requires write access. Use only '
       + 'when a previous run left a lock behind. |',
@@ -343,6 +343,106 @@ async function requireWriteAccess(
   return false;
 }
 
+interface ReviewDecisionResult {
+  repository: {
+    pullRequest: {
+      reviewDecision: string | null;
+      reviewRequests: {
+        nodes: Array<{
+          requestedReviewer:
+          | { __typename: 'User'; login: string }
+          | { __typename: 'Team'; combinedSlug: string }
+          | null;
+        }>;
+      };
+      latestOpinionatedReviews: {
+        nodes: Array<{
+          state: string;
+          author: { login: string } | null;
+        }>;
+      };
+    };
+  };
+}
+
+function reviewerHandle(
+  reviewer: ReviewDecisionResult['repository']['pullRequest']['reviewRequests']['nodes'][number]['requestedReviewer'],
+): string | null {
+  if (!reviewer) {
+    return null;
+  }
+  if (reviewer.__typename === 'User') {
+    return `@${reviewer.login}`;
+  }
+  return `@${reviewer.combinedSlug}`;
+}
+
+async function requireReviewDecision(
+  octokit: Octokit,
+  prNumber: number,
+): Promise<boolean> {
+  const { repository } = await octokit.graphql<ReviewDecisionResult>(`
+    query($owner: String!, $repo: String!, $number: Int!) {
+      repository(owner: $owner, name: $repo) {
+        pullRequest(number: $number) {
+          reviewDecision
+          reviewRequests(first: 20) {
+            nodes {
+              requestedReviewer {
+                __typename
+                ... on User { login }
+                ... on Team { combinedSlug }
+              }
+            }
+          }
+          latestOpinionatedReviews(first: 20) {
+            nodes {
+              state
+              author { login }
+            }
+          }
+        }
+      }
+    }
+  `, {
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    number: prNumber,
+  });
+
+  const { reviewDecision, reviewRequests, latestOpinionatedReviews } = repository.pullRequest;
+
+  if (reviewDecision === null || reviewDecision === 'APPROVED') {
+    return true;
+  }
+
+  let body: string;
+  if (reviewDecision === 'CHANGES_REQUESTED') {
+    const authors = latestOpinionatedReviews.nodes
+      .filter((r) => r.state === 'CHANGES_REQUESTED' && r.author)
+      .map((r) => `@${r.author!.login}`);
+    body = `${quoteTrigger()}\`${botMention} apply-and-merge\` is blocked while a review requests changes.`;
+    if (authors.length > 0) {
+      body += ` Requested by: ${authors.join(', ')}.`;
+    }
+  } else {
+    const reviewers = reviewRequests.nodes
+      .map((n) => reviewerHandle(n.requestedReviewer))
+      .filter((h): h is string => h !== null);
+    body = `${quoteTrigger()}\`${botMention} apply-and-merge\` needs a code-owner approval before it can run.`;
+    if (reviewers.length > 0) {
+      body += ` Waiting on: ${reviewers.join(', ')}.`;
+    }
+  }
+
+  await octokit.rest.issues.createComment({
+    ...context.repo,
+    issue_number: prNumber,
+    body,
+  });
+  return false;
+}
+
 export async function validateApply(octokit: Octokit): Promise<boolean> {
   const ctx = issueCommentContext();
   if (!ctx) {
@@ -354,16 +454,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
     return false;
   }
 
-  const { data: reviews } = await octokit.rest.pulls.listReviews({
-    ...context.repo,
-    pull_number: prNumber,
-  });
-  if (!reviews.some((r) => r.state === 'APPROVED')) {
-    await octokit.rest.issues.createComment({
-      ...context.repo,
-      issue_number: prNumber,
-      body: `${quoteTrigger()}\`${botMention} apply-and-merge\` requires at least one approval.`,
-    });
+  if (!(await requireReviewDecision(octokit, prNumber))) {
     return false;
   }
 
