@@ -10,7 +10,8 @@ description: >
                    the matching command (apply-and-merge, unlock, help), and set
                    the "command" output. Posts a helper comment for unknown
                    commands and validates recognized ones.
-    validate-apply  — validate write access, approval, and mergeability for an
+    validate-apply  — validate write access, the PR's review decision
+                      (CODEOWNERS + branch protection), and mergeability for an
                       apply-and-merge comment. Returns approved boolean.
     validate-unlock — validate write access for an unlock comment.
                       Returns approved boolean.
