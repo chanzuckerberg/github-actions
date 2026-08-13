@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.4.1...terragrunt-git-status-v0.5.0) (2026-08-13)
+
+
+### Features
+
+* **terragrunt-engine:** release stack authority when a PR closes ([#624](https://github.com/chanzuckerberg/github-actions/issues/624)) ([c9a49ec](https://github.com/chanzuckerberg/github-actions/commit/c9a49ec0f6f9e2edf22824309a28ad923f029d84))
+
 ## [0.4.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.4.0...terragrunt-git-status-v0.4.1) (2026-08-12)
 
 

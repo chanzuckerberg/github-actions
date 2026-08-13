@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.37.0](https://github.com/chanzuckerberg/github-actions/compare/v6.36.1...v6.37.0) (2026-08-13)
+
+
+### Features
+
+* **terragrunt-engine:** release stack authority when a PR closes ([#624](https://github.com/chanzuckerberg/github-actions/issues/624)) ([c9a49ec](https://github.com/chanzuckerberg/github-actions/commit/c9a49ec0f6f9e2edf22824309a28ad923f029d84))
+
+
+### BugFixes
+
+* **terragrunt-engine:** skip cleanup role chaining when authority blocks a stack ([#626](https://github.com/chanzuckerberg/github-actions/issues/626)) ([b871980](https://github.com/chanzuckerberg/github-actions/commit/b8719807c9fde3972653d640ec1df1a171ea9407))
+
 ## [6.36.1](https://github.com/chanzuckerberg/github-actions/compare/v6.36.0...v6.36.1) (2026-08-12)
 
 
