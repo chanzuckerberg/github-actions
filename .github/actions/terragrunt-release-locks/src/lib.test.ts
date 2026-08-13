@@ -205,6 +205,26 @@ describe('decideRelease', () => {
     expect(decision.reason).toContain('runner@amd64-hgdcz-runner-7slq8');
   });
 
+  it('releases a lock matching any of this job\'s identities', () => {
+    const decision = decideRelease({
+      info: parseLockInfo(
+        '{"ID":"abc","Who":"runner@amd64-hgdcz-runner-7slq8","Created":"2026-08-13T15:44:59Z"}',
+      ),
+      self: ['runner@workflow-pod', 'runner@amd64-hgdcz-runner-7slq8'],
+      createdAfter: jobStart,
+    });
+    expect(decision.release).toBe(true);
+  });
+
+  it('keeps a lock matching none of this job\'s identities', () => {
+    const decision = decideRelease({
+      info: parseLockInfo('{"ID":"abc","Who":"runner@amd64-hgdcz-runner-7slq8"}'),
+      self: ['runner@host-a', 'runner@host-b'],
+    });
+    expect(decision.release).toBe(false);
+    expect(decision.reason).toContain('runner@host-a, runner@host-b');
+  });
+
   it('releases a lock this job created', () => {
     const decision = decideRelease({
       info: parseLockInfo(

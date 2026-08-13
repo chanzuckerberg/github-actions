@@ -53,13 +53,18 @@ export interface ReleaseDecision {
  * that holds it: its own unlock finds no row and fails with "unexpected end of
  * JSON input". Ownership is therefore the primary guard, and createdAfter covers
  * the case where a hostname is reused across jobs.
+ *
+ * self accepts several identities because the hostname terraform recorded need
+ * not be the one this action observes, for example when steps run in a separate
+ * pod from the runner.
  */
 export function decideRelease(opts: {
   info: LockInfo | null;
-  self: string;
+  self: string | string[];
   createdAfter?: Date;
 }): ReleaseDecision {
-  const { info, self, createdAfter } = opts;
+  const { info, createdAfter } = opts;
+  const selves = (Array.isArray(opts.self) ? opts.self : [opts.self]).filter(Boolean);
 
   if (!info) {
     return {
@@ -72,8 +77,11 @@ export function decideRelease(opts: {
     return { release: false, reason: 'lock Info has no Who field, so ownership cannot be established' };
   }
 
-  if (info.Who !== self) {
-    return { release: false, reason: `held by ${info.Who}, not by this job (${self})` };
+  if (!selves.includes(info.Who)) {
+    return {
+      release: false,
+      reason: `held by ${info.Who}, not by this job (${selves.join(', ')})`,
+    };
   }
 
   if (createdAfter) {
@@ -89,7 +97,7 @@ export function decideRelease(opts: {
     }
   }
 
-  return { release: true, reason: `created by this job (${self})` };
+  return { release: true, reason: `created by this job (${info.Who})` };
 }
 
 /**

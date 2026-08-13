@@ -14,6 +14,19 @@ import {
   parseLockInfo,
 } from './lib';
 
+/**
+ * Identities terraform may have written to a lock's Who field for this job.
+ * On ARC runners the pod hostname and the runner name are the same, but a
+ * setup that runs steps outside the runner pod makes them diverge.
+ */
+function selfIdentities(): string[] {
+  const user = os.userInfo().username;
+  const hosts = [os.hostname(), process.env.RUNNER_NAME].filter(
+    (h): h is string => Boolean(h),
+  );
+  return [...new Set(hosts)].map((h) => `${user}@${h}`);
+}
+
 async function run(): Promise<void> {
   const stackRootInput = core.getInput('stack-root', { required: true });
   const force = core.getBooleanInput('force');
@@ -28,11 +41,11 @@ async function run(): Promise<void> {
     createdAfter = parsed;
   }
 
-  const self = `${os.userInfo().username}@${os.hostname()}`;
+  const self = selfIdentities();
   if (force) {
     core.info('force is set: deleting every lock row found, without ownership checks');
   } else {
-    core.info(`Releasing only locks owned by ${self}`);
+    core.info(`Releasing only locks owned by ${self.join(' or ')}`);
   }
 
   const workspace = process.env.GITHUB_WORKSPACE;
