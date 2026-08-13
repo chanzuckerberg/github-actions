@@ -184,7 +184,8 @@ jobs:
       (needs.dispatch.result == 'success' || needs.dispatch.result == 'skipped') &&
       (github.event_name != 'issue_comment' ||
         needs.dispatch.outputs.command == 'apply-and-merge' ||
-        needs.dispatch.outputs.command == 'unlock')
+        needs.dispatch.outputs.command == 'unlock') &&
+      !(github.event_name == 'pull_request' && github.event.action == 'closed')
     outputs:
       stacks: ${{ steps.stacks.outputs.stacks }}
     timeout-minutes: 10
@@ -510,5 +511,32 @@ jobs:
         with:
           operation: release
           stacks: ${{ needs.find-changed-stacks.outputs.stacks }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
+
+  release-on-close:
+    runs-on: ${{ inputs.runner }}
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    timeout-minutes: 10
+    steps:
+      - name: Configure AWS credentials (CI base role)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.ci_role_arn }}
+          role-session-name: TerragruntEngineReleaseOnClose
+      - name: Configure AWS credentials (cache role, role chaining)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.cache_role_arn }}
+          role-chaining: true
+          role-session-name: TerragruntEngineReleaseOnCloseCache
+      - name: Release authority for this PR
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        with:
+          operation: release
+          stacks: '[]'
+          pr_number: ${{ github.event.pull_request.number }}
           authority_table: ${{ inputs.authority_table }}
           aws_region: ${{ inputs.aws_region }}

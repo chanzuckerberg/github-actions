@@ -15,6 +15,7 @@ import {
   reap,
   scanClaims,
   releaseByPr,
+  resolvePrNumber,
 } from './lib';
 
 const ddbMock = mockClient(DynamoDBClient);
@@ -28,6 +29,24 @@ describe('authorityKey', () => {
     expect(authorityKey('org/repo', 'terraform/envs/dev')).toBe(
       'authority/org/repo/terraform/envs/dev',
     );
+  });
+});
+
+describe('resolvePrNumber', () => {
+  it('prefers an explicit input over the event payload', () => {
+    expect(resolvePrNumber('99', { pull_request: { number: 42 } })).toBe('99');
+  });
+
+  it('reads pull_request.number from the event', () => {
+    expect(resolvePrNumber('', { pull_request: { number: 42 } })).toBe('42');
+  });
+
+  it('falls back to issue.number for comment events', () => {
+    expect(resolvePrNumber('', { issue: { number: 7 } })).toBe('7');
+  });
+
+  it('returns empty when nothing is present', () => {
+    expect(resolvePrNumber('', {})).toBe('');
   });
 });
 

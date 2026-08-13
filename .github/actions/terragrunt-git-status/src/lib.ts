@@ -129,7 +129,8 @@ function helpCommentBody(statusCheckName: string): string {
     '### How it works',
     '',
     '- Each changed stack is locked to this PR while it applies, so two PRs '
-      + 'cannot apply the same stack at the same time.',
+      + 'cannot apply the same stack at the same time. Those locks are '
+      + 'released when the PR is closed or merged.',
     `- The \`${statusCheckName}\` check stays pending until `
       + `\`${botMention} apply-and-merge\` succeeds. A PR that changes no `
       + 'Terraform stacks passes it automatically.',
