@@ -349,6 +349,7 @@ jobs:
           authority_table: ${{ inputs.authority_table }}
           aws_region: ${{ inputs.aws_region }}
       - name: Configure AWS credentials (CI base role)
+        id: ci_base_role
         uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ${{ inputs.aws_region }}
@@ -383,8 +384,12 @@ jobs:
           name: ${{ steps.tgaction.outputs.current_env }}-${{ steps.tgaction.outputs.action_trimmed }}-${{ github.sha }}
           path: |
             ${{ matrix.stack }}/*.txt
+      # Only re-chain when the CI base role was actually re-assumed above. If the
+      # authority check blocked the stack, that step is skipped and the runner still
+      # holds cache-role credentials, which cannot assume the cache role again. The
+      # resulting AssumeRole error would mask the real "owned by another PR" failure.
       - name: Configure AWS credentials (cache role, cleanup, role chaining)
-        if: always()
+        if: ${{ always() && steps.ci_base_role.outcome == 'success' }}
         uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ${{ inputs.aws_region }}
