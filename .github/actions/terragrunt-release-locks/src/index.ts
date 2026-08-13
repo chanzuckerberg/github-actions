@@ -5,14 +5,35 @@ import {
   GetItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import {
+  decideRelease,
   findBackendFiles,
   parseBackendS3Block,
+  parseLockInfo,
 } from './lib';
 
 async function run(): Promise<void> {
   const stackRootInput = core.getInput('stack-root', { required: true });
+  const force = core.getBooleanInput('force');
+  const createdAfterInput = core.getInput('created-after');
+
+  let createdAfter: Date | undefined;
+  if (createdAfterInput) {
+    const parsed = new Date(createdAfterInput);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new Error(`created-after is not a valid timestamp: ${createdAfterInput}`);
+    }
+    createdAfter = parsed;
+  }
+
+  const self = `${os.userInfo().username}@${os.hostname()}`;
+  if (force) {
+    core.info('force is set: deleting every lock row found, without ownership checks');
+  } else {
+    core.info(`Releasing only locks owned by ${self}`);
+  }
 
   const workspace = process.env.GITHUB_WORKSPACE;
   if (!workspace) {
@@ -25,6 +46,7 @@ async function run(): Promise<void> {
   }
 
   let foundAny = false;
+  let skipped = 0;
   for (const backendPath of findBackendFiles(stackRoot)) {
     const backend = parseBackendS3Block(backendPath);
     if (!backend) {
@@ -61,8 +83,22 @@ async function run(): Promise<void> {
       continue;
     }
 
-    const infoRaw = getOut.Item.Info?.S ?? '<missing>';
-    core.info(`  Stale lock metadata (Info): ${infoRaw}`);
+    const infoRaw = getOut.Item.Info?.S;
+    core.info(`  Lock metadata (Info): ${infoRaw ?? '<missing>'}`);
+
+    if (!force) {
+      const decision = decideRelease({
+        info: parseLockInfo(infoRaw),
+        self,
+        createdAfter,
+      });
+      if (!decision.release) {
+        core.info(`  Keeping lock: ${decision.reason}`);
+        skipped += 1;
+        continue;
+      }
+      core.info(`  Lock is releasable: ${decision.reason}`);
+    }
 
     core.info(
       `  Deleting lock row from ${backend.dynamodbTable} (same effect as terraform force-unlock for this backend)`,
@@ -87,6 +123,9 @@ async function run(): Promise<void> {
     core.info(
       `No .tf file with a parsable backend "s3" block under ${stackRoot}; nothing to check`,
     );
+  }
+  if (skipped > 0) {
+    core.info(`Left ${skipped} lock(s) in place because they are not owned by this job`);
   }
   core.info('Lock cleanup (DynamoDB) completed');
 }

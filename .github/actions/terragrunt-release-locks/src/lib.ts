@@ -13,6 +13,86 @@ export function escapeRegex(s: string): string {
 }
 
 /**
+ * Shape of the JSON terraform stores in the Info attribute of a DynamoDB lock row.
+ */
+export interface LockInfo {
+  ID?: string;
+  Operation?: string;
+  Who?: string;
+  Version?: string;
+  Created?: string;
+  Path?: string;
+}
+
+export function parseLockInfo(raw: string | undefined): LockInfo | null {
+  if (!raw) {
+    return null;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return null;
+  }
+  return parsed as LockInfo;
+}
+
+export interface ReleaseDecision {
+  release: boolean;
+  reason: string;
+}
+
+/**
+ * Decide whether a lock row belongs to the current job and may be deleted.
+ *
+ * Terraform writes Who as "<user>@<hostname>", so a lock created by a different
+ * job carries a different runner hostname. Deleting one of those breaks the run
+ * that holds it: its own unlock finds no row and fails with "unexpected end of
+ * JSON input". Ownership is therefore the primary guard, and createdAfter covers
+ * the case where a hostname is reused across jobs.
+ */
+export function decideRelease(opts: {
+  info: LockInfo | null;
+  self: string;
+  createdAfter?: Date;
+}): ReleaseDecision {
+  const { info, self, createdAfter } = opts;
+
+  if (!info) {
+    return {
+      release: true,
+      reason: 'lock row has no parsable Info; terraform cannot release it either',
+    };
+  }
+
+  if (!info.Who) {
+    return { release: false, reason: 'lock Info has no Who field, so ownership cannot be established' };
+  }
+
+  if (info.Who !== self) {
+    return { release: false, reason: `held by ${info.Who}, not by this job (${self})` };
+  }
+
+  if (createdAfter) {
+    const created = info.Created ? new Date(info.Created) : null;
+    if (!created || Number.isNaN(created.getTime())) {
+      return { release: false, reason: 'lock Info has no parsable Created timestamp' };
+    }
+    if (created.getTime() < createdAfter.getTime()) {
+      return {
+        release: false,
+        reason: `created at ${info.Created}, before this job started at ${createdAfter.toISOString()}`,
+      };
+    }
+  }
+
+  return { release: true, reason: `created by this job (${self})` };
+}
+
+/**
  * Extract the first terraform backend "s3" block from HCL text.
  */
 export function parseBackendS3FromText(text: string): BackendS3 | null {
