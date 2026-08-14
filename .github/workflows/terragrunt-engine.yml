@@ -253,6 +253,8 @@ jobs:
       # Cache key is always derived from the calling repo: terraform/<owner>/<repo>/...
       PROVIDER_CACHE_KEY: ${{ format('terraform/{0}/provider-cache/providers.tar.gz', github.repository) }}
     steps:
+      - name: Record job start
+        run: echo "JOB_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
       - name: Generate token
         id: generate_token
         uses: actions/create-github-app-token@v3
@@ -412,11 +414,15 @@ jobs:
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
           provider-cache-key: ${{ env.PROVIDER_CACHE_KEY }}
           cache-dir: ${{ env.TG_PROVIDER_CACHE_DIR }}
+      # Skipped when the action runs with -lock=false, because such a run takes no
+      # locks and so has none of its own to clean up. Sweeping the stack anyway
+      # deletes locks held by a concurrent run, and that run then fails to unlock.
       - name: Release Terragrunt Locks (Cleanup)
-        if: always()
+        if: ${{ always() && !contains(inputs.action, '-lock=false') }}
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-release-locks@terragrunt-release-locks-v0
         with:
           stack-root: ${{ matrix.stack }}
+          created-after: ${{ env.JOB_STARTED_AT }}
 
   unlock:
     runs-on: ${{ inputs.runner }}
@@ -464,10 +470,13 @@ jobs:
           role-to-assume: ${{ inputs.cache_role_arn }}
           role-chaining: true
           role-session-name: TerragruntEngineUnlockCache
+      # This job only runs from an explicit `unlock` comment, so it is the deliberate
+      # force-unlock path and clears locks regardless of which job owns them.
       - name: Release Terragrunt Locks
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-release-locks@terragrunt-release-locks-v0
         with:
           stack-root: ${{ matrix.stack }}
+          force: 'true'
 
   finalize:
     runs-on: ${{ inputs.runner }}

@@ -1,14 +1,27 @@
 name: Release Terraform S3 state locks
 description: >
   Find Terraform components under a stack root, read the S3 backend DynamoDB lock table
-  for each (no terraform plan — avoids taking new locks). Deletes any existing lock row
-  for that state, matching terraform force-unlock for this backend type.
+  for each (no terraform plan — avoids taking new locks). Deletes lock rows left behind by
+  this job, matching terraform force-unlock for this backend type. Locks held by another job
+  are left alone, because deleting a live lock makes the run that holds it fail to unlock.
   Expects the runner to already be configured for DynamoDB access (e.g. tfe-si via aws-actions/configure-aws-credentials).
 
 inputs:
   stack-root:
     description: Path to the terragrunt stack (e.g. terraform/envs/dev-central)
     required: true
+  created-after:
+    description: >
+      ISO timestamp of when this job started. Locks created before it are treated as
+      belonging to another job and are left in place. Ignored when force is true.
+    required: false
+    default: ''
+  force:
+    description: >
+      Delete every lock row found, skipping ownership checks. This is the manual
+      force-unlock escape hatch and must only be set by a deliberate human-triggered job.
+    required: false
+    default: 'false'
 
 runs:
   using: node24

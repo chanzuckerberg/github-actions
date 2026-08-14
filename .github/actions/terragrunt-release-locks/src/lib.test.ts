@@ -2,11 +2,13 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import {
+  decideRelease,
   escapeRegex,
   findBackendFiles,
   findFoggTfFiles,
   parseBackendS3Block,
   parseBackendS3FromText,
+  parseLockInfo,
 } from './lib';
 
 describe('escapeRegex', () => {
@@ -165,6 +167,116 @@ describe('findBackendFiles', () => {
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
+  });
+});
+
+describe('parseLockInfo', () => {
+  it('parses the Info json terraform writes', () => {
+    const raw = '{"ID":"6151c49a","Operation":"OperationTypeApply","Who":"runner@host-a","Created":"2026-08-13T15:44:59.806500055Z"}';
+    expect(parseLockInfo(raw)).toEqual({
+      ID: '6151c49a',
+      Operation: 'OperationTypeApply',
+      Who: 'runner@host-a',
+      Created: '2026-08-13T15:44:59.806500055Z',
+    });
+  });
+
+  it('returns null for empty, malformed, or non-object json', () => {
+    expect(parseLockInfo(undefined)).toBeNull();
+    expect(parseLockInfo('')).toBeNull();
+    expect(parseLockInfo('{"ID":')).toBeNull();
+    expect(parseLockInfo('[1,2]')).toBeNull();
+  });
+});
+
+describe('decideRelease', () => {
+  const jobStart = new Date('2026-08-13T15:42:36Z');
+
+  it('keeps a lock held by another runner', () => {
+    const decision = decideRelease({
+      info: parseLockInfo(
+        '{"ID":"6151c49a-de51-49cd-414a-0b5483205011","Operation":"OperationTypeApply",'
+        + '"Who":"runner@amd64-hgdcz-runner-7slq8","Created":"2026-08-13T15:44:59.806500055Z"}',
+      ),
+      self: 'runner@amd64-hgdcz-runner-nj2sx',
+      createdAfter: new Date('2026-08-13T15:41:16Z'),
+    });
+    expect(decision.release).toBe(false);
+    expect(decision.reason).toContain('runner@amd64-hgdcz-runner-7slq8');
+  });
+
+  it('releases a lock matching any of this job\'s identities', () => {
+    const decision = decideRelease({
+      info: parseLockInfo(
+        '{"ID":"abc","Who":"runner@amd64-hgdcz-runner-7slq8","Created":"2026-08-13T15:44:59Z"}',
+      ),
+      self: ['runner@workflow-pod', 'runner@amd64-hgdcz-runner-7slq8'],
+      createdAfter: jobStart,
+    });
+    expect(decision.release).toBe(true);
+  });
+
+  it('keeps a lock matching none of this job\'s identities', () => {
+    const decision = decideRelease({
+      info: parseLockInfo('{"ID":"abc","Who":"runner@amd64-hgdcz-runner-7slq8"}'),
+      self: ['runner@host-a', 'runner@host-b'],
+    });
+    expect(decision.release).toBe(false);
+    expect(decision.reason).toContain('runner@host-a, runner@host-b');
+  });
+
+  it('releases a lock this job created', () => {
+    const decision = decideRelease({
+      info: parseLockInfo(
+        '{"ID":"abc","Operation":"OperationTypeApply","Who":"runner@host-a","Created":"2026-08-13T15:44:59Z"}',
+      ),
+      self: 'runner@host-a',
+      createdAfter: jobStart,
+    });
+    expect(decision.release).toBe(true);
+  });
+
+  it('keeps a same-hostname lock that predates this job', () => {
+    const decision = decideRelease({
+      info: parseLockInfo(
+        '{"ID":"abc","Who":"runner@host-a","Created":"2026-08-13T15:40:00Z"}',
+      ),
+      self: 'runner@host-a',
+      createdAfter: jobStart,
+    });
+    expect(decision.release).toBe(false);
+    expect(decision.reason).toContain('before this job started');
+  });
+
+  it('ignores age when no createdAfter is given', () => {
+    const decision = decideRelease({
+      info: parseLockInfo('{"ID":"abc","Who":"runner@host-a","Created":"2020-01-01T00:00:00Z"}'),
+      self: 'runner@host-a',
+    });
+    expect(decision.release).toBe(true);
+  });
+
+  it('keeps a lock whose Who is missing or Created is unparsable', () => {
+    expect(
+      decideRelease({ info: { ID: 'abc' }, self: 'runner@host-a' }).release,
+    ).toBe(false);
+    expect(
+      decideRelease({
+        info: { ID: 'abc', Who: 'runner@host-a', Created: 'not-a-date' },
+        self: 'runner@host-a',
+        createdAfter: jobStart,
+      }).release,
+    ).toBe(false);
+  });
+
+  it('releases a row terraform itself cannot parse', () => {
+    const decision = decideRelease({
+      info: parseLockInfo(''),
+      self: 'runner@host-a',
+      createdAfter: jobStart,
+    });
+    expect(decision.release).toBe(true);
+    expect(decision.reason).toContain('no parsable Info');
   });
 });
 
