@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.38.0](https://github.com/chanzuckerberg/github-actions/compare/v6.37.1...v6.38.0) (2026-08-14)
+
+
+### Features
+
+* **terragrunt-engine:** block apply when a PR is behind its base branch ([#629](https://github.com/chanzuckerberg/github-actions/issues/629)) ([f7eb415](https://github.com/chanzuckerberg/github-actions/commit/f7eb4157d057e2ff8a3e9aea12ad570047e8ce9f))
+
 ## [6.37.1](https://github.com/chanzuckerberg/github-actions/compare/v6.37.0...v6.37.1) (2026-08-14)
 
 

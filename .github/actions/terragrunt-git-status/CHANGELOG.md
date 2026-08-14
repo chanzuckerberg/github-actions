@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.5.0...terragrunt-git-status-v0.6.0) (2026-08-14)
+
+
+### Features
+
+* **terragrunt-engine:** block apply when a PR is behind its base branch ([#629](https://github.com/chanzuckerberg/github-actions/issues/629)) ([f7eb415](https://github.com/chanzuckerberg/github-actions/commit/f7eb4157d057e2ff8a3e9aea12ad570047e8ce9f))
+
 ## [0.5.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.4.1...terragrunt-git-status-v0.5.0) (2026-08-13)
 
 
