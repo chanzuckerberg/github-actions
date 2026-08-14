@@ -1,6 +1,6 @@
 import { matchOwnedFiles, parseCodeowners } from 'codeowners-approval-check-action/src/codeowners';
 import { decide } from 'codeowners-approval-check-action/src/decide';
-import { reviewGateRoute } from './lib';
+import { mergeStateMessage, mergeStateRoute, reviewGateRoute } from './lib';
 
 describe('reviewGateRoute', () => {
   it('allows when GitHub reports APPROVED', () => {
@@ -17,6 +17,54 @@ describe('reviewGateRoute', () => {
 
   it('falls back to CODEOWNERS when reviewDecision is null', () => {
     expect(reviewGateRoute(null)).toBe('codeowners');
+  });
+});
+
+describe('mergeStateRoute', () => {
+  it('allows a mergeable branch that is level with its base', () => {
+    expect(mergeStateRoute(true, 'clean', 0)).toBe('allow');
+  });
+
+  it('blocks a branch that is behind its base', () => {
+    expect(mergeStateRoute(true, 'behind', 3)).toBe('block-behind');
+  });
+
+  it('blocks a conflicted branch', () => {
+    expect(mergeStateRoute(false, 'dirty', 0)).toBe('block-conflict');
+  });
+
+  it('reports the conflict rather than the lag when a branch is both', () => {
+    expect(mergeStateRoute(false, 'dirty', 7)).toBe('block-conflict');
+  });
+
+  it('blocks while GitHub has not computed mergeability', () => {
+    expect(mergeStateRoute(null, 'unknown', 0)).toBe('block-unknown');
+  });
+
+  it('blocks a branch behind its base even before mergeability is known', () => {
+    expect(mergeStateRoute(null, 'unknown', 2)).toBe('block-behind');
+  });
+
+  it('allows a blocked mergeable_state, which only reflects branch protection', () => {
+    expect(mergeStateRoute(true, 'blocked', 0)).toBe('allow');
+  });
+});
+
+describe('mergeStateMessage', () => {
+  it('names the base branch and the lag in commits', () => {
+    const message = mergeStateMessage('block-behind', 'main', 3);
+    expect(message).toContain('3 commits behind `main`');
+  });
+
+  it('uses the singular form for a one-commit lag', () => {
+    const message = mergeStateMessage('block-behind', 'main', 1);
+    expect(message).toContain('1 commit behind `main`');
+    expect(message).not.toContain('1 commits');
+  });
+
+  it('names the base branch of a stacked PR', () => {
+    const message = mergeStateMessage('block-conflict', 'heathj/base-pr', 0);
+    expect(message).toContain('`heathj/base-pr`');
   });
 });
 

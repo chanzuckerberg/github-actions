@@ -154,6 +154,8 @@ jobs:
     timeout-minutes: 5
     outputs:
       command: ${{ steps.dispatch.outputs.command }}
+      head_sha: ${{ steps.dispatch.outputs.head_sha }}
+      base_ref: ${{ steps.dispatch.outputs.base_ref }}
     steps:
       - name: Generate token
         id: generate_token
@@ -264,11 +266,34 @@ jobs:
       - name: Get Base Git Ref
         id: ref
         uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1
+      # An apply pins the checkout to the SHA the dispatch job validated. The
+      # refs/pull/N/merge ref used elsewhere is recomputed by GitHub on its own
+      # schedule, so it can resolve to a merge with a stale base or to a commit
+      # pushed after validation passed.
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: ${{ steps.ref.outputs.headRef || 'refs/heads/main' }}
+          ref: ${{ needs.dispatch.outputs.head_sha || steps.ref.outputs.headRef || 'refs/heads/main' }}
+          fetch-depth: 0
           token: ${{ steps.generate_token.outputs.token || github.token }}
+      # The dispatch job rejects a PR that is behind its base, so this normally
+      # merges nothing. It closes the window between that check and this job, in
+      # which the base branch can move and leave the apply about to write a tree
+      # that reverts whatever landed in the meantime.
+      - name: Merge base branch into the working tree
+        if: ${{ needs.dispatch.outputs.head_sha != '' }}
+        env:
+          BASE_REF: ${{ needs.dispatch.outputs.base_ref }}
+        run: |
+          set -euo pipefail
+          git config user.name 'terragrunt-bot'
+          git config user.email 'terragrunt-bot@users.noreply.github.com'
+          git fetch --no-tags origin "$BASE_REF"
+          if ! git merge --no-edit FETCH_HEAD; then
+            git merge --abort || true
+            echo "::error::Merging origin/$BASE_REF into this pull request conflicts, so the apply was stopped before Terragrunt ran. Resolve the conflicts, push, and comment @terragrunt-bot apply-and-merge again."
+            exit 1
+          fi
       # An owner-scoped token reaches every repo the app is installed on, unlike
       # the repo-scoped token above which only covers the calling repo.
       - name: Generate module-read token

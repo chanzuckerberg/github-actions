@@ -120,7 +120,8 @@ function helpCommentBody(statusCheckName: string): string {
     `| \`${botMention} apply-and-merge\` | Runs \`terragrunt apply\` on every `
       + 'changed stack, then enables squash auto-merge once all stacks apply '
       + 'cleanly. Requires write access, any approvals required by branch '
-      + 'protection or CODEOWNERS, no merge conflicts, and a non-draft PR. |',
+      + 'protection or CODEOWNERS, no merge conflicts, a branch that is up to '
+      + 'date with the base branch, and a non-draft PR. |',
     `| \`${botMention} unlock\` | Force-releases stuck Terraform state locks `
       + 'for the stacks changed by this PR. Requires write access. Use only '
       + 'when a previous run left a lock behind. |',
@@ -136,6 +137,9 @@ function helpCommentBody(statusCheckName: string): string {
       + 'Terraform stacks passes it automatically.',
     '- If an apply fails, fix the issue, push, and run '
       + `\`${botMention} apply-and-merge\` again.`,
+    '- A branch that is behind the base branch cannot apply. Applying a stale '
+      + 'branch reverts infrastructure that a newer commit on the base branch '
+      + 'already applied, so update the branch first.',
     '',
     '</details>',
     '',
@@ -568,40 +572,140 @@ async function requireReviewDecision(
   return false;
 }
 
-export async function validateApply(octokit: Octokit): Promise<boolean> {
+export type MergeStateRoute =
+  | 'allow'
+  | 'block-conflict'
+  | 'block-behind'
+  | 'block-unknown';
+
+// mergeStateRoute decides whether a PR's relationship to its base branch
+// permits an apply. Conflicts outrank being behind, because a conflicted branch
+// is also always behind and the conflict is the more useful thing to report.
+export function mergeStateRoute(
+  mergeable: boolean | null,
+  mergeableState: string,
+  behindBy: number,
+): MergeStateRoute {
+  if (mergeable === false || mergeableState === 'dirty') {
+    return 'block-conflict';
+  }
+  if (behindBy > 0) {
+    return 'block-behind';
+  }
+  if (mergeable === null) {
+    return 'block-unknown';
+  }
+  return 'allow';
+}
+
+export function mergeStateMessage(
+  route: MergeStateRoute,
+  baseRef: string,
+  behindBy: number,
+): string {
+  if (route === 'block-conflict') {
+    return `Cannot apply — this branch conflicts with \`${baseRef}\`. `
+      + 'Resolve the conflicts, push, and try again.';
+  }
+  if (route === 'block-behind') {
+    const commits = behindBy === 1 ? '1 commit' : `${behindBy} commits`;
+    return `Cannot apply — this branch is ${commits} behind \`${baseRef}\`. `
+      + 'Applying a stale branch reverts infrastructure that a newer commit on '
+      + `\`${baseRef}\` already applied. Update the branch with the Update `
+      + `branch button, or merge \`${baseRef}\` in locally and push. Wait for `
+      + `the plan to finish, then run \`${botMention} apply-and-merge\` again.`;
+  }
+  return 'Cannot apply — GitHub has not finished working out whether this '
+    + 'branch merges cleanly. Try again in a moment.';
+}
+
+// GitHub computes mergeable asynchronously and reports null until it finishes,
+// which is usually within a second or two of the last push.
+const mergeabilityAttempts = 5;
+const mergeabilityDelayMs = 2000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function fetchPrWithMergeability(octokit: Octokit, prNumber: number) {
+  let pr;
+  for (let attempt = 0; attempt < mergeabilityAttempts; attempt += 1) {
+    if (attempt > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(mergeabilityDelayMs);
+    }
+    // eslint-disable-next-line no-await-in-loop
+    const { data } = await octokit.rest.pulls.get({
+      ...context.repo,
+      pull_number: prNumber,
+    });
+    pr = data;
+    if (pr.mergeable !== null) {
+      return pr;
+    }
+    core.info('GitHub has not computed mergeability yet — retrying');
+  }
+  return pr!;
+}
+
+async function countCommitsBehindBase(
+  octokit: Octokit,
+  baseRef: string,
+  headSha: string,
+): Promise<number> {
+  const { data: comparison } = await octokit.rest.repos.compareCommitsWithBasehead({
+    ...context.repo,
+    basehead: `${baseRef}...${headSha}`,
+  });
+  return comparison.behind_by;
+}
+
+export interface ApplyValidation {
+  ok: boolean;
+  headSha: string;
+  baseRef: string;
+}
+
+const rejected: ApplyValidation = { ok: false, headSha: '', baseRef: '' };
+
+export async function validateApply(octokit: Octokit): Promise<ApplyValidation> {
   const ctx = issueCommentContext();
   if (!ctx) {
-    return false;
+    return rejected;
   }
   const { commenter, prNumber } = ctx;
 
   if (!(await requireWriteAccess(octokit, commenter, prNumber, 'apply-and-merge'))) {
-    return false;
+    return rejected;
   }
 
   if (!(await requireReviewDecision(octokit, prNumber))) {
-    return false;
+    return rejected;
   }
 
-  const { data: pr } = await octokit.rest.pulls.get({
-    ...context.repo,
-    pull_number: prNumber,
-  });
+  const pr = await fetchPrWithMergeability(octokit, prNumber);
   if (pr.draft) {
     await octokit.rest.issues.createComment({
       ...context.repo,
       issue_number: prNumber,
       body: `${quoteTrigger()}Cannot apply — the pull request is still a draft. Mark it as ready for review and try again.`,
     });
-    return false;
+    return rejected;
   }
-  if (pr.mergeable_state === 'dirty' || pr.mergeable === false) {
+
+  const baseRef = pr.base.ref;
+  const behindBy = await countCommitsBehindBase(octokit, baseRef, pr.head.sha);
+  const route = mergeStateRoute(pr.mergeable, pr.mergeable_state, behindBy);
+  if (route !== 'allow') {
     await octokit.rest.issues.createComment({
       ...context.repo,
       issue_number: prNumber,
-      body: `${quoteTrigger()}Cannot apply — the branch has conflicts with the base branch. Resolve them and try again.`,
+      body: `${quoteTrigger()}${mergeStateMessage(route, baseRef, behindBy)}`,
     });
-    return false;
+    return rejected;
   }
 
   const commentId = context.payload.comment?.id;
@@ -631,7 +735,7 @@ export async function validateApply(octokit: Octokit): Promise<boolean> {
   });
 
   core.info(`Accepted apply-and-merge from ${commenter}`);
-  return true;
+  return { ok: true, headSha: pr.head.sha, baseRef };
 }
 
 export async function validateUnlock(octokit: Octokit): Promise<boolean> {
@@ -693,40 +797,45 @@ async function postUnknownCommandComment(
 // "unknown" (ok), so the caller workflow runs nothing. A recognized command
 // that fails validation resolves ok=false so the caller can gate downstream
 // jobs on this job failing.
+export interface DispatchResult extends ApplyValidation {
+  command: string;
+}
+
 export async function dispatch(
   octokit: Octokit,
   statusCheckName: string,
-): Promise<{ command: string; ok: boolean }> {
+): Promise<DispatchResult> {
   const body = context.payload.comment?.body ?? '';
   const prNumber = context.payload.issue?.number;
   const parsed = parseComment(body);
+  const noop = { ok: true, headSha: '', baseRef: '' };
 
   if (!parsed.mentioned) {
     core.info(`Comment does not mention ${botMention} — nothing to do`);
-    return { command: 'none', ok: true };
+    return { command: 'none', ...noop };
   }
 
   if (!prNumber) {
     core.warning('Comment is not on a pull request — ignoring');
-    return { command: 'none', ok: true };
+    return { command: 'none', ...noop };
   }
 
   switch (parsed.command) {
     case 'help': {
       await upsertHelpComment(octokit, prNumber, statusCheckName);
-      return { command: 'help', ok: true };
+      return { command: 'help', ...noop };
     }
     case 'apply-and-merge': {
-      const ok = await validateApply(octokit);
-      return { command: 'apply-and-merge', ok };
+      const validation = await validateApply(octokit);
+      return { command: 'apply-and-merge', ...validation };
     }
     case 'unlock': {
       const ok = await validateUnlock(octokit);
-      return { command: 'unlock', ok };
+      return { command: 'unlock', ...noop, ok };
     }
     default: {
       await postUnknownCommandComment(octokit, prNumber, parsed.command);
-      return { command: 'unknown', ok: true };
+      return { command: 'unknown', ...noop };
     }
   }
 }
