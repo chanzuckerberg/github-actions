@@ -11,8 +11,10 @@ description: >
                    the "command" output. Posts a helper comment for unknown
                    commands and validates recognized ones.
     validate-apply  — validate write access, branch-protection reviewDecision
-                      (with a CODEOWNERS fallback when that field is null), and
-                      mergeability for an apply-and-merge comment. Returns approved boolean.
+                      (with a CODEOWNERS fallback when that field is null),
+                      mergeability, and that the branch is not behind its base
+                      for an apply-and-merge comment. Returns approved boolean
+                      plus the validated head SHA and base ref.
     validate-unlock — validate write access for an unlock comment.
                       Returns approved boolean.
 
@@ -48,6 +50,16 @@ outputs:
     description: >
       The resolved command from a PR comment: apply-and-merge, unlock, help,
       unknown, or none. Set by dispatch.
+  head_sha:
+    description: >
+      The PR head SHA that passed validation, so the apply pins its checkout to
+      the exact commit that was validated rather than re-resolving a ref that
+      may have moved. Empty unless an apply-and-merge validation passed.
+  base_ref:
+    description: >
+      The PR's base branch name, used by the apply to merge the base into the
+      working tree before running Terragrunt. Empty unless an apply-and-merge
+      validation passed.
 
 runs:
   using: node24

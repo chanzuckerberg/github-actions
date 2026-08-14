@@ -36,8 +36,10 @@ async function run(): Promise<void> {
     }
 
     case 'validate-apply': {
-      const approved = await validateApply(octokit);
-      if (!approved) {
+      const validation = await validateApply(octokit);
+      core.setOutput('head_sha', validation.headSha);
+      core.setOutput('base_ref', validation.baseRef);
+      if (!validation.ok) {
         core.setFailed('Validation rejected apply-and-merge');
       }
       break;
@@ -54,6 +56,8 @@ async function run(): Promise<void> {
     case 'dispatch': {
       const result = await dispatch(octokit, statusCheckName);
       core.setOutput('command', result.command);
+      core.setOutput('head_sha', result.headSha);
+      core.setOutput('base_ref', result.baseRef);
       if (!result.ok) {
         core.setFailed(`Validation rejected ${result.command}`);
       }
