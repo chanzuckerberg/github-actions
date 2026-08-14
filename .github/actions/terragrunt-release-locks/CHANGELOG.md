@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-release-locks-v0.3.0...terragrunt-release-locks-v0.3.1) (2026-08-14)
+
+
+### BugFixes
+
+* **terragrunt-release-locks:** only release locks this job owns ([#627](https://github.com/chanzuckerberg/github-actions/issues/627)) ([cedcdb1](https://github.com/chanzuckerberg/github-actions/commit/cedcdb12e1000536042bb66f20a8d1bb6cdb8510))
+
 ## [0.3.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-release-locks-v0.2.0...terragrunt-release-locks-v0.3.0) (2026-06-30)
 
 
