@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.37.1](https://github.com/chanzuckerberg/github-actions/compare/v6.37.0...v6.37.1) (2026-08-14)
+
+
+### BugFixes
+
+* **terragrunt-release-locks:** only release locks this job owns ([#627](https://github.com/chanzuckerberg/github-actions/issues/627)) ([cedcdb1](https://github.com/chanzuckerberg/github-actions/commit/cedcdb12e1000536042bb66f20a8d1bb6cdb8510))
+
 ## [6.37.0](https://github.com/chanzuckerberg/github-actions/compare/v6.36.1...v6.37.0) (2026-08-13)
 
 
