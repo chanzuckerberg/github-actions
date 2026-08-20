@@ -118,8 +118,8 @@ function helpCommentBody(statusCheckName: string): string {
     '| Command | What it does |',
     '| --- | --- |',
     `| \`${botMention} apply-and-merge\` | Runs \`terragrunt apply\` on every `
-      + 'changed stack, then enables squash auto-merge once all stacks apply '
-      + 'cleanly. Requires write access, any approvals required by branch '
+      + 'changed stack, then squash-merges the pull request once all stacks '
+      + 'apply cleanly. Requires write access, any approvals required by branch '
       + 'protection or CODEOWNERS, no merge conflicts, a branch that is up to '
       + 'date with the base branch, and a non-draft PR. |',
     `| \`${botMention} unlock\` | Force-releases stuck Terraform state locks `
@@ -218,6 +218,116 @@ export async function gate(
   }
 }
 
+export type AutoMergeRefusal = 'already-mergeable' | 'not-allowed' | 'other';
+
+// classifyAutoMergeError sorts the GraphQL rejection from
+// enablePullRequestAutoMerge. GitHub only accepts auto-merge on a pull request
+// that cannot be merged yet, and reports "clean status" or "unstable status"
+// when nothing is left to wait for. Neither phrase says so, and the difference
+// decides whether the engine can just merge instead.
+export function classifyAutoMergeError(message: string): AutoMergeRefusal {
+  if (/is in (clean|unstable) status/i.test(message)) {
+    return 'already-mergeable';
+  }
+  if (/auto[- ]?merge is not allowed/i.test(message)) {
+    return 'not-allowed';
+  }
+  return 'other';
+}
+
+export function autoMergeRefusalMessage(
+  refusal: AutoMergeRefusal,
+  raw: string,
+): string {
+  if (refusal === 'not-allowed') {
+    return 'Not merged. This repository does not allow auto-merge, so the '
+      + 'engine could not queue the merge. Enable "Allow auto-merge" in '
+      + 'Settings, General, then merge this pull request by hand.';
+  }
+  return `Not merged. GitHub rejected the merge: ${raw}`;
+}
+
+export interface MergeOutcome {
+  merged: boolean;
+  // Plain-English result for the pull request comment.
+  message: string;
+  // Short form for the commit status description, which GitHub truncates.
+  short: string;
+}
+
+// completeMerge lands the pull request now that every stack applied. Native
+// auto-merge is preferred, so GitHub still waits for any other required check.
+// When GitHub refuses because nothing is left to wait for, the engine merges
+// directly: auto-merge would have merged immediately anyway, and stopping here
+// would leave the apply done and the merge undone.
+async function completeMerge(
+  octokit: Octokit,
+  prNumber: number,
+  prNodeId: string,
+): Promise<MergeOutcome> {
+  try {
+    await octokit.graphql(`
+      mutation($prId: ID!) {
+        enablePullRequestAutoMerge(input: {
+          pullRequestId: $prId,
+          mergeMethod: SQUASH
+        }) {
+          pullRequest { autoMergeRequest { enabledAt } }
+        }
+      }
+    `, { prId: prNodeId });
+    return {
+      merged: true,
+      message: 'Auto-merge enabled.',
+      short: 'Applied — auto-merge enabled',
+    };
+  } catch (err: unknown) {
+    const raw = err instanceof Error ? err.message : String(err);
+    const refusal = classifyAutoMergeError(raw);
+    core.warning(`Auto-merge could not be enabled: ${raw}`);
+
+    if (refusal !== 'already-mergeable') {
+      return {
+        merged: false,
+        message: autoMergeRefusalMessage(refusal, raw),
+        short: 'Applied — not merged (see PR comment)',
+      };
+    }
+
+    return squashMerge(octokit, prNumber);
+  }
+}
+
+async function squashMerge(
+  octokit: Octokit,
+  prNumber: number,
+): Promise<MergeOutcome> {
+  core.info('Nothing left for auto-merge to wait on — merging directly');
+  try {
+    await octokit.rest.pulls.merge({
+      ...context.repo,
+      pull_number: prNumber,
+      merge_method: 'squash',
+    });
+    return {
+      merged: true,
+      message: 'Merged. Nothing was left for auto-merge to wait on, so the '
+        + 'engine squash-merged the pull request itself.',
+      short: 'Applied — merged',
+    };
+  } catch (err: unknown) {
+    const raw = err instanceof Error ? err.message : String(err);
+    core.warning(`Direct merge failed: ${raw}`);
+    return {
+      merged: false,
+      message: 'Not merged. The apply succeeded, but GitHub would neither queue '
+        + `auto-merge nor accept a squash merge: ${raw}. Merge this pull request `
+        + 'by hand.',
+      short: 'Applied — not merged (see PR comment)',
+    };
+  }
+}
+
 export async function finalize(
   octokit: Octokit,
   stacks: string[],
@@ -241,29 +351,12 @@ export async function finalize(
   const url = runUrl();
 
   if (allSucceeded) {
-    let mergeStatus = '';
-    try {
-      await octokit.graphql(`
-        mutation($prId: ID!) {
-          enablePullRequestAutoMerge(input: {
-            pullRequestId: $prId,
-            mergeMethod: SQUASH
-          }) {
-            pullRequest { autoMergeRequest { enabledAt } }
-          }
-        }
-      `, { prId: pr.nodeId });
-      mergeStatus = 'Auto-merge enabled.';
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      core.warning(`Auto-merge could not be enabled: ${msg}`);
-      mergeStatus = `Auto-merge could not be enabled: ${msg}`;
-    }
+    const merge = await completeMerge(octokit, prNumber, pr.nodeId);
 
     const body = [
       `${quoteTrigger()}Apply succeeded for \`${pr.headSha.slice(0, 7)}\` — [workflow run](${url})`,
       '',
-      mergeStatus,
+      merge.message,
     ].join('\n');
 
     await octokit.rest.issues.createComment({
@@ -277,9 +370,7 @@ export async function finalize(
       sha: pr.headSha,
       state: 'success',
       context: statusCheckName,
-      description: mergeStatus.startsWith('Auto-merge enabled')
-        ? 'Applied — auto-merge enabled'
-        : 'Applied — auto-merge failed (see PR comment)',
+      description: merge.short,
       target_url: url,
     });
   } else {
