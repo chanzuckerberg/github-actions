@@ -1,6 +1,12 @@
 import { matchOwnedFiles, parseCodeowners } from 'codeowners-approval-check-action/src/codeowners';
 import { decide } from 'codeowners-approval-check-action/src/decide';
-import { mergeStateMessage, mergeStateRoute, reviewGateRoute } from './lib';
+import {
+  autoMergeRefusalMessage,
+  classifyAutoMergeError,
+  mergeStateMessage,
+  mergeStateRoute,
+  reviewGateRoute,
+} from './lib';
 
 describe('reviewGateRoute', () => {
   it('allows when GitHub reports APPROVED', () => {
@@ -65,6 +71,44 @@ describe('mergeStateMessage', () => {
   it('names the base branch of a stacked PR', () => {
     const message = mergeStateMessage('block-conflict', 'heathj/base-pr', 0);
     expect(message).toContain('`heathj/base-pr`');
+  });
+});
+
+describe('classifyAutoMergeError', () => {
+  it('reads "unstable status" as nothing left to wait on', () => {
+    expect(classifyAutoMergeError(
+      'Request failed due to following response errors:\n'
+      + ' - Pull request Pull request is in unstable status',
+    )).toBe('already-mergeable');
+  });
+
+  it('reads "clean status" as nothing left to wait on', () => {
+    expect(classifyAutoMergeError('Pull request Pull request is in clean status'))
+      .toBe('already-mergeable');
+  });
+
+  it('recognizes a repository with auto-merge turned off', () => {
+    expect(classifyAutoMergeError(
+      'Pull request Auto merge is not allowed for this repository',
+    )).toBe('not-allowed');
+  });
+
+  it('falls through on an unrecognized rejection', () => {
+    expect(classifyAutoMergeError('Resource not accessible by integration'))
+      .toBe('other');
+  });
+});
+
+describe('autoMergeRefusalMessage', () => {
+  it('names the repository setting to change when auto-merge is off', () => {
+    const message = autoMergeRefusalMessage('not-allowed', 'raw error');
+    expect(message).toContain('Allow auto-merge');
+    expect(message).not.toContain('raw error');
+  });
+
+  it('passes an unrecognized rejection through so it is not lost', () => {
+    const message = autoMergeRefusalMessage('other', 'Resource not accessible');
+    expect(message).toContain('Resource not accessible');
   });
 });
 

@@ -2,7 +2,8 @@ name: Terragrunt Branch Protection
 description: >
   Ensure the calling repository has the required settings for the Terragrunt
   engine: auto-merge enabled, squash-only merges, and the apply-gate status
-  check required on the default branch. Fixes any drift automatically.
+  check required on the default branch. Fixes any drift automatically, and
+  comments on the pull request when GitHub will not keep the gate.
 
 inputs:
   status_check_name:
