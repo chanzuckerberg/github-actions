@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.6.0...terragrunt-git-status-v0.6.1) (2026-08-21)
+
+
+### BugFixes
+
+* **terragrunt-engine:** enforce the apply gate and merge when auto-merge is refused ([#633](https://github.com/chanzuckerberg/github-actions/issues/633)) ([d30bd4d](https://github.com/chanzuckerberg/github-actions/commit/d30bd4d834695f127211819e44461167c472b747))
+
 ## [0.6.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.5.0...terragrunt-git-status-v0.6.0) (2026-08-14)
 
 
