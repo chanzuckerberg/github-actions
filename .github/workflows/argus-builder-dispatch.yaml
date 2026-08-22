@@ -55,7 +55,7 @@ jobs:
       tag: ${{ steps.resolve.outputs.tag }}
       trigger_sha: ${{ steps.build_tag.outputs.trigger_sha }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
@@ -81,7 +81,7 @@ jobs:
 
       - name: Check out argus repo
         if: inputs.argus_ref != ''
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: chanzuckerberg/argus
           ref: ${{ inputs.argus_ref }}
