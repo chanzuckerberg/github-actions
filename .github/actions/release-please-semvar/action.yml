@@ -10,9 +10,10 @@ inputs:
     description: 'App token obtained using create-github-app-token'
     required: true
   include_component_in_tag:
-    description: 'If true, add prefix to tags and branches, allowing multiple libraries to be released from the same repository.'
+    description: 'Deprecated: set include-component-in-tag in release-please-config.json instead. This input is accepted for backward compatibility but is not used; the config file is the source of truth.'
     required: false
     default: false
+    deprecationMessage: 'Use include-component-in-tag in release-please-config.json instead. This input is ignored by the node24 JS action.'
   preserve_files:
     description: 'File paths or glob patterns to carry forward after release-please force-pushes the release branch. Accepts comma-separated, newline-separated, or a mix of both. Globs (e.g. */.infra/values.yaml) are expanded against the old branch tree. Only the exact changes the automation made (diff between the old branch and its base) are applied to the new branch, so unrelated edits in the same file are never touched.'
     required: false

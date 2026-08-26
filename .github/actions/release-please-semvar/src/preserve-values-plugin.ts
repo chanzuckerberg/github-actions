@@ -88,9 +88,6 @@ export class PreserveValuesPlugin extends ManifestPlugin {
   }
 
   private async getBranchSha(branch: string): Promise<string> {
-    const branchRef = await this.github.getFileContentsOnBranch('.', branch);
-    // getFileContentsOnBranch won't work for this — use the underlying octokit
-    // to get the branch ref SHA. Cast to GitHub to access the API.
     const gh = this.github as any; // eslint-disable-line @typescript-eslint/no-explicit-any
     const octokit = gh.gitHubApi?.octokit ?? gh.octokit;
     const { owner, repo } = this.github.repository;

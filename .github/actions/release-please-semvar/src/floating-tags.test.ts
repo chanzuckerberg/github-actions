@@ -1,5 +1,5 @@
-import { computeFloatingTags } from './floating-tags';
 import { CreatedRelease, RepositoryConfig } from 'release-please/build/src/manifest';
+import { computeFloatingTags } from './floating-tags';
 
 function makeRelease(overrides: Partial<CreatedRelease>): CreatedRelease {
   return {
