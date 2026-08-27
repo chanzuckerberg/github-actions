@@ -90,7 +90,7 @@ jobs:
 
       - name: Set up Go
         if: inputs.argus_ref != ''
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: _argus/core/go.mod
           cache-dependency-path: _argus/core/go.sum
