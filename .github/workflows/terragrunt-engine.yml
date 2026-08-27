@@ -198,7 +198,7 @@ jobs:
         with:
           client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
           private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Resolve stacks
         id: stacks
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-changed-stacks@terragrunt-changed-stacks-v0
@@ -271,7 +271,7 @@ jobs:
       # schedule, so it can resolve to a merge with a stale base or to a commit
       # pushed after validation passed.
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.dispatch.outputs.head_sha || steps.ref.outputs.headRef || 'refs/heads/main' }}
           fetch-depth: 0
@@ -475,7 +475,7 @@ jobs:
         id: ref
         uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.ref.outputs.headRef || 'refs/heads/main' }}
           token: ${{ steps.generate_token.outputs.token || github.token }}
