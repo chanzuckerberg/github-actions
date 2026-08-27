@@ -8,6 +8,7 @@ interface ActionInputs {
   appToken: string;
   includeComponentInTag: boolean;
   preserveFiles: string[];
+  floatingTags: boolean;
 }
 
 function getInputs(): ActionInputs {
@@ -21,6 +22,7 @@ function getInputs(): ActionInputs {
     appToken: core.getInput('app_token', { required: true }),
     includeComponentInTag: core.getBooleanInput('include_component_in_tag', { required: false }),
     preserveFiles,
+    floatingTags: core.getBooleanInput('floating_tags', { required: false }),
   };
 }
 
@@ -75,8 +77,12 @@ async function run(): Promise<void> {
   core.info(`Created ${createdReleases.length} release(s)`);
 
   if (createdReleases.length > 0) {
-    core.info('Updating floating major/minor tags...');
-    await updateFloatingTags(github, createdReleases, manifest.repositoryConfig);
+    if (inputs.floatingTags) {
+      core.info('Updating floating major/minor tags...');
+      await updateFloatingTags(github, createdReleases, manifest.repositoryConfig);
+    } else {
+      core.info('floating_tags is disabled; skipping floating major/minor tag updates');
+    }
   }
 
   core.info('Done');

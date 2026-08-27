@@ -1,8 +1,8 @@
 # Release please with extras
 
 A JS action wrapping the [release-please](https://github.com/googleapis/release-please)
-library. It creates/updates release PRs and GitHub releases, tags floating
-major/minor versions (e.g. `v1`, `v1.1` in addition to `v1.1.1`), and
+library. It creates/updates release PRs and GitHub releases, optionally tags
+floating major/minor versions (e.g. `v1`, `v1.1` in addition to `v1.1.1`), and
 optionally carries forward automation-made file changes across release-please's
 force pushes — all in a single commit per release branch.
 
@@ -28,13 +28,26 @@ jobs:
           app_token: ${{ steps.generate_token.outputs.token }}
 ```
 
-For automatic component-level major and minor version tagging, pass:
+For component-level tagging (monorepos), set `include-component-in-tag: true`
+in `release-please-config.json`. (The `include_component_in_tag` action input is
+deprecated and ignored — the config file is the source of truth.)
+
+## Floating major/minor tags
+
+By default the action does **not** publish floating tags. Set `floating_tags: true`
+to publish/advance `vMAJOR` / `vMAJOR.MINOR` for the root package and
+`name-vMAJOR` / `name-vMAJOR.MINOR` for components on every release:
 
 ```yaml
-          include_component_in_tag: true
+      - uses: chanzuckerberg/github-actions/.github/actions/release-please-semvar@release-please-semvar-v0
+        with:
+          app_token: ${{ steps.generate_token.outputs.token }}
+          floating_tags: true
 ```
 
-or set `include-component-in-tag: true` in `release-please-config.json`.
+Enable this only for repos whose consumers pin to floating tag aliases (for
+example, repos that publish reusable actions). Leaving it off keeps the tag list
+limited to exact `x.y.z` release tags.
 
 ## Preserving files across release-please force pushes
 
@@ -85,5 +98,6 @@ consumers.
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
 | `app_token` | yes | | GitHub App token with `contents: write` and `pull-requests: write` |
-| `include_component_in_tag` | no | `false` | Add component prefix to tags/branches for monorepo releases |
+| `include_component_in_tag` | no | `false` | Deprecated and ignored; set `include-component-in-tag` in `release-please-config.json` instead |
 | `preserve_files` | no | `''` | Comma/newline-separated file paths or globs to carry forward |
+| `floating_tags` | no | `false` | Publish/advance floating `vMAJOR`/`vMAJOR.MINOR` (and `name-v*` for components) tags on each release |

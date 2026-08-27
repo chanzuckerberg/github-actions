@@ -18,6 +18,10 @@ inputs:
     description: 'File paths or glob patterns to carry forward after release-please force-pushes the release branch. Accepts comma-separated, newline-separated, or a mix of both. Globs (e.g. */.infra/values.yaml) are expanded against the old branch tree. Only the exact changes the automation made (diff between the old branch and its base) are applied to the new branch, so unrelated edits in the same file are never touched.'
     required: false
     default: ''
+  floating_tags:
+    description: 'When true, publish/advance floating major and minor tags (vMAJOR / vMAJOR.MINOR for the root package, name-vMAJOR / name-vMAJOR.MINOR for components) for each release created. Defaults to false; enable this only for repos whose consumers pin to floating tag aliases.'
+    required: false
+    default: false
 runs:
   using: node24
   main: dist/index.js
