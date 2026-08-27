@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.5.0...release-please-semvar-v0.6.0) (2026-08-27)
+
+
+### Features
+
+* **release-please-semvar:** rewrite as node24 JS action with single-commit preserve ([#635](https://github.com/chanzuckerberg/github-actions/issues/635)) ([2874d13](https://github.com/chanzuckerberg/github-actions/commit/2874d133f59d7bc3289c6ff67b602668d7c466ef))
+
 ## [0.5.0](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.4.1...release-please-semvar-v0.5.0) (2026-04-23)
 
 

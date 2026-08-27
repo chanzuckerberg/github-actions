@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.39.0](https://github.com/chanzuckerberg/github-actions/compare/v6.38.1...v6.39.0) (2026-08-27)
+
+
+### Features
+
+* **release-please-semvar:** rewrite as node24 JS action with single-commit preserve ([#635](https://github.com/chanzuckerberg/github-actions/issues/635)) ([2874d13](https://github.com/chanzuckerberg/github-actions/commit/2874d133f59d7bc3289c6ff67b602668d7c466ef))
+
 ## [6.38.1](https://github.com/chanzuckerberg/github-actions/compare/v6.38.0...v6.38.1) (2026-08-21)
 
 

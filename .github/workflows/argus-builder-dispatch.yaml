@@ -55,7 +55,7 @@ jobs:
       tag: ${{ steps.resolve.outputs.tag }}
       trigger_sha: ${{ steps.build_tag.outputs.trigger_sha }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
@@ -81,7 +81,7 @@ jobs:
 
       - name: Check out argus repo
         if: inputs.argus_ref != ''
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: chanzuckerberg/argus
           ref: ${{ inputs.argus_ref }}
@@ -90,7 +90,7 @@ jobs:
 
       - name: Set up Go
         if: inputs.argus_ref != ''
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: _argus/core/go.mod
           cache-dependency-path: _argus/core/go.sum
