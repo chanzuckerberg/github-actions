@@ -349,7 +349,7 @@ jobs:
           role-chaining: true
           role-session-name: TerragruntEngineCache
       - name: Restore Provider Cache from S3
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@terragrunt-provider-cache-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@heathj/test-symlink-fix
         with:
           operation: restore
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
@@ -433,7 +433,7 @@ jobs:
           aws_region: ${{ inputs.aws_region }}
       - name: Upload Provider Cache to S3
         if: always()
-        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@terragrunt-provider-cache-v0
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-provider-cache@heathj/test-symlink-fix
         with:
           operation: upload
           provider-cache-bucket: ${{ inputs.provider_cache_bucket }}
