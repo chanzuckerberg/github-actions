@@ -16,12 +16,48 @@ function removeBaseline(): void {
   }
 }
 
+function isUnit(dir: string): boolean {
+  return fs.existsSync(path.join(dir, 'terragrunt.hcl'));
+}
+
 /**
- * Create symlinks to a shared modules directory in each component dir under a
- * stack root. This works around Terragrunt 1.0.0's 2-level .terragrunt-cache
- * which breaks relative module paths like ../../../modules.
+ * Paths a unit's relative module source resolves to once Terragrunt has copied
+ * the unit into .terragrunt-cache/<hash>/<hash>. Config runs three levels below
+ * the unit there, so a source with three .. segments lands on the unit dir and
+ * one with two lands on .terragrunt-cache. Env components are three deep and
+ * use the former, account stacks are two deep and use the latter.
  */
-function createModuleSymlinks(stackRoot: string, modulesDir: string): void {
+function moduleLinkPaths(unitDir: string): string[] {
+  return [
+    path.join(unitDir, 'modules'),
+    path.join(unitDir, '.terragrunt-cache', 'modules'),
+  ];
+}
+
+function linkModules(target: string, modulesAbs: string): void {
+  let existing: fs.Stats | undefined;
+  try {
+    existing = fs.lstatSync(target);
+  } catch {
+    /* absent is the normal case */
+  }
+  if (existing && !existing.isSymbolicLink()) {
+    return;
+  }
+  if (existing) {
+    fs.unlinkSync(target);
+  }
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.symlinkSync(modulesAbs, target, 'dir');
+}
+
+/**
+ * Create symlinks to a shared modules directory for every unit in a stack, so
+ * relative module paths still resolve after Terragrunt 1.0.0 copies each unit
+ * into .terragrunt-cache. The stack root counts as a unit itself, which is how
+ * account stacks are laid out.
+ */
+export function createModuleSymlinks(stackRoot: string, modulesDir: string): void {
   const modulesAbs = path.resolve(modulesDir);
   if (!fs.existsSync(modulesAbs) || !fs.statSync(modulesAbs).isDirectory()) {
     core.info(`No modules directory at ${modulesAbs}; skipping symlinks`);
@@ -35,15 +71,20 @@ function createModuleSymlinks(stackRoot: string, modulesDir: string): void {
     return;
   }
 
-  for (const ent of entries) {
-    if (!ent.isDirectory()) continue;
-    const compDir = path.join(stackRoot, ent.name);
-    const target = path.join(compDir, 'modules');
-    if (!fs.existsSync(target) || fs.lstatSync(target).isSymbolicLink()) {
-      fs.symlinkSync(modulesAbs, target, 'dir');
+  const unitDirs = [stackRoot]
+    .concat(
+      entries
+        .filter((ent) => ent.isDirectory())
+        .map((ent) => path.join(stackRoot, ent.name)),
+    )
+    .filter(isUnit);
+
+  for (const unitDir of unitDirs) {
+    for (const target of moduleLinkPaths(unitDir)) {
+      linkModules(target, modulesAbs);
     }
   }
-  core.info(`Module symlinks created under ${stackRoot}`);
+  core.info(`Module symlinks created for ${unitDirs.length} unit(s) under ${stackRoot}`);
 }
 
 async function restore(

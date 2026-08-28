@@ -40,6 +40,18 @@ export function stacksFromChangedFiles(
 }
 
 /**
+ * Drop stacks whose directory no longer exists. Deleting a stack still counts
+ * as a changed file, so a PR that removes one would otherwise queue a run in a
+ * directory that is not there.
+ */
+export function existingStacks(
+  stacks: string[],
+  dirExists: (dir: string) => boolean,
+): string[] {
+  return stacks.filter(dirExists);
+}
+
+/**
  * Map changed files to the module names they belong to. A module is one
  * directory below a trigger path (e.g. terraform/modules/vpc/main.tf yields
  * "vpc" when the trigger path is "terraform/modules").

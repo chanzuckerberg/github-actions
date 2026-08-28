@@ -1,5 +1,6 @@
 import {
   enumerateStacks,
+  existingStacks,
   extractChangedModules,
   findDependentStacks,
   parseBases,
@@ -54,6 +55,36 @@ describe('stackForFile', () => {
 
   it('does not false-match a named stack on a partial directory name', () => {
     expect(stackForFile('terraform/global-extra/main.tf', bases, ['terraform/global'])).toBeNull();
+  });
+});
+
+describe('existingStacks', () => {
+  const present = ['terraform/envs/dev', 'terraform/accounts/czi-si'];
+  const dirExists = (dir: string): boolean => present.includes(dir);
+
+  it('drops a stack whose directory was deleted', () => {
+    const stacks = [
+      'terraform/envs/dev',
+      'terraform/envs/karpenter',
+      'terraform/accounts/czi-si',
+      'terraform/accounts/czi-ssh',
+    ];
+    expect(existingStacks(stacks, dirExists)).toEqual([
+      'terraform/envs/dev',
+      'terraform/accounts/czi-si',
+    ]);
+  });
+
+  it('keeps every stack when all still exist', () => {
+    expect(existingStacks(present, dirExists)).toEqual(present);
+  });
+
+  it('returns nothing when the whole set was deleted', () => {
+    expect(existingStacks(['terraform/envs/images'], dirExists)).toEqual([]);
+  });
+
+  it('handles an empty list', () => {
+    expect(existingStacks([], dirExists)).toEqual([]);
   });
 });
 

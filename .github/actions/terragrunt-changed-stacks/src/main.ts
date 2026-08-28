@@ -5,11 +5,16 @@ import * as path from 'path';
 import { findChangedFiles } from '../../find-changed-files/src/findChangedFiles';
 import {
   enumerateStacks,
+  existingStacks,
   extractChangedModules,
   findDependentStacks,
   parseBases,
   stacksFromChangedFiles,
 } from './lib';
+
+function dirExists(dir: string): boolean {
+  return fs.existsSync(dir) && fs.statSync(dir).isDirectory();
+}
 
 function listDirEntries(dir: string): string[] | null {
   if (!fs.existsSync(dir)) {
@@ -49,7 +54,12 @@ export async function run(): Promise<void> {
     const token = core.getInput('github_token', { required: true });
     const result = await findChangedFiles(token);
 
-    const directStacks = stacksFromChangedFiles(result.allModifiedFiles, bases, stackDirs);
+    const changedStacks = stacksFromChangedFiles(result.allModifiedFiles, bases, stackDirs);
+    const directStacks = existingStacks(changedStacks, dirExists);
+    const deleted = changedStacks.filter((s) => !directStacks.includes(s));
+    if (deleted.length > 0) {
+      core.info(`Skipping deleted stacks: ${deleted.join(', ')}`);
+    }
     const changedModules = extractChangedModules(result.allModifiedFiles, triggerPaths);
 
     if (changedModules.length > 0) {
