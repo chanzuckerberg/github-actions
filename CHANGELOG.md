@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.39.1](https://github.com/chanzuckerberg/github-actions/compare/v6.39.0...v6.39.1) (2026-08-28)
+
+
+### BugFixes
+
+* **terragrunt-provider-cache:** link modules for account stacks ([#638](https://github.com/chanzuckerberg/github-actions/issues/638)) ([6644d5d](https://github.com/chanzuckerberg/github-actions/commit/6644d5df7610208160b566f0c820d8a6369a635d))
+
+
+### Misc
+
+* bump actions/checkout from 6 to 7 ([#617](https://github.com/chanzuckerberg/github-actions/issues/617)) ([1f90ed8](https://github.com/chanzuckerberg/github-actions/commit/1f90ed8c918e031490fa72f442e0614af268afd0))
+* bump actions/setup-go from 6 to 7 ([#616](https://github.com/chanzuckerberg/github-actions/issues/616)) ([39bf346](https://github.com/chanzuckerberg/github-actions/commit/39bf346d5695d3f413fa99d1550a01406cfc8dd0))
+* bump actions/setup-node from 6 to 7 ([#618](https://github.com/chanzuckerberg/github-actions/issues/618)) ([9ff2bbf](https://github.com/chanzuckerberg/github-actions/commit/9ff2bbf7e5594b0b5c89ce7d3858f2d949923084))
+* bump EndBug/add-and-commit from 10 to 11 ([#620](https://github.com/chanzuckerberg/github-actions/issues/620)) ([c83f666](https://github.com/chanzuckerberg/github-actions/commit/c83f66638278f9d7f592fa7c3d61448eee2fdfaa))
+* bump undici from 6.24.1 to 6.28.0 ([#614](https://github.com/chanzuckerberg/github-actions/issues/614)) ([e802e22](https://github.com/chanzuckerberg/github-actions/commit/e802e22c2a8fd0b37b28807b444f13803833d0fe))
+* bump updatecli/updatecli-action from 3.0.0 to 3.6.0 ([#631](https://github.com/chanzuckerberg/github-actions/issues/631)) ([10ce347](https://github.com/chanzuckerberg/github-actions/commit/10ce34771c31330130b7ef068ef231b29d7a4b42))
+
 ## [6.39.0](https://github.com/chanzuckerberg/github-actions/compare/v6.38.1...v6.39.0) (2026-08-27)
 
 

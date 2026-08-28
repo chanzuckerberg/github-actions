@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-changed-stacks-v0.4.0...terragrunt-changed-stacks-v0.4.1) (2026-08-28)
+
+
+### BugFixes
+
+* **terragrunt-provider-cache:** link modules for account stacks ([#638](https://github.com/chanzuckerberg/github-actions/issues/638)) ([6644d5d](https://github.com/chanzuckerberg/github-actions/commit/6644d5df7610208160b566f0c820d8a6369a635d))
+
+
+### Misc
+
+* bump undici from 6.24.1 to 6.28.0 ([#614](https://github.com/chanzuckerberg/github-actions/issues/614)) ([e802e22](https://github.com/chanzuckerberg/github-actions/commit/e802e22c2a8fd0b37b28807b444f13803833d0fe))
+
 ## [0.4.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-changed-stacks-v0.3.1...terragrunt-changed-stacks-v0.4.0) (2026-08-03)
 
 
