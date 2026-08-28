@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-release-locks-v0.3.1...terragrunt-release-locks-v0.3.2) (2026-08-28)
+
+
+### Misc
+
+* bump undici from 6.24.1 to 6.28.0 ([#614](https://github.com/chanzuckerberg/github-actions/issues/614)) ([e802e22](https://github.com/chanzuckerberg/github-actions/commit/e802e22c2a8fd0b37b28807b444f13803833d0fe))
+
 ## [0.3.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-release-locks-v0.3.0...terragrunt-release-locks-v0.3.1) (2026-08-14)
 
 
