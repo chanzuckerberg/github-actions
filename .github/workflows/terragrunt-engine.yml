@@ -198,7 +198,12 @@ jobs:
         with:
           client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
           private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+      # Must be the same commit run-all applies. An issue_comment event carries
+      # no ref, so the default checkout would land on the default branch and the
+      # matrix would describe a tree nobody runs.
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.dispatch.outputs.head_sha || github.ref }}
       - name: Resolve stacks
         id: stacks
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-changed-stacks@terragrunt-changed-stacks-v0
