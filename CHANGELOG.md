@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.39.2](https://github.com/chanzuckerberg/github-actions/compare/v6.39.1...v6.39.2) (2026-08-28)
+
+
+### BugFixes
+
+* **terragrunt-engine:** build the apply matrix from the commit being applied ([#640](https://github.com/chanzuckerberg/github-actions/issues/640)) ([8e4f397](https://github.com/chanzuckerberg/github-actions/commit/8e4f397aeb40994d8316099407b01d410af50302))
+
 ## [6.39.1](https://github.com/chanzuckerberg/github-actions/compare/v6.39.0...v6.39.1) (2026-08-28)
 
 
