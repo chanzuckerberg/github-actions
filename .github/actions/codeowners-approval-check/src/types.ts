@@ -50,10 +50,3 @@ export interface FileVerdict {
   /** For `approved`: the approver logins that own this file. */
   approvedByOwners: string[];
 }
-
-/** The `output` block of a Check Run. */
-export interface CheckRunOutput {
-  title: string;
-  summary: string;
-  text?: string;
-}

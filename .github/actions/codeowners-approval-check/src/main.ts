@@ -2,20 +2,65 @@ import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { matchOwnedFiles, parseCodeowners } from './codeowners';
 import { authorOwnsAll, classifyFiles, decide } from './decide';
-import { renderCheckOutput } from './checkOutput';
+import { renderSummaryMarkdown, shortDescription } from './summary';
 import {
-  CheckConclusion, deletesCodeowners, getApprovers, listChangedFiles, readCodeownersAtBase,
-  TeamExpander, upsertCheckRun,
+  deletesCodeowners, getApprovers, listChangedFiles, readCodeownersAtBase, TeamExpander,
 } from './github';
-import { CheckRunOutput, Decision, FileOwnership } from './types';
+import { Decision, FileOwnership, FileVerdict } from './types';
 
-/** Link back to this workflow run, used as the Check Run's details URL. */
+type Octokit = ReturnType<typeof getOctokit>;
+type StatusState = 'success' | 'failure' | 'error';
+
+/** Link back to this workflow run; the commit status' Details points here. */
 function runUrl(): string | undefined {
   const { GITHUB_SERVER_URL, GITHUB_REPOSITORY, GITHUB_RUN_ID } = process.env;
   if (GITHUB_SERVER_URL && GITHUB_REPOSITORY && GITHUB_RUN_ID) {
     return `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`;
   }
   return undefined;
+}
+
+/**
+ * Report the verdict as a commit status on the PR head SHA.
+ *
+ * A commit status (unlike a job's check run) is keyed by (sha, context), so
+ * every run -- pull_request or pull_request_review -- updates the SAME row
+ * instead of adding a new one, collapsing the check to a single latest-wins
+ * entry with a clean, stable name. The description is truncated at 140 chars;
+ * the full breakdown lives in the job summary reachable via Details.
+ */
+async function setStatus(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+  sha: string,
+  statusContext: string,
+  state: StatusState,
+  description: string,
+): Promise<void> {
+  await octokit.rest.repos.createCommitStatus({
+    owner,
+    repo,
+    sha,
+    context: statusContext,
+    state,
+    description: description.slice(0, 140),
+    target_url: runUrl(),
+  });
+}
+
+/**
+ * Write the full "waiting on" + per-file breakdown to the Actions job summary
+ * (best-effort). This is what a reviewer sees when they click the commit
+ * status' Details link.
+ */
+async function writeJobSummary(verdicts: FileVerdict[], expansions: Map<string, string[]>): Promise<void> {
+  try {
+    core.summary.addRaw(renderSummaryMarkdown(verdicts, expansions), true);
+    await core.summary.write();
+  } catch (error) {
+    core.warning(`Failed to write job summary: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 /** Debug-friendly log of which files are still uncovered and by whom. */
@@ -37,15 +82,15 @@ function logDecision(decision: Decision, author: string, approvers: string[]): v
 async function run(): Promise<void> {
   const githubToken = core.getInput('github-token', { required: true });
   const orgToken = core.getInput('org-token', { required: true });
-  // org, codeowners-path and check-name defaults come from action.yml.
+  // org, codeowners-path and status-context defaults come from action.yml.
   const org = core.getInput('org');
   const codeownersPath = core.getInput('codeowners-path');
-  const checkName = core.getInput('check-name');
+  const statusContext = core.getInput('status-context');
   const dismissStale = core.getBooleanInput('dismiss_stale_approvals');
 
   const pr = context.payload.pull_request;
   if (!pr) {
-    // Can't create a check run without a PR head SHA, so just fail the job.
+    // Can't post a commit status without a PR head SHA, so just fail the job.
     core.setFailed('This action must run on a pull_request or pull_request_review event.');
     return;
   }
@@ -58,11 +103,6 @@ async function run(): Promise<void> {
 
   const octokit = getOctokit(githubToken);
   const orgOctokit = getOctokit(orgToken);
-
-  const report = (
-    conclusion: CheckConclusion,
-    output: CheckRunOutput,
-  ): Promise<void> => upsertCheckRun(octokit, owner, repo, headSha, checkName, conclusion, output, runUrl());
 
   try {
     // Independent reads: fetch CODEOWNERS (base ref) and the PR's changed files
@@ -77,12 +117,9 @@ async function run(): Promise<void> {
     // from the base ref, such a deletion would otherwise pass and silently
     // disable ownership enforcement going forward.
     if (deletesCodeowners(changedFiles, codeownersPath)) {
-      const title = `This PR removes or moves ${codeownersPath}`;
-      core.warning(title);
-      await report('failure', {
-        title,
-        summary: `${title}. CODEOWNERS is evaluated at the base ref, so removing it would disable ownership enforcement.`,
-      });
+      const description = `This PR removes or moves ${codeownersPath}`;
+      core.warning(description);
+      await setStatus(octokit, owner, repo, headSha, statusContext, 'failure', description);
       return;
     }
 
@@ -93,13 +130,10 @@ async function run(): Promise<void> {
       `${changedFiles.length} changed file(s); ${ownedFiles.length} matched a CODEOWNERS rule.`,
     );
 
-    // Always report (even when nothing is owned), otherwise a required check
-    // would never appear and would block the PR forever.
+    // Always post a status (even when nothing is owned), otherwise a required
+    // status context would never appear and would block the PR forever.
     if (ownedFiles.length === 0) {
-      await report('success', {
-        title: 'No changed files are owned by CODEOWNERS',
-        summary: 'No changed files match a CODEOWNERS rule; nothing to enforce.',
-      });
+      await setStatus(octokit, owner, repo, headSha, statusContext, 'success', 'No changed files are owned by CODEOWNERS');
       return;
     }
 
@@ -125,27 +159,25 @@ async function run(): Promise<void> {
     const decision = decide({ author, approvers, files });
     logDecision(decision, author, approvers);
 
-    // Build the human-facing output (grouped "waiting on" + per-file table).
+    // Full breakdown -> job summary; compact "waiting on" -> status description.
     const verdicts = classifyFiles({ author, approvers, files });
-    const rendered = renderCheckOutput(verdicts, expander.expansions);
-    const conclusion: CheckConclusion = decision.passed ? 'success' : 'failure';
-    await report(conclusion, rendered);
+    await writeJobSummary(verdicts, expander.expansions);
+
+    const state: StatusState = decision.passed ? 'success' : 'failure';
+    await setStatus(octokit, owner, repo, headSha, statusContext, state, shortDescription(verdicts));
 
     core.info(
-      `CODEOWNERS approval check: ${conclusion} (${decision.uncovered.length} of ${decision.totalOwnedFiles} uncovered).`,
+      `CODEOWNERS approval check: ${state} (${decision.uncovered.length} of ${decision.totalOwnedFiles} uncovered).`,
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    // A genuine error should be visible and block merge: post a failing check
+    // A genuine error should be visible and block merge: post an error status
     // AND fail the job (a red run here is desirable for debugging).
     try {
-      await report('failure', {
-        title: 'CODEOWNERS approval check error',
-        summary: `Action error: ${message}`,
-      });
-    } catch (reportError) {
-      const reportMessage = reportError instanceof Error ? reportError.message : String(reportError);
-      core.warning(`Failed to report check run: ${reportMessage}`);
+      await setStatus(octokit, owner, repo, headSha, statusContext, 'error', `Action error: ${message}`);
+    } catch (statusError) {
+      const statusMessage = statusError instanceof Error ? statusError.message : String(statusError);
+      core.warning(`Failed to set commit status: ${statusMessage}`);
     }
     core.setFailed(`Action failed: ${message}`);
   }

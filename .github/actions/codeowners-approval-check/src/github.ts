@@ -1,6 +1,5 @@
 import * as core from '@actions/core';
 import { getOctokit } from '@actions/github';
-import { CheckRunOutput } from './types';
 
 type Octokit = ReturnType<typeof getOctokit>;
 
@@ -136,43 +135,6 @@ export async function getApprovers(
     approvers.push(login);
   });
   return approvers;
-}
-
-export type CheckConclusion = 'success' | 'failure' | 'neutral';
-
-/**
- * Create or update this action's Check Run for a head SHA.
- *
- * Both the pull_request and pull_request_review workflow runs report as the
- * same GitHub Actions app, so we look up an existing check run of this name on
- * the SHA and update it in place, giving a single check that flips in place
- * across events (no duplicate check runs). The Check Run's conclusion is the
- * gate; its output carries the human-facing breakdown.
- */
-export async function upsertCheckRun(
-  octokit: Octokit,
-  owner: string,
-  repo: string,
-  headSha: string,
-  name: string,
-  conclusion: CheckConclusion,
-  output: CheckRunOutput,
-  detailsUrl?: string,
-): Promise<void> {
-  const existing = await octokit.rest.checks.listForRef({
-    owner, repo, ref: headSha, check_name: name, per_page: 1,
-  });
-  const checkRunId = existing.data.check_runs[0]?.id;
-
-  if (checkRunId) {
-    await octokit.rest.checks.update({
-      owner, repo, check_run_id: checkRunId, status: 'completed', conclusion, details_url: detailsUrl, output,
-    });
-    return;
-  }
-  await octokit.rest.checks.create({
-    owner, repo, name, head_sha: headSha, status: 'completed', conclusion, details_url: detailsUrl, output,
-  });
 }
 
 /**
