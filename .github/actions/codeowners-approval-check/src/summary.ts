@@ -67,7 +67,13 @@ export function renderSummaryMarkdown(
     });
   }
 
-  lines.push('', '### Files', '', '| File | Owning rule | Status | Owners |', '| --- | --- | --- | --- |');
+  lines.push(
+    '',
+    '### Owned files changed (matched a CODEOWNERS rule)',
+    '',
+    '| File | Owning rule | Status | Owners |',
+    '| --- | --- | --- | --- |',
+  );
   verdicts.forEach((v) => {
     const owners = v.ownerTokens.map((t) => describeOwner(t, expansions)).join(', ');
     lines.push(`| \`${v.path}\` | \`${v.pattern}\` | ${statusText(v)} | ${owners} |`);
