@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { matchOwnedFiles, parseCodeowners } from './codeowners';
 import { authorOwnsAll, classifyFiles, decide } from './decide';
-import { buildAnnotations, renderCheckOutput } from './checkOutput';
+import { renderCheckOutput } from './checkOutput';
 import {
   CheckConclusion, deletesCodeowners, getApprovers, listChangedFiles, readCodeownersAtBase,
   TeamExpander, upsertCheckRun,
@@ -125,15 +125,11 @@ async function run(): Promise<void> {
     const decision = decide({ author, approvers, files });
     logDecision(decision, author, approvers);
 
-    // Build the human-facing output (grouped "waiting on" + per-file table) and
-    // inline annotations on the files still needing approval.
+    // Build the human-facing output (grouped "waiting on" + per-file table).
     const verdicts = classifyFiles({ author, approvers, files });
     const rendered = renderCheckOutput(verdicts, expander.expansions);
     const conclusion: CheckConclusion = decision.passed ? 'success' : 'failure';
-    await report(conclusion, {
-      ...rendered,
-      annotations: decision.passed ? undefined : buildAnnotations(verdicts),
-    });
+    await report(conclusion, rendered);
 
     core.info(
       `CODEOWNERS approval check: ${conclusion} (${decision.uncovered.length} of ${decision.totalOwnedFiles} uncovered).`,

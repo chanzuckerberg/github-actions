@@ -50,7 +50,7 @@ const deletesCodeowners = gh.deletesCodeowners as jest.Mock;
 const getApprovers = gh.getApprovers as jest.Mock;
 const upsertCheckRun = gh.upsertCheckRun as jest.Mock;
 
-interface CheckOutput { title: string; annotations?: unknown[] }
+interface CheckOutput { title: string }
 
 /** The (conclusion, output) of the most recent upsertCheckRun call. */
 function lastCheck(): { conclusion: string; output: CheckOutput } {
@@ -123,13 +123,11 @@ describe('run', () => {
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 
-  it('reports failure with annotations (job stays green) when no code owner approved', async () => {
+  it('reports failure (job stays green) when no code owner approved', async () => {
     readCodeownersAtBase.mockResolvedValue('* @bob\n');
     getApprovers.mockResolvedValue(['erin']); // not an owner
     await run();
-    const { conclusion, output } = lastCheck();
-    expect(conclusion).toBe('failure');
-    expect(output.annotations && output.annotations.length).toBeGreaterThan(0);
+    expect(lastCheck().conclusion).toBe('failure');
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 

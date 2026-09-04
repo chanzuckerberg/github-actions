@@ -1,4 +1,4 @@
-import { buildAnnotations, renderCheckOutput } from './checkOutput';
+import { renderCheckOutput } from './checkOutput';
 import { FileVerdict } from './types';
 
 function verdict(
@@ -38,24 +38,5 @@ describe('renderCheckOutput', () => {
     const out = renderCheckOutput([verdict('a.ts', 'author-owned', ['@alice'])], new Map());
     expect(out.title).toBe('All 1 owned file(s) covered by a code owner');
     expect(out.summary).toContain('covered by a code owner');
-  });
-});
-
-describe('buildAnnotations', () => {
-  it('emits one failure annotation per needs-approval file only', () => {
-    const annotations = buildAnnotations([
-      verdict('a.ts', 'author-owned', ['@alice']),
-      verdict('c.ts', 'needs-approval', ['@bob']),
-    ]);
-    expect(annotations).toHaveLength(1);
-    expect(annotations[0]).toMatchObject({
-      path: 'c.ts', start_line: 1, end_line: 1, annotation_level: 'failure',
-    });
-    expect(annotations[0].message).toContain('@bob');
-  });
-
-  it('caps annotations at 50', () => {
-    const many = Array.from({ length: 60 }, (_, i) => verdict(`f${i}.ts`, 'needs-approval', ['@bob']));
-    expect(buildAnnotations(many)).toHaveLength(50);
   });
 });

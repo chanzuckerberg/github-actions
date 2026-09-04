@@ -1,7 +1,4 @@
-import { CheckAnnotation, FileVerdict } from './types';
-
-// GitHub accepts at most 50 annotations per Checks API request.
-const MAX_ANNOTATIONS = 50;
+import { FileVerdict } from './types';
 
 /** Render an owner token, expanding a team inline to its members. */
 function describeOwner(token: string, expansions: Map<string, string[]>): string {
@@ -70,21 +67,4 @@ export function renderCheckOutput(
   });
 
   return { title, summary: summaryLines.join('\n'), text: textLines.join('\n') };
-}
-
-/**
- * One inline annotation per file still needing approval (capped at GitHub's
- * 50-per-request limit), pointing the reviewer at the exact files.
- */
-export function buildAnnotations(verdicts: FileVerdict[]): CheckAnnotation[] {
-  return verdicts
-    .filter((v) => v.state === 'needs-approval')
-    .slice(0, MAX_ANNOTATIONS)
-    .map((v) => ({
-      path: v.path,
-      start_line: 1,
-      end_line: 1,
-      annotation_level: 'failure' as const,
-      message: `Needs approval from a code owner: ${v.ownerTokens.join(', ')}`,
-    }));
 }

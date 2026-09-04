@@ -32,10 +32,9 @@ the `check-name` (default `codeowners-approval`) in branch protection**.
 5. Upserts the `check-name` Check Run: conclusion `success` when every owned
    file is covered (or when nothing is owned), `failure` when not (a genuine
    error also fails the job). The output carries a **"waiting on"** summary
-   grouped by the owners that can still unblock the PR, a per-file breakdown
+   grouped by the owners that can still unblock the PR and a per-file breakdown
    labeling each owned file `Author is an owner` / `Approved by @x` /
-   `Needs approval`, and an inline **annotation** on each file still needing
-   approval.
+   `Needs approval`.
 
 ## Inputs
 

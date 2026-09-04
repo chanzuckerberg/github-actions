@@ -51,19 +51,9 @@ export interface FileVerdict {
   approvedByOwners: string[];
 }
 
-/** A Checks API annotation (rendered inline on the file in the diff). */
-export interface CheckAnnotation {
-  path: string;
-  start_line: number;
-  end_line: number;
-  annotation_level: 'failure' | 'warning' | 'notice';
-  message: string;
-}
-
 /** The `output` block of a Check Run. */
 export interface CheckRunOutput {
   title: string;
   summary: string;
   text?: string;
-  annotations?: CheckAnnotation[];
 }
