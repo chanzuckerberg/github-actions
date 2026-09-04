@@ -15,14 +15,14 @@ jest.mock('./github', () => ({
   listChangedFiles: jest.fn(),
   deletesCodeowners: jest.fn(),
   getApprovers: jest.fn(),
+  upsertCheckRun: jest.fn(),
   TeamExpander: jest.fn().mockImplementation(() => ({
     expansions: new Map<string, string[]>(),
     expandOwners: jest.fn(async (tokens: string[]) => tokens.map((t) => t.replace(/^@/, '').toLowerCase())),
   })),
 }));
 
-const createCommitStatus = jest.fn().mockResolvedValue({});
-const octokit = { rest: { repos: { createCommitStatus } } };
+const octokit = {};
 
 interface Pr {
   number: number;
@@ -48,13 +48,23 @@ const readCodeownersAtBase = gh.readCodeownersAtBase as jest.Mock;
 const listChangedFiles = gh.listChangedFiles as jest.Mock;
 const deletesCodeowners = gh.deletesCodeowners as jest.Mock;
 const getApprovers = gh.getApprovers as jest.Mock;
+const upsertCheckRun = gh.upsertCheckRun as jest.Mock;
+
+interface CheckOutput { title: string; annotations?: unknown[] }
+
+/** The (conclusion, output) of the most recent upsertCheckRun call. */
+function lastCheck(): { conclusion: string; output: CheckOutput } {
+  const { calls } = upsertCheckRun.mock;
+  const call = calls[calls.length - 1];
+  return { conclusion: call[5] as string, output: call[6] as CheckOutput };
+}
 
 const inputs: Record<string, string> = {
   'github-token': 'gh-token',
   'org-token': 'org-token',
   org: 'o',
   'codeowners-path': '.github/CODEOWNERS',
-  'status-context': 'codeowners-approval',
+  'check-name': 'codeowners-approval',
 };
 
 beforeEach(() => {
@@ -68,63 +78,66 @@ beforeEach(() => {
   listChangedFiles.mockResolvedValue([{ filename: 'x.ts', status: 'modified' }]);
   deletesCodeowners.mockReturnValue(false);
   getApprovers.mockResolvedValue([]);
+  upsertCheckRun.mockResolvedValue(undefined);
   setPayload(DEFAULT_PR);
 });
 
 describe('run', () => {
-  it('fails the job (no status) when there is no pull_request in the payload', async () => {
+  it('fails the job (no check) when there is no pull_request in the payload', async () => {
     setPayload(null);
     await run();
     expect(core.setFailed).toHaveBeenCalled();
-    expect(createCommitStatus).not.toHaveBeenCalled();
+    expect(upsertCheckRun).not.toHaveBeenCalled();
   });
 
-  it('posts success when no changed files are owned', async () => {
+  it('reports success when no changed files are owned', async () => {
     readCodeownersAtBase.mockResolvedValue('/src/ @alice\n');
     listChangedFiles.mockResolvedValue([{ filename: 'docs/readme.md', status: 'modified' }]);
     await run();
-    expect(createCommitStatus).toHaveBeenCalledWith(
-      expect.objectContaining({ context: 'codeowners-approval', sha: 'HEAD', state: 'success' }),
-    );
+    expect(lastCheck().conclusion).toBe('success');
+    expect(lastCheck().output.title).toContain('No changed files');
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 
-  it('posts failure when the PR deletes CODEOWNERS', async () => {
+  it('reports failure when the PR deletes CODEOWNERS', async () => {
     deletesCodeowners.mockReturnValue(true);
     await run();
-    expect(createCommitStatus).toHaveBeenCalledWith(expect.objectContaining({ state: 'failure' }));
+    expect(lastCheck().conclusion).toBe('failure');
     expect(getApprovers).not.toHaveBeenCalled();
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 
-  it('posts success via the author fast path without fetching reviews', async () => {
+  it('reports success via the author fast path without fetching reviews', async () => {
     readCodeownersAtBase.mockResolvedValue('* @alice\n'); // author owns everything
     await run();
     expect(getApprovers).not.toHaveBeenCalled();
-    expect(createCommitStatus).toHaveBeenCalledWith(expect.objectContaining({ state: 'success' }));
+    expect(lastCheck().conclusion).toBe('success');
   });
 
-  it('posts success when a code owner approved', async () => {
+  it('reports success when a code owner approved', async () => {
     readCodeownersAtBase.mockResolvedValue('* @bob\n'); // author (alice) is not an owner
     getApprovers.mockResolvedValue(['bob']);
     await run();
     expect(getApprovers).toHaveBeenCalled();
-    expect(createCommitStatus).toHaveBeenCalledWith(expect.objectContaining({ state: 'success' }));
+    expect(lastCheck().conclusion).toBe('success');
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 
-  it('posts failure (job stays green) when no code owner approved', async () => {
+  it('reports failure with annotations (job stays green) when no code owner approved', async () => {
     readCodeownersAtBase.mockResolvedValue('* @bob\n');
     getApprovers.mockResolvedValue(['erin']); // not an owner
     await run();
-    expect(createCommitStatus).toHaveBeenCalledWith(expect.objectContaining({ state: 'failure' }));
+    const { conclusion, output } = lastCheck();
+    expect(conclusion).toBe('failure');
+    expect(output.annotations && output.annotations.length).toBeGreaterThan(0);
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 
-  it('posts an error status and fails the job on an unexpected error', async () => {
+  it('reports a failing check and fails the job on an unexpected error', async () => {
     readCodeownersAtBase.mockRejectedValue(new Error('boom'));
     await run();
-    expect(createCommitStatus).toHaveBeenCalledWith(expect.objectContaining({ state: 'error' }));
+    expect(lastCheck().conclusion).toBe('failure');
+    expect(lastCheck().output.title).toContain('error');
     expect(core.setFailed).toHaveBeenCalledWith(expect.stringContaining('boom'));
   });
 });

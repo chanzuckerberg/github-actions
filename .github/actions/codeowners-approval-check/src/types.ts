@@ -37,3 +37,33 @@ export interface Decision {
   uncovered: UncoveredFile[];
   totalOwnedFiles: number;
 }
+
+/** Per-file status used to render the human-facing Check Run breakdown. */
+export type FileState = 'author-owned' | 'approved' | 'needs-approval';
+
+export interface FileVerdict {
+  path: string;
+  pattern: string;
+  ownerTokens: string[];
+  ownerLogins: string[];
+  state: FileState;
+  /** For `approved`: the approver logins that own this file. */
+  approvedByOwners: string[];
+}
+
+/** A Checks API annotation (rendered inline on the file in the diff). */
+export interface CheckAnnotation {
+  path: string;
+  start_line: number;
+  end_line: number;
+  annotation_level: 'failure' | 'warning' | 'notice';
+  message: string;
+}
+
+/** The `output` block of a Check Run. */
+export interface CheckRunOutput {
+  title: string;
+  summary: string;
+  text?: string;
+  annotations?: CheckAnnotation[];
+}

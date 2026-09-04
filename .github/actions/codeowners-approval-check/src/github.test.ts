@@ -1,5 +1,5 @@
 import {
-  ChangedFile, deletesCodeowners, getApprovers, teamKey, TeamExpander,
+  ChangedFile, deletesCodeowners, getApprovers, teamKey, TeamExpander, upsertCheckRun,
 } from './github';
 
 jest.mock('@actions/core');
@@ -147,5 +147,41 @@ describe('TeamExpander', () => {
 
     // One fetch total (the hyphen slug resolves on the first try, then cached).
     expect(paginate).toHaveBeenCalledTimes(1);
+  });
+});
+
+function octokitWithChecks(existingId?: number) {
+  const listForRef = jest.fn().mockResolvedValue({
+    data: { check_runs: existingId ? [{ id: existingId }] : [] },
+  });
+  const create = jest.fn().mockResolvedValue({});
+  const update = jest.fn().mockResolvedValue({});
+  return {
+    octokit: { rest: { checks: { listForRef, create, update } } } as never,
+    listForRef,
+    create,
+    update,
+  };
+}
+
+const OUTPUT = { title: 't', summary: 's' };
+
+describe('upsertCheckRun', () => {
+  it('creates a check run when none exists for the head SHA', async () => {
+    const { octokit, create, update } = octokitWithChecks();
+    await upsertCheckRun(octokit, 'o', 'r', 'HEAD', 'codeowners-approval', 'failure', OUTPUT);
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'codeowners-approval', head_sha: 'HEAD', status: 'completed', conclusion: 'failure', output: OUTPUT,
+    }));
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('updates the existing check run in place when one is found', async () => {
+    const { octokit, create, update } = octokitWithChecks(42);
+    await upsertCheckRun(octokit, 'o', 'r', 'HEAD', 'codeowners-approval', 'success', OUTPUT);
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({
+      check_run_id: 42, status: 'completed', conclusion: 'success', output: OUTPUT,
+    }));
+    expect(create).not.toHaveBeenCalled();
   });
 });
