@@ -44,6 +44,7 @@ describe('renderSummaryMarkdown', () => {
       verdict('d.ts', 'needs-approval', ['@bob']),
     ], expansions);
 
+    expect(md).toContain('## ❌ CODEOWNERS approval — action required');
     expect(md).toContain('**2 of 4** owned file(s) still need a code-owner approval.');
     expect(md).toContain('- @bob — 2 files');
     expect(md).toContain('- @org/team (@a, @b) — 1 file');
@@ -54,6 +55,7 @@ describe('renderSummaryMarkdown', () => {
 
   it('reports full coverage when nothing needs approval', () => {
     const md = renderSummaryMarkdown([verdict('a.ts', 'author-owned', ['@alice'])], new Map());
+    expect(md).toContain('## ✅ CODEOWNERS approval — passed');
     expect(md).toContain('All 1 owned file(s) are covered by a code owner.');
   });
 });

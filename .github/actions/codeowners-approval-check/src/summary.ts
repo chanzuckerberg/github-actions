@@ -55,7 +55,12 @@ export function renderSummaryMarkdown(
 ): string {
   const total = verdicts.length;
   const needs = verdicts.filter((v) => v.state === 'needs-approval');
-  const lines: string[] = ['## CODEOWNERS approval', ''];
+  // The `report` job is always green (the commit status is the gate), so state
+  // the overall verdict explicitly here with a pass/fail indicator.
+  const heading = needs.length === 0
+    ? '## ✅ CODEOWNERS approval — passed'
+    : '## ❌ CODEOWNERS approval — action required';
+  const lines: string[] = [heading, ''];
 
   if (needs.length === 0) {
     lines.push(`All ${total} owned file(s) are covered by a code owner.`);
