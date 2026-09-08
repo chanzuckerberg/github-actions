@@ -507,6 +507,13 @@ jobs:
         with:
           stack-root: ${{ matrix.stack }}
           force: 'true'
+      - name: Release Stack Authority
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        with:
+          operation: release
+          stacks: ${{ format('["{0}"]', matrix.stack) }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
 
   finalize:
     runs-on: ${{ inputs.runner }}
