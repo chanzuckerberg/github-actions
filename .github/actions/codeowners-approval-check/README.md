@@ -8,17 +8,14 @@ matches a CODEOWNERS rule** is either:
 
 Team owners (`@org/team`) are expanded to their member logins, so an approval or
 authorship from any team member satisfies the rule. This mirrors GitHub's
-branch-protection "Require review from Code Owners" behavior, with an
-informative log that explains exactly which files still need which owners.
+branch-protection "Require review from Code Owners" behavior.
 
 The verdict is published as a **single commit status** (the `status-context`
-input) rather than the job's pass/fail. Commit statuses are keyed by
-`(sha, context)`, so every run — whether triggered by `pull_request` or
-`pull_request_review` — updates the *same* status row (latest wins) instead of
-adding a new check run. This is what makes the check collapse to one entry on
-the PR rather than a stale failure plus a newer pass. The job itself stays
-green; the commit status is the gate, so **require the `status-context` (default
-`codeowners-approval`) in branch protection**, not the job.
+input) keyed by `(sha, context)`, so the `pull_request` and
+`pull_request_review` runs update the *same* row (latest wins) with a clean,
+stable name. The **full breakdown of who still needs to review and for which
+files** is written to the **Actions job summary**, reachable from the status'
+Details link.
 
 ## How it works
 
@@ -32,8 +29,11 @@ green; the commit status is the gate, so **require the `status-context` (default
    reviews (fast path). Otherwise it fetches reviews, takes each reviewer's
    latest non-`COMMENTED` stance, and treats `APPROVED` reviewers as approvers.
 5. Posts the `status-context` commit status: `success` when every owned file is
-   covered (or when nothing is owned), `failure` when not. A genuine error posts
-   an `error` status and fails the job.
+   covered (or when nothing is owned), `failure` when not (a genuine error posts
+   an `error` status and fails the job). The status description carries a compact
+   "waiting on" line; the job summary carries the grouped "waiting on" list and a
+   per-file table labeling each owned file `Author is an owner` / `Approved by
+   @x` / `Needs approval`.
 
 ## Inputs
 
@@ -93,6 +93,8 @@ workflow in the evolutionaryscale repo for the `merge_group` passthrough.
 
 - The job stays green even when coverage fails; the commit status carries the
   red/green verdict so the check collapses to a single latest-wins entry.
+- The per-file breakdown lives in the Actions job summary (linked from the
+  status' Details), so there are no PR comments or diff annotations.
 - Bare email owners in CODEOWNERS cannot be mapped to a login and are ignored
   (a file owned solely by an email can never be satisfied; a warning is logged).
 - Owner/login comparisons are case-insensitive.

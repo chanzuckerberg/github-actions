@@ -1,5 +1,5 @@
 import {
-  Decision, DecisionInput, FileOwnership, UncoveredFile,
+  Decision, DecisionInput, FileOwnership, FileVerdict, UncoveredFile,
 } from './types';
 
 /** GitHub logins are case-insensitive; compare everything lowercased. */
@@ -57,4 +57,32 @@ export function decide(input: DecisionInput): Decision {
     uncovered,
     totalOwnedFiles: input.files.length,
   };
+}
+
+/**
+ * Classify every owned file into one of three human-facing states so the Check
+ * Run can show what is already handled versus what is still outstanding:
+ * `author-owned` (auto-satisfied), `approved` (an owner approved), or
+ * `needs-approval`. Uses the same ownership definition as `decide`.
+ */
+export function classifyFiles(input: DecisionInput): FileVerdict[] {
+  const author = lower(input.author);
+  const approvers = new Set(input.approvers.map(lower));
+
+  return input.files.map((file) => {
+    const base = {
+      path: file.path,
+      pattern: file.pattern,
+      ownerTokens: file.ownerTokens,
+      ownerLogins: file.ownerLogins,
+    };
+    if (isOwner(file, author)) {
+      return { ...base, state: 'author-owned' as const, approvedByOwners: [] };
+    }
+    const approvedByOwners = file.ownerLogins.map(lower).filter((owner) => approvers.has(owner));
+    if (approvedByOwners.length > 0) {
+      return { ...base, state: 'approved' as const, approvedByOwners };
+    }
+    return { ...base, state: 'needs-approval' as const, approvedByOwners: [] };
+  });
 }

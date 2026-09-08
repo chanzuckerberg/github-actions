@@ -1,4 +1,4 @@
-import { authorOwnsAll, decide } from './decide';
+import { authorOwnsAll, classifyFiles, decide } from './decide';
 import { FileOwnership } from './types';
 
 function file(path: string, ownerLogins: string[], pattern = path): FileOwnership {
@@ -112,5 +112,32 @@ describe('authorOwnsAll', () => {
 
   it('is false for an empty file set (nothing to short-circuit)', () => {
     expect(authorOwnsAll([], 'alice')).toBe(false);
+  });
+});
+
+describe('classifyFiles', () => {
+  it('labels each file author-owned / approved / needs-approval', () => {
+    const verdicts = classifyFiles({
+      author: 'alice',
+      approvers: ['carol'],
+      files: [
+        file('a.ts', ['alice', 'dave']), // author owns
+        file('b.ts', ['carol']), // approved by owner carol
+        file('c.ts', ['bob']), // needs approval
+      ],
+    });
+    expect(verdicts.map((v) => v.state)).toEqual(['author-owned', 'approved', 'needs-approval']);
+    expect(verdicts[1].approvedByOwners).toEqual(['carol']);
+    expect(verdicts[0].approvedByOwners).toEqual([]);
+    expect(verdicts[2].approvedByOwners).toEqual([]);
+  });
+
+  it('is case-insensitive for author and approver matching', () => {
+    const verdicts = classifyFiles({
+      author: 'Alice',
+      approvers: ['BOB'],
+      files: [file('a.ts', ['alice']), file('b.ts', ['bob'])],
+    });
+    expect(verdicts.map((v) => v.state)).toEqual(['author-owned', 'approved']);
   });
 });

@@ -3,8 +3,10 @@ description: >
   Reports a commit status that is green only when every changed file matching a
   CODEOWNERS rule is authored by a code owner or has an APPROVED review from a
   code owner. Team owners (@org/team) are expanded to members via an org-scoped
-  token. The verdict is published as a single commit status (context below), not
-  the job's pass/fail, so it collapses to one latest-wins entry on the PR.
+  token. A single status (context below) is upserted per head SHA -- so it
+  collapses to one latest-wins entry with a clean, stable name -- and the full
+  "waiting on" + per-file breakdown is written to the Actions job summary,
+  reachable from the status' Details link.
 author: 'CZI'
 
 inputs:

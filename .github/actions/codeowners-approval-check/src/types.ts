@@ -37,3 +37,16 @@ export interface Decision {
   uncovered: UncoveredFile[];
   totalOwnedFiles: number;
 }
+
+/** Per-file status used to render the human-facing Check Run breakdown. */
+export type FileState = 'author-owned' | 'approved' | 'needs-approval';
+
+export interface FileVerdict {
+  path: string;
+  pattern: string;
+  ownerTokens: string[];
+  ownerLogins: string[];
+  state: FileState;
+  /** For `approved`: the approver logins that own this file. */
+  approvedByOwners: string[];
+}

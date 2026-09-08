@@ -113,11 +113,13 @@ describe('run', () => {
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 
-  it('posts failure (job stays green) when no code owner approved', async () => {
+  it('posts failure (job stays green) with a "waiting on" description when no owner approved', async () => {
     readCodeownersAtBase.mockResolvedValue('* @bob\n');
     getApprovers.mockResolvedValue(['erin']); // not an owner
     await run();
-    expect(createCommitStatus).toHaveBeenCalledWith(expect.objectContaining({ state: 'failure' }));
+    expect(createCommitStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ state: 'failure', description: expect.stringContaining('waiting on') }),
+    );
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 
