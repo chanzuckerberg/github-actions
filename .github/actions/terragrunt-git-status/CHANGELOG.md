@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.6.2...terragrunt-git-status-v0.7.0) (2026-09-08)
+
+
+### Features
+
+* **codeowners-approval-check:** surface who needs to review via commit status + job summary ([#642](https://github.com/chanzuckerberg/github-actions/issues/642)) ([e1546c1](https://github.com/chanzuckerberg/github-actions/commit/e1546c128ffd061850abba9323ed59341db75556))
+
 ## [0.6.2](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.6.1...terragrunt-git-status-v0.6.2) (2026-08-28)
 
 
