@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.40.0](https://github.com/chanzuckerberg/github-actions/compare/v6.39.2...v6.40.0) (2026-09-08)
+
+
+### Features
+
+* **codeowners-approval-check:** surface who needs to review via commit status + job summary ([#642](https://github.com/chanzuckerberg/github-actions/issues/642)) ([e1546c1](https://github.com/chanzuckerberg/github-actions/commit/e1546c128ffd061850abba9323ed59341db75556))
+
 ## [6.39.2](https://github.com/chanzuckerberg/github-actions/compare/v6.39.1...v6.39.2) (2026-08-28)
 
 
