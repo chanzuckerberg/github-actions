@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.40.1](https://github.com/chanzuckerberg/github-actions/compare/v6.40.0...v6.40.1) (2026-09-09)
+
+
+### BugFixes
+
+* **terragrunt-engine:** release stack authority on unlock ([#645](https://github.com/chanzuckerberg/github-actions/issues/645)) ([cdbbcf7](https://github.com/chanzuckerberg/github-actions/commit/cdbbcf7a9723c28400cdac058613402567f349ba))
+
 ## [6.40.0](https://github.com/chanzuckerberg/github-actions/compare/v6.39.2...v6.40.0) (2026-09-08)
 
 
