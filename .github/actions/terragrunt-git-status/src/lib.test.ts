@@ -5,8 +5,66 @@ import {
   classifyAutoMergeError,
   mergeStateMessage,
   mergeStateRoute,
+  parseApplyTimes,
+  parseComment,
   reviewGateRoute,
 } from './lib';
+
+describe('parseComment', () => {
+  it('extracts apply-and-merge arguments', () => {
+    expect(parseComment('@terragrunt-bot apply-and-merge --times=3')).toEqual({
+      mentioned: true,
+      command: 'apply-and-merge',
+      args: ['--times=3'],
+    });
+  });
+
+  it('accepts the GitHub App bot login and normalizes the command', () => {
+    expect(parseComment('@terragrunt-bot[bot] APPLY-AND-MERGE --times=2')).toEqual({
+      mentioned: true,
+      command: 'apply-and-merge',
+      args: ['--times=2'],
+    });
+  });
+
+  it('returns no command or arguments for a bare mention', () => {
+    expect(parseComment('@terragrunt-bot')).toEqual({
+      mentioned: true,
+      command: null,
+      args: [],
+    });
+  });
+
+  it('ignores comments that do not mention the bot', () => {
+    expect(parseComment('apply-and-merge --times=3')).toEqual({
+      mentioned: false,
+      command: null,
+      args: [],
+    });
+  });
+});
+
+describe('parseApplyTimes', () => {
+  it('defaults to one attempt', () => {
+    expect(parseApplyTimes([])).toBe(1);
+  });
+
+  it.each([1, 2, 3, 4, 5])('accepts %i attempts', (times) => {
+    expect(parseApplyTimes([`--times=${times}`])).toBe(times);
+  });
+
+  it.each([
+    ['--times=0'],
+    ['--times=6'],
+    ['--times=three'],
+    ['--times'],
+    ['--other=3'],
+    ['--times=2', '--times=3'],
+    ['--times=2', 'please'],
+  ])('rejects invalid arguments: %j', (...args) => {
+    expect(parseApplyTimes(args)).toBeNull();
+  });
+});
 
 describe('reviewGateRoute', () => {
   it('allows when GitHub reports APPROVED', () => {

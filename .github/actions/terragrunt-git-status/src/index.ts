@@ -58,6 +58,7 @@ async function run(): Promise<void> {
       core.setOutput('command', result.command);
       core.setOutput('head_sha', result.headSha);
       core.setOutput('base_ref', result.baseRef);
+      core.setOutput('times', String(result.times));
       if (!result.ok) {
         core.setFailed(`Validation rejected ${result.command}`);
       }
