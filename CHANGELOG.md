@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.41.0](https://github.com/chanzuckerberg/github-actions/compare/v6.40.1...v6.41.0) (2026-09-10)
+
+
+### Features
+
+* **terragrunt-engine:** retry apply-and-merge ([#648](https://github.com/chanzuckerberg/github-actions/issues/648)) ([cfc53d4](https://github.com/chanzuckerberg/github-actions/commit/cfc53d48d5ba7cb4dec5add3208515a78cb03339))
+
 ## [6.40.1](https://github.com/chanzuckerberg/github-actions/compare/v6.40.0...v6.40.1) (2026-09-09)
 
 
