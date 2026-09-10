@@ -83,19 +83,35 @@ export interface ParsedComment {
   // The first token after the mention, lowercased, or null when the mention has
   // no argument.
   command: string | null;
+  // Every remaining whitespace-delimited token after the command.
+  args: string[];
 }
 
 // parseComment extracts the requested subcommand from a PR comment body.
 export function parseComment(body: string): ParsedComment {
   const mention = /@terragrunt-bot(?:\[bot\])?/i;
   if (!mention.test(body)) {
-    return { mentioned: false, command: null };
+    return { mentioned: false, command: null, args: [] };
   }
-  const withArg = /@terragrunt-bot(?:\[bot\])?\s+(\S+)/i.exec(body);
+  const withArgs = /@terragrunt-bot(?:\[bot\])?\s+(\S+)([\s\S]*)/i.exec(body);
   return {
     mentioned: true,
-    command: withArg ? withArg[1].toLowerCase() : null,
+    command: withArgs ? withArgs[1].toLowerCase() : null,
+    args: withArgs ? withArgs[2].trim().split(/\s+/).filter(Boolean) : [],
   };
+}
+
+// parseApplyTimes returns the requested maximum number of apply attempts.
+// null means the arguments are invalid.
+export function parseApplyTimes(args: string[]): number | null {
+  if (args.length === 0) {
+    return 1;
+  }
+  if (args.length !== 1) {
+    return null;
+  }
+  const match = /^--times=([1-5])$/.exec(args[0]);
+  return match ? Number(match[1]) : null;
 }
 
 // helpCommentBody renders the informational comment listing every way a user
@@ -117,11 +133,12 @@ function helpCommentBody(statusCheckName: string): string {
     '',
     '| Command | What it does |',
     '| --- | --- |',
-    `| \`${botMention} apply-and-merge\` | Runs \`terragrunt apply\` on every `
+    `| \`${botMention} apply-and-merge [--times=N]\` | Runs \`terragrunt apply\` on every `
       + 'changed stack, then squash-merges the pull request once all stacks '
       + 'apply cleanly. Requires write access, any approvals required by branch '
       + 'protection or CODEOWNERS, no merge conflicts, a branch that is up to '
-      + 'date with the base branch, and a non-draft PR. |',
+      + 'date with the base branch, and a non-draft PR. Set `--times=N` from 1 '
+      + 'through 5 to retry a failed stack, stopping at its first successful apply. |',
     `| \`${botMention} unlock\` | Force-releases stuck Terraform state locks `
       + 'for the stacks changed by this PR. Requires write access. Use only '
       + 'when a previous run left a lock behind. |',
@@ -135,6 +152,8 @@ function helpCommentBody(statusCheckName: string): string {
     `- The \`${statusCheckName}\` check stays pending until `
       + `\`${botMention} apply-and-merge\` succeeds. A PR that changes no `
       + 'Terraform stacks passes it automatically.',
+    '- `--times=N` retries broad apply failures at the bot level. Terragrunt may '
+      + 'also retry configured transient errors within each attempt.',
     '- If an apply fails, fix the issue, push, and run '
       + `\`${botMention} apply-and-merge\` again.`,
     '- A branch that is behind the base branch cannot apply. Applying a stale '
@@ -762,7 +781,7 @@ export interface ApplyValidation {
 
 const rejected: ApplyValidation = { ok: false, headSha: '', baseRef: '' };
 
-export async function validateApply(octokit: Octokit): Promise<ApplyValidation> {
+export async function validateApply(octokit: Octokit, times = 1): Promise<ApplyValidation> {
   const ctx = issueCommentContext();
   if (!ctx) {
     return rejected;
@@ -822,10 +841,12 @@ export async function validateApply(octokit: Octokit): Promise<ApplyValidation> 
   await octokit.rest.issues.createComment({
     ...context.repo,
     issue_number: prNumber,
-    body: `${quoteTrigger()}Applying \`${headSha}\` — [workflow run](${runUrl()})`,
+    body: times === 1
+      ? `${quoteTrigger()}Applying \`${headSha}\` — [workflow run](${runUrl()})`
+      : `${quoteTrigger()}Applying \`${headSha}\` with up to ${times} attempts per stack — [workflow run](${runUrl()})`,
   });
 
-  core.info(`Accepted apply-and-merge from ${commenter}`);
+  core.info(`Accepted apply-and-merge from ${commenter} with up to ${times} attempt(s) per stack`);
   return { ok: true, headSha: pr.head.sha, baseRef };
 }
 
@@ -882,6 +903,21 @@ async function postUnknownCommandComment(
   });
 }
 
+async function postInvalidApplyArgumentsComment(
+  octokit: Octokit,
+  prNumber: number,
+): Promise<void> {
+  await octokit.rest.issues.createComment({
+    ...context.repo,
+    issue_number: prNumber,
+    body: [
+      `${quoteTrigger()}Invalid arguments for \`${botMention} apply-and-merge\`.`,
+      '',
+      `Usage: \`${botMention} apply-and-merge [--times=N]\`, where \`N\` is an integer from 1 through 5.`,
+    ].join('\n'),
+  });
+}
+
 // dispatch parses a PR comment that mentions the bot, routes it to the matching
 // command, and returns the resolved command name plus whether the engine should
 // proceed. Unknown or missing subcommands post a helper comment and resolve to
@@ -890,6 +926,7 @@ async function postUnknownCommandComment(
 // jobs on this job failing.
 export interface DispatchResult extends ApplyValidation {
   command: string;
+  times: number;
 }
 
 export async function dispatch(
@@ -899,7 +936,9 @@ export async function dispatch(
   const body = context.payload.comment?.body ?? '';
   const prNumber = context.payload.issue?.number;
   const parsed = parseComment(body);
-  const noop = { ok: true, headSha: '', baseRef: '' };
+  const noop = {
+    ok: true, headSha: '', baseRef: '', times: 1,
+  };
 
   if (!parsed.mentioned) {
     core.info(`Comment does not mention ${botMention} — nothing to do`);
@@ -917,8 +956,15 @@ export async function dispatch(
       return { command: 'help', ...noop };
     }
     case 'apply-and-merge': {
-      const validation = await validateApply(octokit);
-      return { command: 'apply-and-merge', ...validation };
+      const times = parseApplyTimes(parsed.args);
+      if (times === null) {
+        await postInvalidApplyArgumentsComment(octokit, prNumber);
+        return {
+          command: 'apply-and-merge', ...rejected, times: 1,
+        };
+      }
+      const validation = await validateApply(octokit, times);
+      return { command: 'apply-and-merge', ...validation, times };
     }
     case 'unlock': {
       const ok = await validateUnlock(octokit);

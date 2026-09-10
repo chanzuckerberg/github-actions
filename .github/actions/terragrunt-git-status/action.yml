@@ -60,6 +60,10 @@ outputs:
       The PR's base branch name, used by the apply to merge the base into the
       working tree before running Terragrunt. Empty unless an apply-and-merge
       validation passed.
+  times:
+    description: >
+      Maximum apply attempts per stack, from 1 through 5. Set by dispatch and
+      defaults to 1.
 
 runs:
   using: node24

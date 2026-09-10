@@ -156,6 +156,7 @@ jobs:
       command: ${{ steps.dispatch.outputs.command }}
       head_sha: ${{ steps.dispatch.outputs.head_sha }}
       base_ref: ${{ steps.dispatch.outputs.base_ref }}
+      times: ${{ steps.dispatch.outputs.times }}
     steps:
       - name: Generate token
         id: generate_token
@@ -398,6 +399,8 @@ jobs:
         id: tgaction
         if: ${{ steps.authority.outputs.proceed != 'false' }}
         timeout-minutes: 90
+        env:
+          APPLY_TIMES: ${{ needs.dispatch.outputs.times || '1' }}
         run: |
           # Pipefail ensures that a terragrunt failure is reported by the Github Action.
           # Without it, the `tee` exit code always succeeds and the action looks green.
@@ -405,8 +408,28 @@ jobs:
           echo "current_env=$(basename '${{ matrix.stack }}')" >> "$GITHUB_OUTPUT"
           echo "action_trimmed=$(echo '${{ inputs.action }}' | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
 
-          # '2> >(tee err.txt >&2)' captures stderr, writes it to err.txt AND pipes it back to stderr for the gha console.
-          terragrunt run --all --non-interactive -- ${{ inputs.action }} -no-color 2> >(tee err.txt >&2) | tee out.txt
+          if [[ ! "$APPLY_TIMES" =~ ^[1-5]$ ]]; then
+            echo "::error::Invalid apply attempt count: $APPLY_TIMES"
+            exit 1
+          fi
+
+          : > out.txt
+          : > err.txt
+          for ((attempt = 1; attempt <= APPLY_TIMES; attempt++)); do
+            echo "Terragrunt attempt $attempt/$APPLY_TIMES" | tee -a out.txt
+
+            # Capture stderr in err.txt while preserving it in the GitHub Actions console.
+            if terragrunt run --all --non-interactive -- ${{ inputs.action }} -no-color \
+              2> >(tee -a err.txt >&2) | tee -a out.txt; then
+              break
+            fi
+
+            if ((attempt == APPLY_TIMES)); then
+              echo "::error::Terragrunt failed after $APPLY_TIMES attempt(s)"
+              exit 1
+            fi
+            echo "::warning::Terragrunt attempt $attempt/$APPLY_TIMES failed; retrying"
+          done
           cat out.txt && cat err.txt
       - name: Store Outputs
         uses: actions/upload-artifact@v7
