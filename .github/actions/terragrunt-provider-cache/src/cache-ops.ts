@@ -1,19 +1,63 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
+import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fingerprintCacheDir } from './fingerprint';
 
-export const baselinePath = '/tmp/tg-provider-cache.baseline.fp';
+interface RestoreState {
+  baseline: string;
+  sourceETag: string | null;
+}
 
-const tarPath = '/tmp/providers.tar.gz';
+function archivePath(cacheDir: string): string {
+  return `${cacheDir}.tar.gz`;
+}
 
-function removeBaseline(): void {
+export function restoreStatePath(cacheDir: string): string {
+  return `${cacheDir}.restore-state.json`;
+}
+
+function removeRestoreState(cacheDir: string): void {
+  fs.rmSync(restoreStatePath(cacheDir), { force: true });
+}
+
+function writeRestoreState(cacheDir: string, state: RestoreState): void {
+  fs.writeFileSync(restoreStatePath(cacheDir), JSON.stringify(state), 'utf8');
+}
+
+function readRestoreState(cacheDir: string): RestoreState | null {
   try {
-    fs.unlinkSync(baselinePath);
+    return JSON.parse(
+      fs.readFileSync(restoreStatePath(cacheDir), 'utf8'),
+    ) as RestoreState;
   } catch {
-    /* absent is fine */
+    return null;
   }
+}
+
+function isNotFound(out: exec.ExecOutput): boolean {
+  return /\b404\b|NoSuchKey|Not Found/i.test(`${out.stdout}\n${out.stderr}`);
+}
+
+function replaceDirectory(stagingDir: string, cacheDir: string): void {
+  const backupDir = `${cacheDir}.previous-${randomUUID()}`;
+  const hadCache = fs.existsSync(cacheDir);
+
+  if (hadCache) {
+    fs.renameSync(cacheDir, backupDir);
+  }
+
+  try {
+    fs.renameSync(stagingDir, cacheDir);
+  } catch (err) {
+    if (hadCache) {
+      fs.renameSync(backupDir, cacheDir);
+    }
+    throw err;
+  }
+
+  fs.rmSync(backupDir, { recursive: true, force: true });
 }
 
 function isUnit(dir: string): boolean {
@@ -92,30 +136,54 @@ async function restore(
   key: string,
   cacheDir: string,
 ): Promise<void> {
-  fs.mkdirSync(cacheDir, { recursive: true });
-  removeBaseline();
+  const tarPath = archivePath(cacheDir);
+  const stagingDir = `${cacheDir}.restore-${randomUUID()}`;
+  removeRestoreState(cacheDir);
 
-  const dest = `s3://${bucket}/${key}`;
-  const out = await exec.getExecOutput('aws', ['s3', 'cp', dest, tarPath], {
+  const head = await exec.getExecOutput('aws', [
+    's3api',
+    'head-object',
+    '--bucket',
+    bucket,
+    '--key',
+    key,
+  ], {
     ignoreReturnCode: true,
     silent: true,
   });
 
-  if (out.exitCode !== 0) {
+  if (head.exitCode !== 0 && isNotFound(head)) {
+    fs.rmSync(cacheDir, { recursive: true, force: true });
+    fs.mkdirSync(cacheDir, { recursive: true });
+    writeRestoreState(cacheDir, { baseline: 'EMPTY', sourceETag: null });
     core.info('No provider cache found in S3, starting fresh');
     return;
   }
-
-  await exec.exec('tar', ['-xzf', tarPath, '-C', cacheDir]);
-  try {
-    fs.unlinkSync(tarPath);
-  } catch {
-    /* best-effort */
+  if (head.exitCode !== 0) {
+    throw new Error(`inspect provider cache in S3: ${head.stderr.trim()}`);
   }
 
-  const fp = fingerprintCacheDir(cacheDir);
-  fs.writeFileSync(baselinePath, `${fp}\n`, 'utf8');
-  core.info('Provider cache restored from S3 (baseline fingerprint recorded)');
+  try {
+    const metadata = JSON.parse(head.stdout) as { ETag?: string };
+    if (!metadata.ETag) {
+      throw new Error('inspect provider cache in S3: response did not include ETag');
+    }
+
+    await exec.exec('aws', ['s3', 'cp', `s3://${bucket}/${key}`, tarPath]);
+    fs.mkdirSync(stagingDir, { recursive: true });
+    await exec.exec('tar', ['-xzf', tarPath, '-C', stagingDir]);
+
+    const baseline = fingerprintCacheDir(stagingDir);
+    replaceDirectory(stagingDir, cacheDir);
+    writeRestoreState(cacheDir, {
+      baseline,
+      sourceETag: metadata.ETag,
+    });
+    core.info('Provider cache restored from S3 (baseline fingerprint recorded)');
+  } finally {
+    fs.rmSync(tarPath, { force: true });
+    fs.rmSync(stagingDir, { recursive: true, force: true });
+  }
 }
 
 async function upload(
@@ -123,6 +191,12 @@ async function upload(
   key: string,
   cacheDir: string,
 ): Promise<void> {
+  const restoreState = readRestoreState(cacheDir);
+  if (!restoreState) {
+    core.warning('Provider cache restore did not complete; skip upload');
+    return;
+  }
+
   if (!fs.existsSync(cacheDir) || !fs.statSync(cacheDir).isDirectory()) {
     core.info('No provider cache directory; skip upload');
     return;
@@ -134,31 +208,72 @@ async function upload(
     return;
   }
 
-  if (fs.existsSync(baselinePath)) {
-    const previous = fs.readFileSync(baselinePath, 'utf8').trim();
-    if (current === previous) {
-      core.info(
-        'Provider cache unchanged since restore (fingerprint match); skip S3 upload',
-      );
-      return;
-    }
+  if (current === restoreState.baseline) {
+    core.info(
+      'Provider cache unchanged since restore (fingerprint match); skip S3 upload',
+    );
+    return;
   }
 
-  await exec.exec('tar', ['-czf', tarPath, '-C', cacheDir, '.']);
-  await exec.exec('aws', [
-    's3',
-    'cp',
-    tarPath,
-    `s3://${bucket}/${key}`,
-    '--sse',
-    'AES256',
-  ]);
+  const tarPath = archivePath(cacheDir);
+  const stagingKey = `${key}.uploads/${randomUUID()}.tar.gz`;
+
   try {
-    fs.unlinkSync(tarPath);
-  } catch {
-    /* best-effort */
+    await exec.exec('tar', ['-czf', tarPath, '-C', cacheDir, '.']);
+    await exec.exec('aws', [
+      's3',
+      'cp',
+      tarPath,
+      `s3://${bucket}/${stagingKey}`,
+      '--sse',
+      'AES256',
+    ]);
+
+    const promoteArgs = [
+      's3api',
+      'copy-object',
+      '--bucket',
+      bucket,
+      '--key',
+      key,
+      '--copy-source',
+      `${bucket}/${stagingKey}`,
+      '--server-side-encryption',
+      'AES256',
+    ];
+    if (restoreState.sourceETag) {
+      promoteArgs.push('--if-match', restoreState.sourceETag);
+    } else {
+      promoteArgs.push('--if-none-match', '*');
+    }
+
+    const promoted = await exec.getExecOutput('aws', promoteArgs, {
+      ignoreReturnCode: true,
+      silent: true,
+    });
+    if (promoted.exitCode !== 0 && /\b412\b|PreconditionFailed/i.test(promoted.stderr)) {
+      core.info('Provider cache changed in S3 since restore; skip stale upload');
+      return;
+    }
+    if (promoted.exitCode !== 0) {
+      throw new Error(`promote provider cache in S3: ${promoted.stderr.trim()}`);
+    }
+
+    core.info('Provider cache uploaded to S3');
+  } finally {
+    fs.rmSync(tarPath, { force: true });
+    await exec.getExecOutput('aws', [
+      's3api',
+      'delete-object',
+      '--bucket',
+      bucket,
+      '--key',
+      stagingKey,
+    ], {
+      ignoreReturnCode: true,
+      silent: true,
+    });
   }
-  core.info('Provider cache uploaded to S3');
 }
 
 export async function run(): Promise<void> {
