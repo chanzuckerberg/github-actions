@@ -1,18 +1,46 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
+import {
+  CopyObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { Readable } from 'stream';
 import {
   createModuleSymlinks,
   restoreStatePath,
   run,
 } from './cache-ops';
 
+const mockS3Send = jest.fn();
+const mockUploadDone = jest.fn();
+const mockUploadChunks: unknown[] = [];
+
 jest.mock('@actions/core');
 jest.mock('@actions/exec', () => ({
   getExecOutput: jest.fn(),
   exec: jest.fn(),
+}));
+jest.mock('@aws-sdk/client-s3', () => {
+  const actual = jest.requireActual('@aws-sdk/client-s3');
+  return {
+    ...actual,
+    S3Client: jest.fn(() => ({ send: mockS3Send })),
+  };
+});
+jest.mock('@aws-sdk/lib-storage', () => ({
+  Upload: jest.fn((options) => ({
+    done: async () => {
+      for await (const chunk of options.params.Body) {
+        // Consume the stream as the real multipart uploader does.
+        mockUploadChunks.push(chunk);
+      }
+      return mockUploadDone();
+    },
+  })),
 }));
 
 describe('run', () => {
@@ -26,6 +54,9 @@ describe('run', () => {
     jest.mocked(core.warning).mockReset();
     jest.mocked(exec.exec).mockReset();
     jest.mocked(exec.getExecOutput).mockReset();
+    mockS3Send.mockReset();
+    mockUploadDone.mockReset();
+    mockUploadChunks.length = 0;
     jest.mocked(core.getInput).mockImplementation((name: string) => {
       if (name === 'provider-cache-bucket') return 'bucket';
       if (name === 'provider-cache-key') return 'cache/providers.tar.gz';
@@ -37,6 +68,7 @@ describe('run', () => {
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     fs.rmSync(cacheDir, { recursive: true, force: true });
     fs.rmSync(`${cacheDir}.tar.gz`, { force: true });
     fs.rmSync(restoreStatePath(cacheDir), { force: true });
@@ -66,14 +98,14 @@ describe('run', () => {
       if (name === 'modules-dir') return '/missing-modules';
       return '';
     });
-    jest.mocked(exec.getExecOutput).mockResolvedValue({
-      exitCode: 254,
-      stdout: '',
-      stderr: 'An error occurred (404) when calling HeadObject: Not Found',
+    mockS3Send.mockRejectedValue({
+      name: 'NotFound',
+      $metadata: { httpStatusCode: 404 },
     });
 
     await run();
 
+    expect(mockS3Send.mock.calls[0][0]).toBeInstanceOf(GetObjectCommand);
     expect(
       JSON.parse(fs.readFileSync(restoreStatePath(cacheDir), 'utf8')),
     ).toEqual({ baseline: 'EMPTY', sourceETag: null });
@@ -90,17 +122,17 @@ describe('run', () => {
       if (name === 'modules-dir') return '/missing-modules';
       return '';
     });
-    jest.mocked(exec.getExecOutput).mockResolvedValue({
-      exitCode: 0,
-      stdout: '{"ETag":"\\"etag-1\\""}',
-      stderr: '',
+    mockS3Send.mockResolvedValueOnce({
+      ETag: '"etag-1"',
+      Body: Readable.from('archive'),
     });
-    jest.mocked(exec.exec)
-      .mockResolvedValueOnce(0)
-      .mockRejectedValueOnce(new Error('operation cancelled'));
+    jest.mocked(exec.exec).mockRejectedValueOnce(
+      new Error('operation cancelled'),
+    );
 
     await expect(run()).rejects.toThrow('operation cancelled');
 
+    expect(mockS3Send.mock.calls[0][0]).toBeInstanceOf(GetObjectCommand);
     expect(fs.readFileSync(path.join(cacheDir, 'existing-provider'), 'utf8'))
       .toBe('complete');
     expect(fs.existsSync(restoreStatePath(cacheDir))).toBe(false);
@@ -122,6 +154,7 @@ describe('run', () => {
       'Provider cache restore did not complete; skip upload',
     );
     expect(exec.exec).not.toHaveBeenCalled();
+    expect(mockS3Send).not.toHaveBeenCalled();
   });
 
   it('does not overwrite a cache changed by another matrix job', async () => {
@@ -137,26 +170,35 @@ describe('run', () => {
       if (name === 'cache-dir') return cacheDir;
       return '';
     });
-    jest.mocked(exec.exec).mockResolvedValue(0);
-    jest.mocked(exec.getExecOutput)
-      .mockResolvedValueOnce({
-        exitCode: 1,
-        stdout: '',
-        stderr: 'PreconditionFailed (412)',
-      })
-      .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' });
+    jest.mocked(exec.exec).mockImplementation(async (_command, args) => {
+      fs.writeFileSync(args![1], 'archive');
+      return 0;
+    });
+    mockUploadDone.mockResolvedValue({});
+    mockS3Send.mockImplementation(async (command) => {
+      if (command instanceof CopyObjectCommand) {
+        throw Object.assign(new Error('precondition failed'), {
+          name: 'PreconditionFailed',
+          $metadata: { httpStatusCode: 412 },
+        });
+      }
+      return {};
+    });
 
     await run();
 
     expect(core.info).toHaveBeenCalledWith(
       'Provider cache changed in S3 since restore; skip stale upload',
     );
-    expect(exec.getExecOutput).toHaveBeenNthCalledWith(
-      1,
-      'aws',
-      expect.arrayContaining(['--if-match', '"etag-1"']),
-      expect.anything(),
+    const copy = mockS3Send.mock.calls
+      .map(([command]) => command)
+      .find((command) => command instanceof CopyObjectCommand);
+    expect(copy?.input).toEqual(
+      expect.objectContaining({ IfMatch: '"etag-1"' }),
     );
+    expect(mockUploadChunks).not.toHaveLength(0);
+    const lastCall = mockS3Send.mock.calls[mockS3Send.mock.calls.length - 1];
+    expect(lastCall[0]).toBeInstanceOf(DeleteObjectCommand);
   });
 });
 
