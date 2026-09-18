@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-provider-cache-v0.2.1...terragrunt-provider-cache-v0.2.2) (2026-09-18)
+
+
+### BugFixes
+
+* **terragrunt-provider-cache:** prevent partial cache uploads ([#651](https://github.com/chanzuckerberg/github-actions/issues/651)) ([4e69139](https://github.com/chanzuckerberg/github-actions/commit/4e69139728701710785ce7f7077e63f2f9378c68))
+
 ## [0.2.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-provider-cache-v0.2.0...terragrunt-provider-cache-v0.2.1) (2026-08-28)
 
 

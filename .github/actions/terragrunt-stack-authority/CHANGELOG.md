@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-stack-authority-v0.4.1...terragrunt-stack-authority-v0.4.2) (2026-09-18)
+
+
+### BugFixes
+
+* **terragrunt-provider-cache:** prevent partial cache uploads ([#651](https://github.com/chanzuckerberg/github-actions/issues/651)) ([4e69139](https://github.com/chanzuckerberg/github-actions/commit/4e69139728701710785ce7f7077e63f2f9378c68))
+
 ## [0.4.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-stack-authority-v0.4.0...terragrunt-stack-authority-v0.4.1) (2026-08-28)
 
 
