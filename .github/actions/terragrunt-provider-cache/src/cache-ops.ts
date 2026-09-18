@@ -1,19 +1,88 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
+import {
+  CopyObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+  GetObjectCommandOutput,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { pipeline } from 'stream/promises';
+import { Readable } from 'stream';
 import { fingerprintCacheDir } from './fingerprint';
 
-export const baselinePath = '/tmp/tg-provider-cache.baseline.fp';
+interface RestoreState {
+  baseline: string;
+  sourceETag: string | null;
+}
 
-const tarPath = '/tmp/providers.tar.gz';
+function archivePath(cacheDir: string): string {
+  return `${cacheDir}.tar.gz`;
+}
 
-function removeBaseline(): void {
+export function restoreStatePath(cacheDir: string): string {
+  return `${cacheDir}.restore-state.json`;
+}
+
+function removeRestoreState(cacheDir: string): void {
+  fs.rmSync(restoreStatePath(cacheDir), { force: true });
+}
+
+function writeRestoreState(cacheDir: string, state: RestoreState): void {
+  fs.writeFileSync(restoreStatePath(cacheDir), JSON.stringify(state), 'utf8');
+}
+
+function readRestoreState(cacheDir: string): RestoreState | null {
   try {
-    fs.unlinkSync(baselinePath);
+    return JSON.parse(
+      fs.readFileSync(restoreStatePath(cacheDir), 'utf8'),
+    ) as RestoreState;
   } catch {
-    /* absent is fine */
+    return null;
   }
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function statusCode(err: unknown): number | undefined {
+  return (err as { $metadata?: { httpStatusCode?: number } })
+    ?.$metadata?.httpStatusCode;
+}
+
+function isNotFound(err: unknown): boolean {
+  return statusCode(err) === 404
+    || (err instanceof Error && ['NotFound', 'NoSuchKey'].includes(err.name));
+}
+
+function isPreconditionFailed(err: unknown): boolean {
+  return statusCode(err) === 412
+    || (err instanceof Error && err.name === 'PreconditionFailed');
+}
+
+function replaceDirectory(stagingDir: string, cacheDir: string): void {
+  const backupDir = `${cacheDir}.previous-${randomUUID()}`;
+  const hadCache = fs.existsSync(cacheDir);
+
+  if (hadCache) {
+    fs.renameSync(cacheDir, backupDir);
+  }
+
+  try {
+    fs.renameSync(stagingDir, cacheDir);
+  } catch (err) {
+    if (hadCache) {
+      fs.renameSync(backupDir, cacheDir);
+    }
+    throw err;
+  }
+
+  fs.rmSync(backupDir, { recursive: true, force: true });
 }
 
 function isUnit(dir: string): boolean {
@@ -88,41 +157,68 @@ export function createModuleSymlinks(stackRoot: string, modulesDir: string): voi
 }
 
 async function restore(
+  s3: S3Client,
   bucket: string,
   key: string,
   cacheDir: string,
 ): Promise<void> {
-  fs.mkdirSync(cacheDir, { recursive: true });
-  removeBaseline();
+  const tarPath = archivePath(cacheDir);
+  const stagingDir = `${cacheDir}.restore-${randomUUID()}`;
+  removeRestoreState(cacheDir);
 
-  const dest = `s3://${bucket}/${key}`;
-  const out = await exec.getExecOutput('aws', ['s3', 'cp', dest, tarPath], {
-    ignoreReturnCode: true,
-    silent: true,
-  });
-
-  if (out.exitCode !== 0) {
-    core.info('No provider cache found in S3, starting fresh');
-    return;
-  }
-
-  await exec.exec('tar', ['-xzf', tarPath, '-C', cacheDir]);
+  let response: GetObjectCommandOutput;
   try {
-    fs.unlinkSync(tarPath);
-  } catch {
-    /* best-effort */
+    response = await s3.send(new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    }));
+  } catch (err) {
+    if (isNotFound(err)) {
+      fs.rmSync(cacheDir, { recursive: true, force: true });
+      fs.mkdirSync(cacheDir, { recursive: true });
+      writeRestoreState(cacheDir, { baseline: 'EMPTY', sourceETag: null });
+      core.info('No provider cache found in S3, starting fresh');
+      return;
+    }
+    throw new Error(`download provider cache from S3: ${errorMessage(err)}`);
+  }
+  if (!response.ETag) {
+    throw new Error('download provider cache from S3: response had no ETag');
+  }
+  if (!response.Body) {
+    throw new Error('download provider cache from S3: response had no body');
   }
 
-  const fp = fingerprintCacheDir(cacheDir);
-  fs.writeFileSync(baselinePath, `${fp}\n`, 'utf8');
-  core.info('Provider cache restored from S3 (baseline fingerprint recorded)');
+  try {
+    await pipeline(response.Body as Readable, fs.createWriteStream(tarPath));
+    fs.mkdirSync(stagingDir, { recursive: true });
+    await exec.exec('tar', ['-xzf', tarPath, '-C', stagingDir]);
+
+    const baseline = fingerprintCacheDir(stagingDir);
+    replaceDirectory(stagingDir, cacheDir);
+    writeRestoreState(cacheDir, {
+      baseline,
+      sourceETag: response.ETag,
+    });
+    core.info('Provider cache restored from S3 (baseline fingerprint recorded)');
+  } finally {
+    fs.rmSync(tarPath, { force: true });
+    fs.rmSync(stagingDir, { recursive: true, force: true });
+  }
 }
 
 async function upload(
+  s3: S3Client,
   bucket: string,
   key: string,
   cacheDir: string,
 ): Promise<void> {
+  const restoreState = readRestoreState(cacheDir);
+  if (!restoreState) {
+    core.warning('Provider cache restore did not complete; skip upload');
+    return;
+  }
+
   if (!fs.existsSync(cacheDir) || !fs.statSync(cacheDir).isDirectory()) {
     core.info('No provider cache directory; skip upload');
     return;
@@ -134,31 +230,58 @@ async function upload(
     return;
   }
 
-  if (fs.existsSync(baselinePath)) {
-    const previous = fs.readFileSync(baselinePath, 'utf8').trim();
-    if (current === previous) {
-      core.info(
-        'Provider cache unchanged since restore (fingerprint match); skip S3 upload',
-      );
-      return;
-    }
+  if (current === restoreState.baseline) {
+    core.info(
+      'Provider cache unchanged since restore (fingerprint match); skip S3 upload',
+    );
+    return;
   }
 
-  await exec.exec('tar', ['-czf', tarPath, '-C', cacheDir, '.']);
-  await exec.exec('aws', [
-    's3',
-    'cp',
-    tarPath,
-    `s3://${bucket}/${key}`,
-    '--sse',
-    'AES256',
-  ]);
+  const tarPath = archivePath(cacheDir);
+  const stagingKey = `${key}.uploads/${randomUUID()}.tar.gz`;
+
   try {
-    fs.unlinkSync(tarPath);
-  } catch {
-    /* best-effort */
+    await exec.exec('tar', ['-czf', tarPath, '-C', cacheDir, '.']);
+    const stagingUpload = new Upload({
+      client: s3,
+      params: {
+        Bucket: bucket,
+        Key: stagingKey,
+        Body: fs.createReadStream(tarPath),
+        ServerSideEncryption: 'AES256',
+      },
+    });
+    await stagingUpload.done();
+
+    try {
+      await s3.send(new CopyObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        CopySource: `${bucket}/${stagingKey}`,
+        ServerSideEncryption: 'AES256',
+        IfMatch: restoreState.sourceETag ?? undefined,
+        IfNoneMatch: restoreState.sourceETag ? undefined : '*',
+      }));
+    } catch (err) {
+      if (isPreconditionFailed(err)) {
+        core.info('Provider cache changed in S3 since restore; skip stale upload');
+        return;
+      }
+      throw new Error(`promote provider cache in S3: ${errorMessage(err)}`);
+    }
+
+    core.info('Provider cache uploaded to S3');
+  } finally {
+    fs.rmSync(tarPath, { force: true });
+    try {
+      await s3.send(new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: stagingKey,
+      }));
+    } catch (err) {
+      core.warning(`delete staged provider cache from S3: ${errorMessage(err)}`);
+    }
   }
-  core.info('Provider cache uploaded to S3');
 }
 
 export async function run(): Promise<void> {
@@ -166,9 +289,10 @@ export async function run(): Promise<void> {
   const bucket = core.getInput('provider-cache-bucket', { required: true });
   const cacheKey = core.getInput('provider-cache-key', { required: true });
   const cacheDir = core.getInput('cache-dir', { required: true });
+  const s3 = new S3Client({});
 
   if (operation === 'restore') {
-    await restore(bucket, cacheKey, cacheDir);
+    await restore(s3, bucket, cacheKey, cacheDir);
 
     const stackRoot = core.getInput('stack-root', { required: true });
     const modulesDir = core.getInput('modules-dir');
@@ -178,7 +302,7 @@ export async function run(): Promise<void> {
     return;
   }
   if (operation === 'upload') {
-    await upload(bucket, cacheKey, cacheDir);
+    await upload(s3, bucket, cacheKey, cacheDir);
     return;
   }
 
