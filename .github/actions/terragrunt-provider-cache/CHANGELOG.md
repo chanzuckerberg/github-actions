@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-provider-cache-v0.2.2...terragrunt-provider-cache-v0.2.3) (2026-09-18)
+
+
+### BugFixes
+
+* **terragrunt-provider-cache:** handle S3 promotion conflicts ([#652](https://github.com/chanzuckerberg/github-actions/issues/652)) ([506916f](https://github.com/chanzuckerberg/github-actions/commit/506916fd2d200818687a4f00ce8acce31652c20d))
+
 ## [0.2.2](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-provider-cache-v0.2.1...terragrunt-provider-cache-v0.2.2) (2026-09-18)
 
 

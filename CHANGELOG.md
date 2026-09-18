@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.41.1](https://github.com/chanzuckerberg/github-actions/compare/v6.41.0...v6.41.1) (2026-09-18)
+
+
+### BugFixes
+
+* **terragrunt-provider-cache:** handle S3 promotion conflicts ([#652](https://github.com/chanzuckerberg/github-actions/issues/652)) ([506916f](https://github.com/chanzuckerberg/github-actions/commit/506916fd2d200818687a4f00ce8acce31652c20d))
+
 ## [6.41.0](https://github.com/chanzuckerberg/github-actions/compare/v6.40.1...v6.41.0) (2026-09-18)
 
 
