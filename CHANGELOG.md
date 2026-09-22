@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.41.2](https://github.com/chanzuckerberg/github-actions/compare/v6.41.1...v6.41.2) (2026-09-22)
+
+
+### BugFixes
+
+* keep archived-repo-scan green on fork pull requests ([#654](https://github.com/chanzuckerberg/github-actions/issues/654)) ([e27c0e3](https://github.com/chanzuckerberg/github-actions/commit/e27c0e37ea127b38a3c90343f67afccbd87715a0))
+
 ## [6.41.1](https://github.com/chanzuckerberg/github-actions/compare/v6.41.0...v6.41.1) (2026-09-18)
 
 
