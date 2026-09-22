@@ -26,6 +26,7 @@ jobs:
 
       - name: Generate GitHub App token
         id: generate_token
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.GH_ACTIONS_HELPER_APP_ID }}
@@ -35,5 +36,5 @@ jobs:
       - name: Scan for archived repositories
         uses: chanzuckerberg/github-actions/.github/actions/archived-repo-scanner@v6
         with:
-          github_token: ${{ steps.generate_token.outputs.token }}
+          github_token: ${{ steps.generate_token.outputs.token || github.token }}
           fail_on_archived: 'false'
