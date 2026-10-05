@@ -101,17 +101,36 @@ export function parseComment(body: string): ParsedComment {
   };
 }
 
-// parseApplyTimes returns the requested maximum number of apply attempts.
-// null means the arguments are invalid.
-export function parseApplyTimes(args: string[]): number | null {
-  if (args.length === 0) {
-    return 1;
-  }
-  if (args.length !== 1) {
+export interface ApplyOptions {
+  times: number;
+  refresh: string;
+}
+
+export function parseApplyOptions(args: string[]): ApplyOptions | null {
+  let times = 1;
+  let refresh = '';
+  let hasTimes = false;
+  let hasRefresh = false;
+
+  for (const arg of args) {
+    const timesMatch = /^--times=([1-5])$/.exec(arg);
+    if (timesMatch && !hasTimes) {
+      times = Number(timesMatch[1]);
+      hasTimes = true;
+      continue;
+    }
+
+    const refreshMatch = /^--refresh=(true|false)$/.exec(arg);
+    if (refreshMatch && !hasRefresh) {
+      [, refresh] = refreshMatch;
+      hasRefresh = true;
+      continue;
+    }
+
     return null;
   }
-  const match = /^--times=([1-5])$/.exec(args[0]);
-  return match ? Number(match[1]) : null;
+
+  return { times, refresh };
 }
 
 // helpCommentBody renders the informational comment listing every way a user
@@ -133,12 +152,13 @@ function helpCommentBody(statusCheckName: string): string {
     '',
     '| Command | What it does |',
     '| --- | --- |',
-    `| \`${botMention} apply-and-merge [--times=N]\` | Runs \`terragrunt apply\` on every `
+    `| \`${botMention} apply-and-merge [--times=N] [--refresh=true\\|false]\` | Runs \`terragrunt apply\` on every `
       + 'changed stack, then squash-merges the pull request once all stacks '
       + 'apply cleanly. Requires write access, any approvals required by branch '
       + 'protection or CODEOWNERS, no merge conflicts, a branch that is up to '
       + 'date with the base branch, and a non-draft PR. Set `--times=N` from 1 '
-      + 'through 5 to retry a failed stack, stopping at its first successful apply. |',
+      + 'through 5 to retry a failed stack, stopping at its first successful apply. '
+      + 'Set `--refresh=true` or `--refresh=false` to override refresh behavior for the apply. |',
     `| \`${botMention} unlock\` | Force-releases stuck Terraform state locks `
       + 'for the stacks changed by this PR. Requires write access. Use only '
       + 'when a previous run left a lock behind. |',
@@ -154,6 +174,8 @@ function helpCommentBody(statusCheckName: string): string {
       + 'Terraform stacks passes it automatically.',
     '- `--times=N` retries broad apply failures at the bot level. Terragrunt may '
       + 'also retry configured transient errors within each attempt.',
+    '- `--refresh=true` or `--refresh=false` overrides Terraform refresh behavior '
+      + 'for that apply.',
     '- If an apply fails, fix the issue, push, and run '
       + `\`${botMention} apply-and-merge\` again.`,
     '- A branch that is behind the base branch cannot apply. Applying a stale '
@@ -913,7 +935,7 @@ async function postInvalidApplyArgumentsComment(
     body: [
       `${quoteTrigger()}Invalid arguments for \`${botMention} apply-and-merge\`.`,
       '',
-      `Usage: \`${botMention} apply-and-merge [--times=N]\`, where \`N\` is an integer from 1 through 5.`,
+      `Usage: \`${botMention} apply-and-merge [--times=N] [--refresh=true|false]\`, where \`N\` is an integer from 1 through 5.`,
     ].join('\n'),
   });
 }
@@ -927,6 +949,7 @@ async function postInvalidApplyArgumentsComment(
 export interface DispatchResult extends ApplyValidation {
   command: string;
   times: number;
+  refresh: string;
 }
 
 export async function dispatch(
@@ -937,7 +960,7 @@ export async function dispatch(
   const prNumber = context.payload.issue?.number;
   const parsed = parseComment(body);
   const noop = {
-    ok: true, headSha: '', baseRef: '', times: 1,
+    ok: true, headSha: '', baseRef: '', times: 1, refresh: '',
   };
 
   if (!parsed.mentioned) {
@@ -956,15 +979,15 @@ export async function dispatch(
       return { command: 'help', ...noop };
     }
     case 'apply-and-merge': {
-      const times = parseApplyTimes(parsed.args);
-      if (times === null) {
+      const options = parseApplyOptions(parsed.args);
+      if (options === null) {
         await postInvalidApplyArgumentsComment(octokit, prNumber);
         return {
-          command: 'apply-and-merge', ...rejected, times: 1,
+          command: 'apply-and-merge', ...rejected, times: 1, refresh: '',
         };
       }
-      const validation = await validateApply(octokit, times);
-      return { command: 'apply-and-merge', ...validation, times };
+      const validation = await validateApply(octokit, options.times);
+      return { command: 'apply-and-merge', ...validation, ...options };
     }
     case 'unlock': {
       const ok = await validateUnlock(octokit);

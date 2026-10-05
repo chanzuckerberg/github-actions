@@ -162,6 +162,7 @@ jobs:
       head_sha: ${{ steps.dispatch.outputs.head_sha }}
       base_ref: ${{ steps.dispatch.outputs.base_ref }}
       times: ${{ steps.dispatch.outputs.times }}
+      refresh: ${{ steps.dispatch.outputs.refresh }}
     steps:
       - name: Generate token
         id: generate_token
@@ -407,7 +408,7 @@ jobs:
         timeout-minutes: 90
         env:
           APPLY_TIMES: ${{ needs.dispatch.outputs.times || '1' }}
-          REFRESH_MODE: ${{ inputs.refresh }}
+          REFRESH_MODE: ${{ needs.dispatch.outputs.refresh || inputs.refresh }}
         run: |
           # Pipefail ensures that a terragrunt failure is reported by the Github Action.
           # Without it, the `tee` exit code always succeeds and the action looks green.
