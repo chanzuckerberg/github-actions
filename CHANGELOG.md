@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.41.3](https://github.com/chanzuckerberg/github-actions/compare/v6.41.2...v6.41.3) (2026-10-06)
+
+
+### BugFixes
+
+* **terragrunt-engine:** disable refresh for PR runs ([#658](https://github.com/chanzuckerberg/github-actions/issues/658)) ([ebbc356](https://github.com/chanzuckerberg/github-actions/commit/ebbc35615af75b6cb199c00af3acbe0e0d4fb92b))
+
 ## [6.41.2](https://github.com/chanzuckerberg/github-actions/compare/v6.41.1...v6.41.2) (2026-09-22)
 
 
