@@ -1,10 +1,12 @@
 # chanzuckerberg/github-actions
 
-Reusable GitHub Actions and workflows used across CZI.
+This open-source repository contains reusable GitHub Actions and workflows used across CZI.
 
-Each action and workflow is released independently with its own semver tag
-(for example `terragrunt-engine-v0`), driven by conventional commits and
-release-please.
+Releases are automated using [Release Please](https://github.com/googleapis/release-please).
+It reads commit messages following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+format, such as `fix:` and `feat:`, and opens a release PR with proposed version
+updates and changelog entries. When that PR is merged, it creates the corresponding
+version tags and GitHub Releases.
 
 ## Using a reusable workflow
 
