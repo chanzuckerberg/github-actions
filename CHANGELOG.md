@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.42.0](https://github.com/chanzuckerberg/github-actions/compare/v6.41.3...v6.42.0) (2026-10-13)
+
+
+### Features
+
+* **docker-build-push:** compress registry cache with the image's compression ([#662](https://github.com/chanzuckerberg/github-actions/issues/662)) ([7588589](https://github.com/chanzuckerberg/github-actions/commit/7588589f4e6c8794af5cc698194efb6b7ba0baff))
+
 ## [6.41.3](https://github.com/chanzuckerberg/github-actions/compare/v6.41.2...v6.41.3) (2026-10-06)
 
 
