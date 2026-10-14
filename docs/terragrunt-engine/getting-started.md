@@ -13,19 +13,35 @@ is the reference implementation.
 
 ### Plan on pull requests
 
+Create a file under `.github/workflows/` in the repository containing your
+infrastructure. This complete example uses the engine's default configuration,
+as the plan caller in `chanzuckerberg/shared-infra` does. It plans changes when a
+pull request is opened, updated, or reopened. The `closed` event releases any
+stack ownership held by the pull request.
+
 ```yaml
-# TODO: confirm against the reference caller in argus-infra-stacks
+# .github/workflows/terragrunt-plan.yml
+name: Plan infrastructure changes
+
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
 
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: plan-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   plan:
-    uses: chanzuckerberg/github-actions/.github/workflows/terragrunt-engine.yml@terragrunt-engine-v0
+    uses: chanzuckerberg/github-actions/.github/workflows/terragrunt-engine.yml@v6
+    secrets: inherit
     with:
       action: plan -lock=false
       set_apply_gate: true
-    secrets: inherit
 ```
 
 ### Apply from PR comments
