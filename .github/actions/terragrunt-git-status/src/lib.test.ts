@@ -5,7 +5,7 @@ import {
   classifyAutoMergeError,
   mergeStateMessage,
   mergeStateRoute,
-  parseApplyTimes,
+  parseApplyOptions,
   parseComment,
   reviewGateRoute,
 } from './lib';
@@ -44,13 +44,28 @@ describe('parseComment', () => {
   });
 });
 
-describe('parseApplyTimes', () => {
-  it('defaults to one attempt', () => {
-    expect(parseApplyTimes([])).toBe(1);
+describe('parseApplyOptions', () => {
+  it('defaults to one attempt without a refresh override', () => {
+    expect(parseApplyOptions([])).toEqual({ times: 1, refresh: '' });
   });
 
   it.each([1, 2, 3, 4, 5])('accepts %i attempts', (times) => {
-    expect(parseApplyTimes([`--times=${times}`])).toBe(times);
+    expect(parseApplyOptions([`--times=${times}`])).toEqual({ times, refresh: '' });
+  });
+
+  it.each(['true', 'false'])('accepts refresh=%s', (refresh) => {
+    expect(parseApplyOptions([`--refresh=${refresh}`])).toEqual({ times: 1, refresh });
+  });
+
+  it('accepts both options in either order', () => {
+    expect(parseApplyOptions(['--times=3', '--refresh=true'])).toEqual({
+      times: 3,
+      refresh: 'true',
+    });
+    expect(parseApplyOptions(['--refresh=false', '--times=2'])).toEqual({
+      times: 2,
+      refresh: 'false',
+    });
   });
 
   it.each([
@@ -60,9 +75,11 @@ describe('parseApplyTimes', () => {
     ['--times'],
     ['--other=3'],
     ['--times=2', '--times=3'],
+    ['--refresh=yes'],
+    ['--refresh=true', '--refresh=false'],
     ['--times=2', 'please'],
   ])('rejects invalid arguments: %j', (...args) => {
-    expect(parseApplyTimes(args)).toBeNull();
+    expect(parseApplyOptions(args)).toBeNull();
   });
 });
 

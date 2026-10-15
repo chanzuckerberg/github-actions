@@ -157,7 +157,13 @@ describe('run', () => {
     expect(mockS3Send).not.toHaveBeenCalled();
   });
 
-  it('does not overwrite a cache changed by another matrix job', async () => {
+  it.each([
+    ['ConditionalRequestConflict', 409],
+    ['PreconditionFailed', 412],
+  ])('does not overwrite a cache changed by another matrix job after %s', async (
+    errorName,
+    httpStatusCode,
+  ) => {
     fs.writeFileSync(path.join(cacheDir, 'provider'), 'new provider');
     fs.writeFileSync(
       restoreStatePath(cacheDir),
@@ -178,8 +184,8 @@ describe('run', () => {
     mockS3Send.mockImplementation(async (command) => {
       if (command instanceof CopyObjectCommand) {
         throw Object.assign(new Error('precondition failed'), {
-          name: 'PreconditionFailed',
-          $metadata: { httpStatusCode: 412 },
+          name: errorName,
+          $metadata: { httpStatusCode },
         });
       }
       return {};

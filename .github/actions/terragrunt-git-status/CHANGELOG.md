@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.1](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.8.0...terragrunt-git-status-v0.8.1) (2026-10-06)
+
+
+### BugFixes
+
+* **terragrunt-engine:** disable refresh for PR runs ([#658](https://github.com/chanzuckerberg/github-actions/issues/658)) ([ebbc356](https://github.com/chanzuckerberg/github-actions/commit/ebbc35615af75b6cb199c00af3acbe0e0d4fb92b))
+
+## [0.8.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.7.0...terragrunt-git-status-v0.8.0) (2026-09-18)
+
+
+### Features
+
+* **terragrunt-engine:** retry apply-and-merge ([#648](https://github.com/chanzuckerberg/github-actions/issues/648)) ([cfc53d4](https://github.com/chanzuckerberg/github-actions/commit/cfc53d48d5ba7cb4dec5add3208515a78cb03339))
+
 ## [0.7.0](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-git-status-v0.6.2...terragrunt-git-status-v0.7.0) (2026-09-08)
 
 

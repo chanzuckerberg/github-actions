@@ -1,5 +1,45 @@
 # Changelog
 
+## [6.42.0](https://github.com/chanzuckerberg/github-actions/compare/v6.41.3...v6.42.0) (2026-10-13)
+
+
+### Features
+
+* **docker-build-push:** compress registry cache with the image's compression ([#662](https://github.com/chanzuckerberg/github-actions/issues/662)) ([7588589](https://github.com/chanzuckerberg/github-actions/commit/7588589f4e6c8794af5cc698194efb6b7ba0baff))
+
+## [6.41.3](https://github.com/chanzuckerberg/github-actions/compare/v6.41.2...v6.41.3) (2026-10-06)
+
+
+### BugFixes
+
+* **terragrunt-engine:** disable refresh for PR runs ([#658](https://github.com/chanzuckerberg/github-actions/issues/658)) ([ebbc356](https://github.com/chanzuckerberg/github-actions/commit/ebbc35615af75b6cb199c00af3acbe0e0d4fb92b))
+
+## [6.41.2](https://github.com/chanzuckerberg/github-actions/compare/v6.41.1...v6.41.2) (2026-09-22)
+
+
+### BugFixes
+
+* keep archived-repo-scan green on fork pull requests ([#654](https://github.com/chanzuckerberg/github-actions/issues/654)) ([e27c0e3](https://github.com/chanzuckerberg/github-actions/commit/e27c0e37ea127b38a3c90343f67afccbd87715a0))
+
+## [6.41.1](https://github.com/chanzuckerberg/github-actions/compare/v6.41.0...v6.41.1) (2026-09-18)
+
+
+### BugFixes
+
+* **terragrunt-provider-cache:** handle S3 promotion conflicts ([#652](https://github.com/chanzuckerberg/github-actions/issues/652)) ([506916f](https://github.com/chanzuckerberg/github-actions/commit/506916fd2d200818687a4f00ce8acce31652c20d))
+
+## [6.41.0](https://github.com/chanzuckerberg/github-actions/compare/v6.40.1...v6.41.0) (2026-09-18)
+
+
+### Features
+
+* **terragrunt-engine:** retry apply-and-merge ([#648](https://github.com/chanzuckerberg/github-actions/issues/648)) ([cfc53d4](https://github.com/chanzuckerberg/github-actions/commit/cfc53d48d5ba7cb4dec5add3208515a78cb03339))
+
+
+### BugFixes
+
+* **terragrunt-provider-cache:** prevent partial cache uploads ([#651](https://github.com/chanzuckerberg/github-actions/issues/651)) ([4e69139](https://github.com/chanzuckerberg/github-actions/commit/4e69139728701710785ce7f7077e63f2f9378c68))
+
 ## [6.40.1](https://github.com/chanzuckerberg/github-actions/compare/v6.40.0...v6.40.1) (2026-09-09)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.14.1...docker-build-push-v1.15.0) (2026-10-13)
+
+
+### Features
+
+* **docker-build-push:** compress registry cache with the image's compression ([#662](https://github.com/chanzuckerberg/github-actions/issues/662)) ([7588589](https://github.com/chanzuckerberg/github-actions/commit/7588589f4e6c8794af5cc698194efb6b7ba0baff))
+
 ## [1.14.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.14.0...docker-build-push-v1.14.1) (2026-08-09)
 
 
