@@ -1,8 +1,7 @@
 # Troubleshooting
 
 !!! todo
-    For each problem, document the symptom (the exact error or PR comment),
-    the cause, and the fix.
+    For each problem, document the symptom (the exact error or PR comment), the cause, and the fix.
 
 ## A stack is owned by another PR
 

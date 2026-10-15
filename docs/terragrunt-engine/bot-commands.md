@@ -16,9 +16,8 @@ Comment on a pull request to drive the engine.
 ### Preconditions
 
 !!! todo
-    List the checks performed before an apply runs (write access, approvals,
-    code owners, up to date with base, no conflicts, non-draft). Source:
-    `.github/actions/terragrunt-git-status/src/lib.ts`.
+    List the checks performed before an apply runs (write access, approvals, code owners, up to date with base, no conflicts, non-draft).
+    Source: `.github/actions/terragrunt-git-status/src/lib.ts`.
 
 ## `@terragrunt-bot unlock`
 

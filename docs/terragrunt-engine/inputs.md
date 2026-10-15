@@ -1,7 +1,7 @@
 # Inputs reference
 
-Inputs to the `terragrunt-engine.yml` reusable workflow. The source of truth is
-the `on.workflow_call.inputs` block in `.github/workflows/terragrunt-engine.yml`.
+Inputs to the `terragrunt-engine.yml` reusable workflow.
+The source of truth is the `on.workflow_call.inputs` block in `.github/workflows/terragrunt-engine.yml`.
 
 !!! todo
     Consider generating this page from the workflow file so it cannot drift.
@@ -33,7 +33,8 @@ the `on.workflow_call.inputs` block in `.github/workflows/terragrunt-engine.yml`
 
 ## Secrets
 
-Pass secrets with `secrets: inherit`. The engine discovers them by name.
+Pass secrets with `secrets: inherit`.
+The engine discovers them by name.
 
 | Secret | Purpose |
 | --- | --- |

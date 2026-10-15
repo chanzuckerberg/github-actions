@@ -1,8 +1,9 @@
 # Terragrunt Engine
 
-A reusable workflow (`.github/workflows/terragrunt-engine.yml`) that runs
-Terragrunt plans on pull requests and applies them before merge, driven by
-`@terragrunt-bot` PR comments.
+Terragrunt Engine (`.github/workflows/terragrunt-engine.yml`) is CZI’s reusable GitHub Actions workflow for running Terraform through Terragrunt.
+Infrastructure repositories call it to plan or apply changes.
+The engine selects the affected stacks, configures credentials, runs the requested operation, and reports the results.
+It also handles PR commands such as `@terragrunt-bot apply-and-merge`, which applies changes before attempting to merge the PR.
 
 ## What it does
 

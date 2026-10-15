@@ -3,21 +3,19 @@
 ## Prerequisites
 
 !!! todo
-    Document what a repo needs before adopting the engine: the terragrunt-bot
-    GitHub App installation, org secrets, AWS role trust, and stack layout.
+    Document what a repo needs before adopting the engine: the terragrunt-bot GitHub App installation, org secrets, AWS role trust, and stack layout.
 
 ## Caller workflows
 
-A repo adopts the engine with thin caller workflows. `chanzuckerberg/argus-infra-stacks`
-is the reference implementation.
+A repo adopts the engine with thin caller workflows.
+`chanzuckerberg/argus-infra-stacks` is the reference implementation.
 
 ### Plan on pull requests
 
-Create a file under `.github/workflows/` in the repository containing your
-infrastructure. This complete example uses the engine's default configuration,
-as the plan caller in `chanzuckerberg/shared-infra` does. It plans changes when a
-pull request is opened, updated, or reopened. The `closed` event releases any
-stack ownership held by the pull request.
+Create a file under `.github/workflows/` in the repository containing your infrastructure.
+This complete example uses the engine's default configuration, as the plan caller in `chanzuckerberg/shared-infra` does.
+It plans changes when a pull request is opened, updated, or reopened.
+The `closed` event releases any stack ownership held by the pull request.
 
 ```yaml
 # .github/workflows/terragrunt-plan.yml

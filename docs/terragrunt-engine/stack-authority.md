@@ -1,19 +1,17 @@
 # Stack authority
 
-Stack authority records which branch the live infrastructure for a stack
-reflects: `main`, or a specific pull request that has applied but not yet merged.
+Stack authority records which branch the live infrastructure for a stack reflects: `main`, or a specific pull request that has applied but not yet merged.
 
 ## Why it exists
 
 !!! todo
-    Explain the problem: two unmerged PRs applying to the same stack and
-    overwriting each other.
+    Explain the problem: two unmerged PRs applying to the same stack and overwriting each other.
 
 ## How a claim works
 
 !!! todo
-    Describe the DynamoDB record and the conditional write. Source:
-    `.github/actions/terragrunt-stack-authority/src/lib.ts`.
+    Describe the DynamoDB record and the conditional write.
+    Source: `.github/actions/terragrunt-stack-authority/src/lib.ts`.
 
 ## When authority is released
 
