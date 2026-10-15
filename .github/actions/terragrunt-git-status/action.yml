@@ -64,6 +64,10 @@ outputs:
     description: >
       Maximum apply attempts per stack, from 1 through 5. Set by dispatch and
       defaults to 1.
+  refresh:
+    description: >
+      Terraform refresh override from an apply-and-merge comment. Set to
+      "true", "false", or empty when no override was provided.
 
 runs:
   using: node24

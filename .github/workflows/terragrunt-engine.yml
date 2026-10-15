@@ -10,6 +10,11 @@ on:
         description: 'Passed to `terragrunt run --all -- <action>` (e.g. "plan -lock=false" or "apply").'
         required: true
         type: string
+      refresh:
+        description: 'Terraform refresh behavior: "auto" disables refresh for pull request plans and applies, "true" always refreshes, and "false" never refreshes.'
+        required: false
+        type: string
+        default: auto
       all_stacks:
         description: "Run on every stack rather than only the changed ones."
         required: false
@@ -157,6 +162,7 @@ jobs:
       head_sha: ${{ steps.dispatch.outputs.head_sha }}
       base_ref: ${{ steps.dispatch.outputs.base_ref }}
       times: ${{ steps.dispatch.outputs.times }}
+      refresh: ${{ steps.dispatch.outputs.refresh }}
     steps:
       - name: Generate token
         id: generate_token
@@ -402,6 +408,7 @@ jobs:
         timeout-minutes: 90
         env:
           APPLY_TIMES: ${{ needs.dispatch.outputs.times || '1' }}
+          REFRESH_MODE: ${{ needs.dispatch.outputs.refresh || inputs.refresh }}
         run: |
           # Pipefail ensures that a terragrunt failure is reported by the Github Action.
           # Without it, the `tee` exit code always succeeds and the action looks green.
@@ -416,11 +423,27 @@ jobs:
 
           : > out.txt
           : > err.txt
+          refresh_args=()
+          case "$REFRESH_MODE" in
+            auto)
+              if [[ "$GITHUB_EVENT_NAME" == "pull_request" || "$GITHUB_EVENT_NAME" == "issue_comment" ]]; then
+                refresh_args=(-refresh=false)
+              fi
+              ;;
+            true|false)
+              refresh_args=("-refresh=$REFRESH_MODE")
+              ;;
+            *)
+              echo "::error::Invalid refresh value: $REFRESH_MODE"
+              exit 1
+              ;;
+          esac
+
           for ((attempt = 1; attempt <= APPLY_TIMES; attempt++)); do
             echo "Terragrunt attempt $attempt/$APPLY_TIMES" | tee -a out.txt
 
             # Capture stderr in err.txt while preserving it in the GitHub Actions console.
-            if terragrunt run --all --non-interactive -- ${{ inputs.action }} -no-color \
+            if terragrunt run --all --non-interactive -- ${{ inputs.action }} "${refresh_args[@]}" -no-color \
               2> >(tee -a err.txt >&2) | tee -a out.txt; then
               break
             fi

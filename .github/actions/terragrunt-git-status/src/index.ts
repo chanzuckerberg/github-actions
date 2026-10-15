@@ -59,6 +59,7 @@ async function run(): Promise<void> {
       core.setOutput('head_sha', result.headSha);
       core.setOutput('base_ref', result.baseRef);
       core.setOutput('times', String(result.times));
+      core.setOutput('refresh', result.refresh);
       if (!result.ok) {
         core.setFailed(`Validation rejected ${result.command}`);
       }

@@ -152,6 +152,8 @@ runs:
         cl="${COMPRESSION_LEVEL:-3}"
         fc="${FORCE_COMPRESSION:-true}"
         echo "spec=type=registry,compression=${c},compression-level=${cl},force-compression=${fc}" >> "$GITHUB_OUTPUT"
+        # Cache-only layers (e.g. mode=max builder stages) otherwise default to single-threaded gzip.
+        echo "cache_compression=compression=${c},compression-level=${cl}" >> "$GITHUB_OUTPUT"
     - name: Build and push
       uses: docker/build-push-action@v7
       with:
@@ -164,7 +166,7 @@ runs:
         cache-from: |
           ${{ steps.cache.outputs.cacheFrom }}
         cache-to: |
-          ${{ steps.cache.outputs.cacheTo }},mode=max
+          ${{ steps.cache.outputs.cacheTo }},mode=max,${{ steps.output.outputs.cache_compression }}
         build-args: |
           ${{ inputs.build_args }}
         secret-files: ${{ inputs.secret-files }}

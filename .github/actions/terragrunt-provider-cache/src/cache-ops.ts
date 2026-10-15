@@ -60,9 +60,10 @@ function isNotFound(err: unknown): boolean {
     || (err instanceof Error && ['NotFound', 'NoSuchKey'].includes(err.name));
 }
 
-function isPreconditionFailed(err: unknown): boolean {
-  return statusCode(err) === 412
-    || (err instanceof Error && err.name === 'PreconditionFailed');
+function isConditionalWriteConflict(err: unknown): boolean {
+  return [409, 412].includes(statusCode(err) ?? 0)
+    || (err instanceof Error
+      && ['ConditionalRequestConflict', 'PreconditionFailed'].includes(err.name));
 }
 
 function replaceDirectory(stagingDir: string, cacheDir: string): void {
@@ -263,7 +264,7 @@ async function upload(
         IfNoneMatch: restoreState.sourceETag ? undefined : '*',
       }));
     } catch (err) {
-      if (isPreconditionFailed(err)) {
+      if (isConditionalWriteConflict(err)) {
         core.info('Provider cache changed in S3 since restore; skip stale upload');
         return;
       }
