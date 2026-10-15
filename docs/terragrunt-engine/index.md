@@ -5,6 +5,9 @@ Infrastructure repositories call it to plan or apply changes.
 The engine selects the affected stacks, configures credentials, runs the requested operation, and reports the results.
 It also handles PR commands such as `@terragrunt-bot apply-and-merge`, which applies changes before attempting to merge the PR.
 
+Terragrunt Engine provides a lightweight alternative to tools such as [Atlantis](https://www.runatlantis.io/) for running Terraform through pull requests.
+Using our existing GitHub Actions setup means we do not need to deploy, operate, or maintain a separate Atlantis server.
+
 ## What it does
 
 ### Automatic plans on pull requests
@@ -53,8 +56,17 @@ This table describes the usual flow, with a few exceptions; see the job conditio
 
 ## PR lifecycle
 
-!!! todo
-    Describe the sequence: open PR, plan, review, `apply-and-merge`, finalize, auto-merge.
+A typical (happy path) PR follows this process:
+
+1. Open a PR.
+2. The engine automatically identifies the affected stacks using `find-changed-stacks` and runs a `plan` against each of them.
+3. Review the plan and get the required approvals for your PR.
+4. Comment `@terragrunt-bot apply-and-merge`.
+   The engine checks that you have write access, that the PR meets its review requirements, and that it is ready to merge.
+5. The engine applies the Terraform changes.
+6. If all applies succeed, the engine attempts to merge the PR into the target branch (usually `main`).
+   If an apply fails, the engine reports the failure in a PR comment.
+7. When the PR is merged or closed, the engine releases any remaining stack ownership claims.
 
 ## Composite actions it uses
 
