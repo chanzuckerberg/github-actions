@@ -67,3 +67,12 @@ A typical (happy path) PR follows this process:
 6. If all applies succeed, the engine attempts to merge the PR into the target branch (usually `main`).
    If an apply fails, the engine reports the failure in a PR comment.
 7. When the PR is merged or closed, the engine releases any remaining stack ownership claims.
+
+## Learn more
+
+- [Getting started](getting-started.md) covers repository prerequisites and the caller workflows, including scheduled and manual runs.
+- [Bot commands](bot-commands.md) explains command options and the checks performed before applying.
+- [Authentication and state](authentication-and-state.md) traces GitHub and AWS credentials, state storage, and locking.
+- [Stack authority](stack-authority.md) explains how the engine coordinates competing PRs.
+- [Inputs reference](inputs.md) lists configuration values and secret conventions.
+- [Troubleshooting](troubleshooting.md) describes common failures and how to investigate them.

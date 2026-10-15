@@ -45,6 +45,7 @@ nav:
   - Terragrunt Engine:
       - terragrunt-engine/index.md
       - Getting started: terragrunt-engine/getting-started.md
+      - Authentication and state: terragrunt-engine/authentication-and-state.md
       - Bot commands: terragrunt-engine/bot-commands.md
       - Stack authority: terragrunt-engine/stack-authority.md
       - Inputs reference: terragrunt-engine/inputs.md
