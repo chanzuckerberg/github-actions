@@ -7,8 +7,21 @@ It also handles PR commands such as `@terragrunt-bot apply-and-merge`, which app
 
 ## What it does
 
-!!! todo
-    Summarize the plan-on-PR and apply-before-merge lifecycle in a few sentences.
+### Automatic plans on pull requests
+
+Infrastructure repositories enable automatic planning by adding a caller workflow under `.github/workflows/`.
+That workflow listens for GitHub pull request events and invokes Terragrunt Engine with `action: plan -lock=false`.
+
+For example, `shared-infra` runs this workflow when a pull request is opened, updated with new commits, or reopened.
+The engine identifies the affected stacks and runs Terragrunt plans for them.
+If no stacks are affected, it skips running Terragrunt.
+
+The caller workflow defines the event triggers, while Terragrunt Engine exposes `workflow_call` so other workflows can invoke it.
+
+### Applying Terraform changes before merging a PR
+
+When someone comments `@terragrunt-bot apply-and-merge` on a PR, the repository’s caller workflow invokes Terragrunt Engine with `action: apply`.
+The engine checks permissions and PR readiness, applies the affected stacks, and attempts to merge the PR if all applies succeed.
 
 ## Jobs
 
