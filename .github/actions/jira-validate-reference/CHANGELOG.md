@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.3.0...jira-validate-reference-v1.3.1) (2026-10-15)
+
+
+### Misc
+
+* bump baseline-browser-mapping from 2.10.16 to 2.11.25 ([#647](https://github.com/chanzuckerberg/github-actions/issues/647)) ([98e251a](https://github.com/chanzuckerberg/github-actions/commit/98e251ab5fefa5d70c1d50cbb136bac6a4a7830a))
+
 ## [1.3.0](https://github.com/chanzuckerberg/github-actions/compare/jira-validate-reference-v1.2.1...jira-validate-reference-v1.3.0) (2026-04-06)
 
 

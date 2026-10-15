@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.5](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-branch-protection-v0.0.4...terragrunt-branch-protection-v0.0.5) (2026-10-15)
+
+
+### Misc
+
+* bump baseline-browser-mapping from 2.10.16 to 2.11.25 ([#647](https://github.com/chanzuckerberg/github-actions/issues/647)) ([98e251a](https://github.com/chanzuckerberg/github-actions/commit/98e251ab5fefa5d70c1d50cbb136bac6a4a7830a))
+* bump undici from 6.28.0 to 6.29.1 ([#656](https://github.com/chanzuckerberg/github-actions/issues/656)) ([1b10281](https://github.com/chanzuckerberg/github-actions/commit/1b10281c06b621acd6a3e5f0095d06061bed6768))
+
 ## [0.0.4](https://github.com/chanzuckerberg/github-actions/compare/terragrunt-branch-protection-v0.0.3...terragrunt-branch-protection-v0.0.4) (2026-08-28)
 
 

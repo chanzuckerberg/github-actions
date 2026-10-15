@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.2](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.6.1...release-please-semvar-v0.6.2) (2026-10-15)
+
+
+### Misc
+
+* bump baseline-browser-mapping from 2.10.16 to 2.11.25 ([#647](https://github.com/chanzuckerberg/github-actions/issues/647)) ([98e251a](https://github.com/chanzuckerberg/github-actions/commit/98e251ab5fefa5d70c1d50cbb136bac6a4a7830a))
+* bump handlebars from 4.7.9 to 4.7.10 ([#666](https://github.com/chanzuckerberg/github-actions/issues/666)) ([2dde030](https://github.com/chanzuckerberg/github-actions/commit/2dde0302bb0d3a51c33b2d2ad682f761f256fd6c))
+* bump js-yaml from 4.1.1 to 4.3.2 ([#461](https://github.com/chanzuckerberg/github-actions/issues/461)) ([eb48dfd](https://github.com/chanzuckerberg/github-actions/commit/eb48dfd9f45958ebd607b83df43100c419e2b3d9))
+* bump undici from 6.28.0 to 6.29.1 ([#656](https://github.com/chanzuckerberg/github-actions/issues/656)) ([1b10281](https://github.com/chanzuckerberg/github-actions/commit/1b10281c06b621acd6a3e5f0095d06061bed6768))
+
 ## [0.6.1](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.6.0...release-please-semvar-v0.6.1) (2026-08-28)
 
 
