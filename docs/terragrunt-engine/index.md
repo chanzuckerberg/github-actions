@@ -43,7 +43,7 @@ This table describes the usual flow, with a few exceptions; see the job conditio
 
 | Job | Runs when | Purpose |
 | --- | --- | --- |
-| `dispatch` | Someone comments a bot command on a PR. | TODO |
+| `dispatch` | Someone comments a bot command on a PR. | Parses bot commands, performs the required permission and PR checks, and routes accepted commands to the appropriate jobs. |
 | `find-changed-stacks` | At the start of a plan, apply, or unlock run. | Identifies the stacks affected by the changes. |
 | `set-apply-gate` | After stack discovery, if the caller enables the apply gate. | Sets the PR’s apply status to pending when stacks change, or success when none change, and posts instructions when an apply is needed. |
 | `run-all` | When there are stacks to plan or apply. | Runs the requested Terragrunt command (`plan` or `apply`) on the stacks identified by `find-changed-stacks`. |
@@ -52,7 +52,7 @@ This table describes the usual flow, with a few exceptions; see the job conditio
 | `release-on-close` | A PR is merged or closed. | Releases the PR’s stack ownership claims, returning control to `main`. |
 
 !!! warning "State locking"
-    [DynamoDB-based state locking](https://developer.hashicorp.com/terraform/language/backend/s3#state-locking) is deprecated in favor of native S3 locking (`use_lockfile = true`, Terraform 1.10+), but this engine’s lock cleanup currently supports DynamoDB only.
+    [DynamoDB-based state locking](https://developer.hashicorp.com/terraform/language/backend/s3#state-locking) is deprecated in favor of native S3 locking (`use_lockfile = true`, Terraform 1.10+), but this engine’s lock cleanup currently supports DynamoDB state locks only.
 
 ## PR lifecycle
 
@@ -67,8 +67,3 @@ A typical (happy path) PR follows this process:
 6. If all applies succeed, the engine attempts to merge the PR into the target branch (usually `main`).
    If an apply fails, the engine reports the failure in a PR comment.
 7. When the PR is merged or closed, the engine releases any remaining stack ownership claims.
-
-## Composite actions it uses
-
-!!! todo
-    List each `terragrunt-*` action under `.github/actions/` and what it is responsible for.
