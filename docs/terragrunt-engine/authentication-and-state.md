@@ -1,4 +1,9 @@
+---
+---
+
 # Authentication and state
+
+[Documentation home](../index.md) · [Terragrunt Engine overview](index.md)
 
 This page describes the credential and state paths present in the checked source.
 Repository and AWS settings deployed in a particular environment must still be verified when adopting the engine.
@@ -14,8 +19,9 @@ The branch-protection code calls repository administration APIs in addition to t
 Team-based CODEOWNERS checks may also need permission to read team membership.
 The checked repositories do not establish the complete permissions of the installed GitHub App.
 
-!!! todo "Onboarding process"
-    Confirm the App owner, installation process, exact App permissions, and how repositories receive its secrets.
+> **TODO: Onboarding process**
+>
+> Confirm the App owner, installation process, exact App permissions, and how repositories receive its secrets.
 
 Sources: [token creation and module authentication](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L270-L326) and [repository-setting updates](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L189).
 
@@ -115,6 +121,7 @@ The shared workflow does not declare a GitHub deployment environment with a prod
 
 See [Getting started](getting-started.md#branch-protection) for branch protection and [Bot commands](bot-commands.md#preconditions) for the implemented PR checks.
 
-!!! todo "Review with Jake"
-    Confirm deployed IAM and GitHub App permissions, production review and bypass rules, manual-run access, state recovery expectations, and whether native S3 locking is planned.
-    Document who owns onboarding and incident recovery after those procedures are confirmed.
+> **TODO: Review with Jake**
+>
+> Confirm deployed IAM and GitHub App permissions, production review and bypass rules, manual-run access, state recovery expectations, and whether native S3 locking is planned.
+> Document who owns onboarding and incident recovery after those procedures are confirmed.

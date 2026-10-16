@@ -1,4 +1,9 @@
+---
+---
+
 # Bot commands
+
+[Documentation home](../index.md) · [Terragrunt Engine overview](index.md)
 
 Comment on a pull request in a repository that has configured the [apply caller workflow](getting-started.md#apply-from-pr-comments-and-pushes-to-main).
 The caller passes the comment to the engine, which parses the command and decides whether to proceed.
@@ -40,8 +45,9 @@ After all stacks apply successfully, the engine attempts a squash merge using Gi
 Other required checks or a merge error can leave the PR waiting or unmerged after a successful apply.
 Failed applies are reported in a PR comment and the apply status.
 
-!!! todo "Team procedures"
-    Confirm any additional production approval requirements, who handles failed applies, and when engineers should request help.
+> **TODO: Team procedures**
+>
+> Confirm any additional production approval requirements, who handles failed applies, and when engineers should request help.
 
 ## `@terragrunt-bot unlock`
 
@@ -51,14 +57,16 @@ It requires write or admin access, but does not perform the apply command's revi
 For the stacks changed by the PR, it force-removes the DynamoDB state-lock rows found in the Terraform S3 backend configuration and releases the engine's stack ownership claims.
 It does not run an apply or merge the PR.
 
-!!! warning "Check for an active run first"
-    This is a force-unlock operation that bypasses lock-owner checks.
-    Confirm that no Terraform or Terragrunt run is still using the affected state before using it.
+> **⚠️ Check for an active run first**
+>
+> This is a force-unlock operation that bypasses lock-owner checks.
+> Confirm that no Terraform or Terragrunt run is still using the affected state before using it.
 
 The custom cleanup supports S3 backends with a readable `dynamodb_table` configuration; it does not clear native S3 lockfiles or locks for other backend types.
 
-!!! todo "Team procedures"
-    Confirm who may authorize force-unlocking production state and the team's recovery and escalation process.
+> **TODO: Team procedures**
+>
+> Confirm who may authorize force-unlocking production state and the team's recovery and escalation process.
 
 ## `@terragrunt-bot help`
 

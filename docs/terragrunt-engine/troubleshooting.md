@@ -1,10 +1,16 @@
+---
+---
+
 # Troubleshooting
+
+[Documentation home](../index.md) · [Terragrunt Engine overview](index.md)
 
 Start with the linked Actions run and the bot's PR comments.
 The cases below describe behavior implemented in the engine; team-specific recovery and escalation procedures still need confirmation.
 
-!!! todo "Team procedures"
-    Confirm the support contact, production incident process, and who should authorize recovery actions such as force-unlocking state.
+> **TODO: Team procedures**
+>
+> Confirm the support contact, production incident process, and who should authorize recovery actions such as force-unlocking state.
 
 ## A stack is owned by another PR
 

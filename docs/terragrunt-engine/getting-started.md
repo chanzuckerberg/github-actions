@@ -1,4 +1,9 @@
+---
+---
+
 # Getting started
+
+[Documentation home](../index.md) · [Terragrunt Engine overview](index.md)
 
 ## Prerequisites
 
@@ -15,9 +20,10 @@ Before adding caller workflows, the repository needs:
 See [Inputs reference](inputs.md) for configuration and secret conventions, and [Authentication and state](authentication-and-state.md) for the credential flow and backend details.
 The engine's shared defaults are CZI configuration; adopting another repository or organization requires checking its access rather than assuming those defaults will work.
 
-!!! todo "Onboarding process"
-    Confirm who installs the GitHub App, grants access to organization secrets and runners, and provisions or approves AWS roles and state resources.
-    Add the team's onboarding instructions and contacts once confirmed.
+> **TODO: Onboarding process**
+>
+> Confirm who installs the GitHub App, grants access to organization secrets and runners, and provisions or approves AWS roles and state resources.
+> Add the team's onboarding instructions and contacts once confirmed.
 
 ## Caller workflows
 
@@ -30,6 +36,8 @@ Create a file under `.github/workflows/` in the repository containing your infra
 This complete example uses the engine's default configuration, as the plan caller in `chanzuckerberg/shared-infra` does.
 It plans changes when a pull request is opened, updated, or reopened.
 The `closed` event releases any stack ownership held by the pull request.
+
+<!-- {% raw %} -->
 
 ```yaml
 # .github/workflows/terragrunt-plan.yml
@@ -56,12 +64,16 @@ jobs:
       set_apply_gate: true
 ```
 
+<!-- {% endraw %} -->
+
 ### Apply from PR comments and pushes to main
 
 Create `.github/workflows/terragrunt-apply.yml` in the repository containing your infrastructure, alongside the plan workflow.
 This example follows the working [apply caller in `shared-infra`](https://github.com/chanzuckerberg/shared-infra/blob/main/.github/workflows/terragrunt_apply.yml).
 It handles bot commands on PRs and applies infrastructure changes pushed to `main`.
 Adjust the branch and Terraform paths to match your repository.
+
+<!-- {% raw %} -->
 
 ```yaml
 # .github/workflows/terragrunt-apply.yml
@@ -101,6 +113,8 @@ jobs:
       action: apply
 ```
 
+<!-- {% endraw %} -->
+
 - `issue_comment` listens for new comments; the job's `if` condition accepts PR comments that mention `@terragrunt-bot` and come from a human user.
   The engine then parses the command and performs the required permission and PR checks.
 - `push` runs an apply when changes reach `main` under one of the listed Terraform paths, including after a PR is merged.
@@ -124,9 +138,10 @@ If the action cannot verify that the required check is enforced after writing th
 Existing rulesets, bypass permissions, and App installation permissions still need review before relying on the gate.
 The checks performed before applying are described in [Bot commands](bot-commands.md#preconditions).
 
-!!! todo "Repository policy review"
-    Confirm the intended production review requirements, branch rules and bypass permissions with the team before adopting the engine.
-    Have Jake review this section against the repository's actual settings.
+> **TODO: Repository policy review**
+>
+> Confirm the intended production review requirements, branch rules and bypass permissions with the team before adopting the engine.
+> Have Jake review this section against the repository's actual settings.
 
 Sources: [gate status](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L224-L260), [branch-protection enforcement](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L217), and [dispatch integration](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L156-L186).
 
@@ -150,5 +165,6 @@ These callers do not use the bot command's PR validation path.
 The PR and main-branch apply example uses separate concurrency groups from the all-stacks caller, so the callers do not provide a single global apply queue.
 See [Authentication and state](authentication-and-state.md#concurrency-and-locking) for how the different coordination mechanisms fit together.
 
-!!! todo "Team procedures"
-    Confirm who can start manual or scheduled applies against production and how the team monitors and handles drift-correction failures.
+> **TODO: Team procedures**
+>
+> Confirm who can start manual or scheduled applies against production and how the team monitors and handles drift-correction failures.

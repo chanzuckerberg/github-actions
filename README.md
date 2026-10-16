@@ -13,12 +13,13 @@ GitHub has an undocumented limitation with reusable Actions -- they must all liv
 
 ## Documentation publishing
 
-The [Docs workflow](.github/workflows/docs.yml) builds the MkDocs site for documentation pull requests and publishes it after documentation changes merge into `main`.
-It can also be run manually; publishing is restricted to `main`.
-
-Before the first deployment, a repository administrator must open **Settings → Pages → Build and deployment** and select **GitHub Actions** as the source.
-Any deployment protection rules on the `github-pages` environment must allow deployment from `main`; required reviewers will make publishing wait for approval.
+The documentation uses GitHub Pages' built-in Jekyll publishing and the supported Minimal theme, configured in [docs/_config.yml](docs/_config.yml).
+A repository administrator must open **Settings → Pages → Build and deployment**, select **Deploy from a branch**, and choose **main** and **/docs**.
+GitHub then builds and publishes the site when documentation changes merge into `main`; this repository does not need a custom documentation workflow.
 Once deployed, the site is available at [chanzuckerberg.github.io/github-actions](https://chanzuckerberg.github.io/github-actions/).
+
+Edit the Markdown files under `docs/` and use relative `.md` links so navigation works both on GitHub and on the published site.
+Keep the HTML-commented Liquid `raw` markers around workflow examples containing GitHub Actions expressions; they prevent Jekyll from interpreting those expressions while keeping the markers hidden when reading the Markdown on GitHub.
 
 ## Installation
 

@@ -1,4 +1,9 @@
+---
+---
+
 # Terragrunt Engine
+
+[Documentation home](../index.md)
 
 Terragrunt Engine (`.github/workflows/terragrunt-engine.yml`) is CZI’s reusable GitHub Actions workflow for running Terraform through Terragrunt.
 Infrastructure repositories call it to plan or apply changes.
@@ -28,14 +33,15 @@ The engine checks permissions and PR readiness, applies the affected stacks, and
 
 ## Jobs
 
-```mermaid
-flowchart LR
-  dispatch --> find-changed-stacks
-  find-changed-stacks --> set-apply-gate
-  find-changed-stacks --> run-all
-  find-changed-stacks --> unlock
-  run-all --> finalize
-  release-on-close
+```text
+dispatch (PR comments)
+  |
+find-changed-stacks
+  |-- set-apply-gate
+  |-- run-all --> finalize
+  `-- unlock
+
+release-on-close (when a PR closes)
 ```
 
 The caller workflow determines which GitHub events invoke the engine.
@@ -51,8 +57,9 @@ This table describes the usual flow, with a few exceptions; see the job conditio
 | `finalize` | After an apply-and-merge attempt finishes. | Reports apply results and attempts to merge the PR if all applies succeed. |
 | `release-on-close` | A PR is merged or closed. | Releases the PR’s stack ownership claims, returning control to `main`. |
 
-!!! warning "State locking"
-    [DynamoDB-based state locking](https://developer.hashicorp.com/terraform/language/backend/s3#state-locking) is deprecated in favor of native S3 locking (`use_lockfile = true`, Terraform 1.10+), but this engine’s lock cleanup currently supports DynamoDB state locks only.
+> **⚠️ State locking**
+>
+> [DynamoDB-based state locking](https://developer.hashicorp.com/terraform/language/backend/s3#state-locking) is deprecated in favor of native S3 locking (`use_lockfile = true`, Terraform 1.10+), but this engine’s lock cleanup currently supports DynamoDB state locks only.
 
 ## PR lifecycle
 

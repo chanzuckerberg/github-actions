@@ -1,4 +1,9 @@
+---
+---
+
 # Stack authority
+
+[Documentation home](../index.md) · [Terragrunt Engine overview](index.md)
 
 Stack authority is the engine's record of which PR currently controls a stack.
 A claim reserves a stack for a PR while it applies and until the claim is released.
@@ -47,8 +52,9 @@ An apply from another PR or from `main` fails the ownership check for that stack
 An apply from the PR that owns it may proceed.
 This check applies to scheduled runs too, so an all-stacks run does not override PR ownership.
 
-!!! todo "Team procedures"
-    Confirm how engineers should coordinate competing PRs and how to recover abandoned claims after a failed or partially completed apply.
+> **TODO: Team procedures**
+>
+> Confirm how engineers should coordinate competing PRs and how to recover abandoned claims after a failed or partially completed apply.
 
 ## Implementation references
 
