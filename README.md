@@ -11,6 +11,15 @@ NOTE:
 
 GitHub has an undocumented limitation with reusable Actions -- they must all live under `.github/workflows/`
 
+## Documentation publishing
+
+The [Docs workflow](.github/workflows/docs.yml) builds the MkDocs site for documentation pull requests and publishes it after documentation changes merge into `main`.
+It can also be run manually; publishing is restricted to `main`.
+
+Before the first deployment, a repository administrator must open **Settings → Pages → Build and deployment** and select **GitHub Actions** as the source.
+Any deployment protection rules on the `github-pages` environment must allow deployment from `main`; required reviewers will make publishing wait for approval.
+Once deployed, the site is available at [chanzuckerberg.github.io/github-actions](https://chanzuckerberg.github.io/github-actions/).
+
 ## Installation
 
 For some actions you will need to have a helper Github Application configured to act on behalf of Actions.

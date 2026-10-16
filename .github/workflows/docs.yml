@@ -36,15 +36,13 @@ jobs:
         run: pip install -r docs/requirements.txt
       - name: Build site
         run: mkdocs build --strict
-      - uses: actions/configure-pages@v6
-        if: ${{ github.event_name != 'pull_request' }}
       - uses: actions/upload-pages-artifact@v5
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
         with:
           path: site
 
   deploy:
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -55,6 +53,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
