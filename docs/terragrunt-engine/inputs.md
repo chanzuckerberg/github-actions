@@ -29,7 +29,7 @@ Pass overrides through the caller job's `with` block.
 | `claim_authority` | boolean | `false` | Explicitly claim selected stacks for the PR before execution. Comment-triggered applies already claim automatically; claiming requires PR context. |
 | `skip_pr_owned` | boolean | `true` | Check stack ownership. Applies fail for stacks owned by another PR; plans warn but proceed. The name does not mean that a conflicting apply silently succeeds. |
 | `release_authority` | boolean | `false` | Release each stack after successful execution for runs outside `issue_comment`, when `auto_merge_on_success` is false. Comment applies release through `finalize` instead. |
-| `auto_merge_on_success` | boolean | `false` | Enable finalization and a merge attempt after successful execution in PR context. `apply-and-merge` enables this path automatically without an explicit input override. |
+| `auto_merge_on_success` | boolean | `false` | Run the `finalize` job in PR context. It posts the apply status and a PR comment for both outcomes; after full success, it also releases claims and attempts a merge. `apply-and-merge` enables this path automatically without an explicit input override. |
 | `set_apply_gate` | boolean | `false` | Set the PR's apply status after discovery: pending if stacks changed, success if none changed. Enable this in the PR plan caller. |
 | `status_check_name` | string | `terragrunt-apply` | Status name used by the gate, finalizer, and branch-protection action. Keep the default unless a custom name has been verified end to end. |
 | `authority_table` | string | `terragrunt-engine-state-lock` | DynamoDB table for stack ownership records. See [Stack authority](stack-authority.md). |

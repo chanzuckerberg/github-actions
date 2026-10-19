@@ -12,7 +12,8 @@ Repository and AWS settings deployed in a particular environment must still be v
 
 The engine creates GitHub App installation tokens using `TERRAGRUNT_BOT_APP_ID` and `TERRAGRUNT_BOT_PK`.
 It uses these tokens for bot comments, status updates, PR checks and merges, repository settings, and private module access.
-The workflow rewrites Git module URLs during the job so private module downloads can use an App token.
+During each apply or plan job, the workflow rewrites GitHub module URLs in SSH form (`git@github.com:` and `ssh://git@github.com/`) and `git://` form to HTTPS URLs that carry an App token, so private module downloads can authenticate.
+Module sources that already use HTTPS are not rewritten by this step.
 The App must be installed on the repositories the job needs to read.
 
 The branch-protection code calls repository administration APIs in addition to the APIs used for comments and merges.
@@ -23,7 +24,7 @@ The checked repositories do not establish the complete permissions of the instal
 >
 > Confirm the App owner, installation process, exact App permissions, and how repositories receive its secrets.
 
-Sources: [token creation and module authentication](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L270-L326) and [repository-setting updates](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L189).
+Sources: [token creation and module authentication](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L270-L326) and [repository-setting updates](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/lib.ts#L92-L190).
 
 ## AWS authentication
 
@@ -54,7 +55,7 @@ Its [cztack cross-account module](https://github.com/chanzuckerberg/cztack/blob/
 The default role names and trust configuration are not evidence that a new repository already has access.
 Confirm the deployed OIDC provider, trust conditions, role policies, and destination roles before integration.
 
-Source: [engine AWS credential steps](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L327-L403).
+Source: [engine AWS credential steps](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L328-L398).
 
 ## Provider credentials and inputs
 
@@ -100,9 +101,10 @@ The engine itself does not define a global workflow concurrency group.
 The reference PR, main-branch, and scheduled callers use different groups, so one group does not serialize all engine invocations.
 PR plans explicitly pass `-lock=false`; applies use the backend's normal locking behavior.
 
-After execution, the custom cleanup action checks DynamoDB state locks and normally uses runner identity and creation time to avoid deleting another run's lock.
+After a run that takes locks, such as an apply, the custom cleanup action checks DynamoDB state locks and normally uses runner identity and creation time to avoid deleting another run's lock.
+It is skipped when the `action` input contains `-lock=false`, because such a run creates no locks of its own.
 Lock rows with missing or unparsable metadata are an exception that it may delete without those checks.
-The explicit `unlock` command bypasses ownership checks and also releases engine stack claims.
+The explicit `unlock` command bypasses lock-owner checks and also deletes the affected stacks' ownership claims, whichever PR holds them.
 See [Bot commands](bot-commands.md#terragrunt-bot-unlock) before using it.
 
 The cleanup parser requires literal S3 backend settings for bucket, key, region, and DynamoDB table in readable `.tf` files.

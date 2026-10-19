@@ -77,7 +77,8 @@ A typical (happy path) PR follows this process:
 2. The engine automatically identifies the affected stacks using `find-changed-stacks` and runs a `plan` against each of them.
 3. Review the plan and get the required approvals for your PR.
 4. Comment `@terragrunt-bot apply-and-merge`.
-   The engine checks that you have write access, that the PR meets its review requirements, and that it is ready to merge.
+   The engine checks that you have write access, that the PR meets its review requirements, and that it is not a draft and is up to date with its base branch without conflicts.
+   It does not wait for the PR's other status checks.
 5. The engine applies the Terraform changes.
 6. If all applies succeed, the engine attempts to merge the PR into the target branch (usually `main`).
    If an apply fails, the engine reports the failure in a PR comment.

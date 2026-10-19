@@ -40,6 +40,7 @@ steps:
 ```
 
 Replace `<action>` with the action's directory name and `<tag>` with its version tag.
+Many actions are released separately with tags named after the action, such as `terragrunt-git-status-v0`; actions without their own tags are included in the repository-wide tags, such as `v6`.
 Add any required inputs using `with`, as described in that action's documentation.
 
 ## Catalog

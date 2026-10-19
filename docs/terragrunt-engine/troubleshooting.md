@@ -71,7 +71,7 @@ Review the new plan before commenting `@terragrunt-bot apply-and-merge` again.
 **Symptom:** the bot commented `Applying <commit>` and the `terragrunt-apply` status shows `Applying...`, but the workflow run's apply jobs were skipped.
 The `dispatch` job failed at its `Enforce branch protection` step.
 
-**Cause:** after accepting the command, the engine updates the repository's merge settings and the default branch's protection rule.
+**Cause:** after accepting the command, the engine checks the repository's merge settings and the default branch's protection rule, and changes any that do not match what it requires.
 GitHub rejected one of those changes, which stops the run before stack discovery.
 A missing repository administration permission on the GitHub App is one possible reason.
 
@@ -94,7 +94,8 @@ If an apply failed or stopped, investigate that failure before retrying.
 
 ## The apply succeeded but the PR did not merge
 
-**Symptom:** the bot reports a successful apply followed by `Auto-merge enabled` or `Applied — not merged`.
+**Symptom:** the bot's comment reports a successful apply followed by `Auto-merge enabled.` or a message beginning `Not merged.`
+The `terragrunt-apply` status description reads `Applied — auto-merge enabled` or `Applied — not merged (see PR comment)`.
 
 **Cause:** GitHub may be waiting for another required check, or it may have rejected the merge request.
 
@@ -104,8 +105,8 @@ The finalizer releases stack ownership after all applies succeed even when the m
 
 ## Implementation references
 
-- [Ownership failure messages](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-stack-authority/src/index.ts#L49-L98).
+- [Ownership failure messages](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-stack-authority/src/index.ts#L49-L141).
 - [Apply validation and review messages](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L604-L841).
-- [Branch-protection changes](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L217) and [dispatch integration](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L156-L193).
+- [Branch-protection changes](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/lib.ts#L92-L217) and [dispatch integration](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L156-L193).
 - [Working-tree merge failure](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L291-L308).
 - [Gate status](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L224-L260) and [finalize results](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L299-L440).

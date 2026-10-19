@@ -147,7 +147,7 @@ The checks performed before applying are described in [Bot commands](bot-command
 > Confirm the intended production review requirements, branch rules and bypass permissions with the team before adopting the engine.
 > Have Jake review this section against the repository's actual settings.
 
-Sources: [gate status](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L224-L260), [branch-protection enforcement](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L217), [failure handling](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/index.ts#L5-L15), and [dispatch integration](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L156-L186).
+Sources: [gate status](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L224-L260), [branch-protection enforcement](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/lib.ts#L92-L217), [failure handling](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/index.ts#L5-L15), and [dispatch integration](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L156-L186).
 
 ## Scheduled and manual runs
 
