@@ -13,6 +13,12 @@ It also handles PR commands such as `@terragrunt-bot apply-and-merge`, which app
 Terragrunt Engine provides a lightweight alternative to tools such as [Atlantis](https://www.runatlantis.io/) for running Terraform through pull requests.
 Using our existing GitHub Actions setup means we do not need to deploy, operate, or maintain a separate Atlantis server.
 
+## Version described
+
+These pages describe the engine as of release [v6.42.0](https://github.com/chanzuckerberg/github-actions/tree/v6.42.0), and their source links point to that tag.
+The caller examples use the floating `v6` tag, which pointed to v6.42.0 when these pages were written.
+The engine calls its helper actions through floating tags such as `terragrunt-git-status-v0`, so its behavior can change without the `v6` tag moving.
+
 ## What it does
 
 ### Automatic plans on pull requests
@@ -45,7 +51,7 @@ release-on-close (when a PR closes)
 ```
 
 The caller workflow determines which GitHub events invoke the engine.
-This table describes the usual flow, with a few exceptions; see the job conditions in [terragrunt-engine.yml](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml) for the full details.
+This table describes the usual flow, with a few exceptions; see the job conditions in [terragrunt-engine.yml](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml) for the full details.
 
 | Job | Runs when | Purpose |
 | --- | --- | --- |
@@ -53,13 +59,15 @@ This table describes the usual flow, with a few exceptions; see the job conditio
 | `find-changed-stacks` | At the start of a plan, apply, or unlock run. | Identifies the stacks affected by the changes. |
 | `set-apply-gate` | After stack discovery, if the caller enables the apply gate. | Sets the PR’s apply status to pending when stacks change, or success when none change, and posts instructions when an apply is needed. |
 | `run-all` | When there are stacks to plan or apply. | Runs the requested Terragrunt command (`plan` or `apply`) on the stacks identified by `find-changed-stacks`. |
-| `unlock` | Someone comments `@terragrunt-bot unlock` on a PR. | Force-releases DynamoDB state locks and stack ownership claims for affected stacks. |
+| `unlock` | Someone comments `@terragrunt-bot unlock` on a PR. | Force-releases DynamoDB state locks and stack ownership claims for affected stacks, whichever PR holds the claims. |
 | `finalize` | After an apply-and-merge attempt finishes. | Reports apply results and attempts to merge the PR if all applies succeed. |
 | `release-on-close` | A PR is merged or closed. | Releases the PR’s stack ownership claims, returning control to `main`. |
 
 > **⚠️ State locking**
 >
-> [DynamoDB-based state locking](https://developer.hashicorp.com/terraform/language/backend/s3#state-locking) is deprecated in favor of native S3 locking (`use_lockfile = true`, Terraform 1.10+), but this engine’s lock cleanup currently supports DynamoDB state locks only.
+> [DynamoDB-based state locking](https://developer.hashicorp.com/terraform/language/backend/s3#state-locking) is deprecated in favor of native S3 locking (`use_lockfile = true`), but this engine’s lock cleanup currently supports DynamoDB state locks only.
+> Native S3 locking was experimental in Terraform 1.10 and became generally available in 1.11, which also deprecated DynamoDB locking.
+> The engine defaults to Terraform 1.9.8; see [Concurrency and locking](authentication-and-state.md#concurrency-and-locking).
 
 ## PR lifecycle
 
@@ -73,7 +81,9 @@ A typical (happy path) PR follows this process:
 5. The engine applies the Terraform changes.
 6. If all applies succeed, the engine attempts to merge the PR into the target branch (usually `main`).
    If an apply fails, the engine reports the failure in a PR comment.
-7. When the PR is merged or closed, the engine releases any remaining stack ownership claims.
+7. If the repository's apply caller also runs on pushes to `main`, as in [Getting started](getting-started.md#apply-from-pr-comments-and-pushes-to-main), the merge triggers another apply of the changed stacks from `main`.
+   This run uses Terraform's default refresh behavior, and it normally makes no changes because the PR's changes were already applied.
+8. When the PR is merged or closed, the engine releases any remaining stack ownership claims.
 
 ## Learn more
 

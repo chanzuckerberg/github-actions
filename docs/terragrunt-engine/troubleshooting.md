@@ -15,12 +15,14 @@ The cases below describe behavior implemented in the engine; team-specific recov
 ## A stack is owned by another PR
 
 **Symptom:** the job reports `owned by PR #<number> — cannot proceed` or `One or more stacks are owned by another PR and cannot be applied`.
+When claiming a stack, it reports `blocked — owned by PR #<number>` or `One or more stacks could not be claimed (owned by another PR)`.
 
 **Cause:** another PR holds the engine's ownership claim for a selected stack.
 The same check applies to scheduled applies from `main`.
 
 **Next step:** inspect the owning PR and its last apply before starting another apply against that stack.
 Claims are released after successful finalization, when the PR closes, or by the explicit unlock and reaper paths.
+Commenting `@terragrunt-bot unlock` on your own PR also deletes another PR's claim on any stack your PR changes, so coordinate with the owning PR first.
 See [Stack authority](stack-authority.md) for the distinction between a claim and a Terraform state lock.
 Releasing ownership does not roll back infrastructure that the owning PR already changed.
 
@@ -64,12 +66,27 @@ If an ownership rule appears incorrect, raise it with the team rather than bypas
 **Next step:** merge the base branch into the PR branch, resolve the conflicts, and push.
 Review the new plan before commenting `@terragrunt-bot apply-and-merge` again.
 
+## The bot said it was applying, but no apply ran
+
+**Symptom:** the bot commented `Applying <commit>` and the `terragrunt-apply` status shows `Applying...`, but the workflow run's apply jobs were skipped.
+The `dispatch` job failed at its `Enforce branch protection` step.
+
+**Cause:** after accepting the command, the engine updates the repository's merge settings and the default branch's protection rule.
+GitHub rejected one of those changes, which stops the run before stack discovery.
+A missing repository administration permission on the GitHub App is one possible reason.
+
+**Next step:** read the failed step's log for the GitHub API error and resolve it before commenting `@terragrunt-bot apply-and-merge` again.
+No Terraform ran, so the infrastructure did not change.
+The status stays pending until a later apply finishes.
+See [Branch protection](getting-started.md#branch-protection) for the settings the engine changes.
+
 ## The `terragrunt-apply` status stays pending
 
 **Symptom:** the PR still shows a pending `terragrunt-apply` status.
 
 **Cause:** stack discovery sets that status to pending when stacks change; a plan by itself does not satisfy the apply gate.
 A new commit also needs a new apply result, and an interrupted workflow may not reach finalization.
+An accepted command whose run fails before applying, as [described above](#the-bot-said-it-was-applying-but-no-apply-ran), also leaves the status pending.
 
 **Next step:** inspect the latest plan and apply runs for the current PR commit.
 Once the PR is ready and the plan has been reviewed, run `@terragrunt-bot apply-and-merge`.
@@ -87,7 +104,8 @@ The finalizer releases stack ownership after all applies succeed even when the m
 
 ## Implementation references
 
-- [Ownership failure messages](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-stack-authority/src/index.ts#L49-L98).
-- [Apply validation and review messages](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L604-L841).
-- [Working-tree merge failure](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L291-L308).
-- [Gate status](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L224-L260) and [finalize results](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L299-L440).
+- [Ownership failure messages](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-stack-authority/src/index.ts#L49-L98).
+- [Apply validation and review messages](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L604-L841).
+- [Branch-protection changes](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L217) and [dispatch integration](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L156-L193).
+- [Working-tree merge failure](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L291-L308).
+- [Gate status](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L224-L260) and [finalize results](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L299-L440).

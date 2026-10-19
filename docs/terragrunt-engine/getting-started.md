@@ -33,7 +33,7 @@ The examples below use `chanzuckerberg/shared-infra` as a reference implementati
 ### Plan on pull requests
 
 Create a file under `.github/workflows/` in the repository containing your infrastructure.
-This complete example uses the engine's default configuration, as the plan caller in `chanzuckerberg/shared-infra` does.
+This complete example matches the plan caller in `chanzuckerberg/shared-infra`: it uses the engine's defaults except for `set_apply_gate: true`, which [Branch protection](#branch-protection) explains.
 It plans changes when a pull request is opened, updated, or reopened.
 The `closed` event releases any stack ownership held by the pull request.
 
@@ -69,7 +69,7 @@ jobs:
 ### Apply from PR comments and pushes to main
 
 Create `.github/workflows/terragrunt-apply.yml` in the repository containing your infrastructure, alongside the plan workflow.
-This example follows the working [apply caller in `shared-infra`](https://github.com/chanzuckerberg/shared-infra/blob/main/.github/workflows/terragrunt_apply.yml).
+This example follows the working [apply caller in `shared-infra`](https://github.com/chanzuckerberg/shared-infra/blob/8a2fd6c7a2a2ac3125a4dd33bd82b03b7f832227/.github/workflows/terragrunt_apply.yml).
 It handles bot commands on PRs and applies infrastructure changes pushed to `main`.
 Adjust the branch and Terraform paths to match your repository.
 
@@ -119,7 +119,9 @@ jobs:
   The engine then parses the command and performs the required permission and PR checks.
 - `push` runs an apply when changes reach `main` under one of the listed Terraform paths, including after a PR is merged.
 - `permissions` allows the workflow to read the repository and request a GitHub OIDC token for AWS authentication.
-- `concurrency` allows one running apply per PR or `main` group, without cancelling an apply already in progress.
+- `concurrency` allows one running apply per PR or `main` group without cancelling an apply already in progress.
+  GitHub keeps at most one more run pending in each group, and a newer run replaces the pending one.
+  Each push run selects stacks from its own push's changes, so stacks changed only by the push whose run was replaced are not applied until a later run selects them, such as the scheduled all-stacks apply.
 - `secrets: inherit` passes the calling repository's available secrets to the engine.
 - `action: apply` tells the engine to run Terragrunt applies on the selected stacks.
 
@@ -134,7 +136,9 @@ When an `apply-and-merge` command is accepted, the engine's branch-protection ac
 It creates or updates an exact-name rule for that branch using the bot's App token.
 These are repository-setting changes performed by the engine, not settings implied by the caller's `permissions` block.
 
-If the action cannot verify that the required check is enforced after writing the rule, it warns in the logs and on the PR rather than stopping the apply for that reason.
+If GitHub rejects one of these changes, for example because the App lacks repository administration permission, the `dispatch` job fails and no apply runs.
+By then the bot has already commented that it is applying and set the apply status to pending, so the PR can look as if an apply is in progress; see [Troubleshooting](troubleshooting.md#the-bot-said-it-was-applying-but-no-apply-ran).
+If the changes succeed but the action cannot then verify that the required check is enforced, it warns in the logs and on the PR and continues with the apply.
 Existing rulesets, bypass permissions, and App installation permissions still need review before relying on the gate.
 The checks performed before applying are described in [Bot commands](bot-commands.md#preconditions).
 
@@ -143,7 +147,7 @@ The checks performed before applying are described in [Bot commands](bot-command
 > Confirm the intended production review requirements, branch rules and bypass permissions with the team before adopting the engine.
 > Have Jake review this section against the repository's actual settings.
 
-Sources: [gate status](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L224-L260), [branch-protection enforcement](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L217), and [dispatch integration](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L156-L186).
+Sources: [gate status](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L224-L260), [branch-protection enforcement](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L217), [failure handling](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/index.ts#L5-L15), and [dispatch integration](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L156-L186).
 
 ## Scheduled and manual runs
 
@@ -152,19 +156,20 @@ The reference repository has these additional workflows:
 
 | Caller in `shared-infra` | Trigger | Operation |
 | --- | --- | --- |
-| [terragrunt_apply_all.yml](https://github.com/chanzuckerberg/shared-infra/blob/main/.github/workflows/terragrunt_apply_all.yml) | Daily at 10:00 UTC, or manually through `workflow_dispatch` | `action: apply` with `all_stacks: true`. |
-| [terragrunt_plan_all.yml](https://github.com/chanzuckerberg/shared-infra/blob/main/.github/workflows/terragrunt_plan_all.yml) | Manually through `workflow_dispatch` | `action: plan -lock=false` with `all_stacks: true`. |
-| [terragrunt_reap_authority.yml](https://github.com/chanzuckerberg/shared-infra/blob/main/.github/workflows/terragrunt_reap_authority.yml) | On the 1st and 16th of each month at 12:00 UTC, or manually | Calls the stack-authority action directly to release closed or stale PR claims. |
+| [terragrunt_apply_all.yml](https://github.com/chanzuckerberg/shared-infra/blob/8a2fd6c7a2a2ac3125a4dd33bd82b03b7f832227/.github/workflows/terragrunt_apply_all.yml) | Daily at 10:00 UTC, or manually through `workflow_dispatch` | `action: apply` with `all_stacks: true`. |
+| [terragrunt_plan_all.yml](https://github.com/chanzuckerberg/shared-infra/blob/8a2fd6c7a2a2ac3125a4dd33bd82b03b7f832227/.github/workflows/terragrunt_plan_all.yml) | Manually through `workflow_dispatch` | `action: plan -lock=false` with `all_stacks: true`. |
+| [terragrunt_reap_authority.yml](https://github.com/chanzuckerberg/shared-infra/blob/8a2fd6c7a2a2ac3125a4dd33bd82b03b7f832227/.github/workflows/terragrunt_reap_authority.yml) | On the 1st and 16th of each month at 12:00 UTC, or manually | Calls the stack-authority action directly to release closed or stale PR claims. |
 
 The scheduled apply uses the default branch, refreshes state under the default `refresh: auto` behavior, and applies the configured infrastructure across the selected stacks.
 It can correct drift by changing live resources; it is not just a drift report.
 Stack ownership checks still block applies to stacks controlled by another PR.
-Manual all-stacks runs use the branch selected for that workflow run.
-These callers do not use the bot command's PR validation path.
+Manual runs use whichever branch is selected when the workflow is started, and that branch does not need to be reviewed or merged.
+These callers do not use the bot command's PR validation path, so a manual all-stacks apply can apply an unreviewed branch's configuration to every selected stack.
+Starting a `workflow_dispatch` run requires write access to the repository; the engine adds no further check.
 
 The PR and main-branch apply example uses separate concurrency groups from the all-stacks caller, so the callers do not provide a single global apply queue.
 See [Authentication and state](authentication-and-state.md#concurrency-and-locking) for how the different coordination mechanisms fit together.
 
 > **TODO: Team procedures**
 >
-> Confirm who can start manual or scheduled applies against production and how the team monitors and handles drift-correction failures.
+> Confirm who can start manual or scheduled applies against production, whether manual applies from unmerged branches are allowed, and how the team monitors and handles drift-correction failures.

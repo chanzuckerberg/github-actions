@@ -19,7 +19,8 @@ Stack ownership prevents applies from a different PR or from `main` while the cl
 
 Before a comment-triggered apply, the engine checks existing ownership and claims each selected stack for the PR.
 Claims are stored in the `authority_table` DynamoDB table under a `LockID` shaped like `authority/<owner>/<repo>/<stack>`.
-The record includes the PR number, actor, claim timestamp, and recorded event SHA.
+The record includes the PR number, actor, and claim timestamp, along with the commit SHA of the workflow event.
+For comment-triggered applies, that SHA is the latest commit on the default branch, not the PR commit being applied.
 
 A conditional write permits a claim only when no claim exists, the owner is `main`, or the same PR already owns the stack.
 That prevents two different PRs from both claiming the same stack during a race.
@@ -35,7 +36,7 @@ The Terraform state-lock cleanup step does not release PR ownership claims.
 ## When authority is released
 
 - After all selected stacks apply successfully, the `finalize` job releases their claims.
-- `@terragrunt-bot unlock` releases claims for the PR's selected stacks as well as their state locks.
+- `@terragrunt-bot unlock` deletes the claims on the PR's selected stacks, whichever PR holds them, as well as their state locks.
 - Closing or merging a PR releases any remaining claims belonging to that PR through `release-on-close`.
 - A separate reaper workflow can remove claims for closed PRs or claims older than its configured maximum age, which defaults to 30 days.
 
@@ -43,7 +44,7 @@ The Terraform state-lock cleanup step does not release PR ownership claims.
 After an unsuccessful apply, claims remain unless one of the other release paths runs.
 Releasing a claim does not undo infrastructure changes; it allows other engine runs to apply to the stack again.
 
-The reference [reaper caller](https://github.com/chanzuckerberg/shared-infra/blob/main/.github/workflows/terragrunt_reap_authority.yml) runs on the 1st and 16th of each month at 12:00 UTC and can also be started manually.
+The reference [reaper caller](https://github.com/chanzuckerberg/shared-infra/blob/8a2fd6c7a2a2ac3125a4dd33bd82b03b7f832227/.github/workflows/terragrunt_reap_authority.yml) runs on the 1st and 16th of each month at 12:00 UTC and can also be started manually.
 
 ## Plans versus applies
 
@@ -58,6 +59,6 @@ This check applies to scheduled runs too, so an all-stacks run does not override
 
 ## Implementation references
 
-- [Claim keys, conditional writes, and releases](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-stack-authority/src/lib.ts#L41-L153).
-- [Ownership checks and reaping](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-stack-authority/src/index.ts#L49-L219).
-- [Workflow claim and release conditions](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L372-L390), [finalize](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L565-L613), and [release on close](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L615-L640).
+- [Claim keys, conditional writes, and releases](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-stack-authority/src/lib.ts#L41-L153).
+- [Ownership checks and reaping](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-stack-authority/src/index.ts#L49-L219).
+- [Workflow claim and release conditions](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L372-L390), [finalize](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L565-L613), and [release on close](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L615-L640).

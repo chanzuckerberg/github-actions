@@ -6,7 +6,7 @@
 [Documentation home](../index.md) · [Terragrunt Engine overview](index.md)
 
 Inputs to the `terragrunt-engine.yml` reusable workflow.
-The source of truth is the [workflow's input definitions](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L6-L145) and the code paths that consume them.
+The source of truth is the [workflow's input definitions](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L6-L145) and the code paths that consume them.
 Pass overrides through the caller job's `with` block.
 
 ## Inputs
@@ -50,7 +50,7 @@ Directories deleted by a PR are removed from the selection; deleting a directory
 For shared-module changes, discovery scans `.tf` files at each stack root and one directory below it for literal module sources ending in `/modules/<module-name>`.
 It is not a complete Terraform dependency graph, so repositories with other layouts or module source patterns need to verify their stack selection.
 
-See the [discovery action](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-changed-stacks/src/main.ts#L44-L77) and its [layout and module-matching helpers](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-changed-stacks/src/lib.ts#L16-L127).
+See the [discovery action](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-changed-stacks/src/main.ts#L44-L77) and its [layout and module-matching helpers](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-changed-stacks/src/lib.ts#L16-L127).
 
 ## Secrets
 
@@ -68,4 +68,4 @@ The workflow declares the two bot secrets as optional, but its token-creation st
 The provider-secret action masks exported values and ignores `GITHUB_TOKEN`.
 It exports the matching inherited secrets into each executing stack job; it does not choose different credentials by stack.
 
-See [Authentication and state](authentication-and-state.md), the [provider-secret exporter](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-provider-secrets/src/main.ts#L13-L59), and the [apply status initialization](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L853-L860).
+See [Authentication and state](authentication-and-state.md), the [provider-secret exporter](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-provider-secrets/src/main.ts#L13-L59), and the [apply status initialization](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L853-L860).

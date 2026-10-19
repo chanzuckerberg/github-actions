@@ -54,13 +54,17 @@ Failed applies are reported in a PR comment and the apply status.
 Use this command to recover from a state lock left behind by a previous run.
 It requires write or admin access, but does not perform the apply command's review and merge-readiness checks.
 
-For the stacks changed by the PR, it force-removes the DynamoDB state-lock rows found in the Terraform S3 backend configuration and releases the engine's stack ownership claims.
+For the stacks changed by the PR, it force-removes the DynamoDB state-lock rows found in the Terraform S3 backend configuration and deletes the stacks' ownership claims.
+It deletes those claims whichever PR holds them, so unlocking a stack that another PR owns also removes that PR's claim.
 It does not run an apply or merge the PR.
+
+The command selects stacks from the PR's changed files but reads the default branch to check which stack directories exist.
+Stacks that exist only in the PR are therefore skipped.
 
 > **⚠️ Check for an active run first**
 >
-> This is a force-unlock operation that bypasses lock-owner checks.
-> Confirm that no Terraform or Terragrunt run is still using the affected state before using it.
+> This is a force-unlock operation that bypasses lock-owner and stack-ownership checks.
+> Confirm that no Terraform or Terragrunt run is still using the affected state, and that no other PR is relying on its claim to the affected stacks, before using it.
 
 The custom cleanup supports S3 backends with a readable `dynamodb_table` configuration; it does not clear native S3 lockfiles or locks for other backend types.
 
@@ -76,6 +80,6 @@ Missing or unknown commands produce a response listing the supported commands.
 
 ## Implementation references
 
-- [Command parsing and options](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L91-L133).
-- [Review checks](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L545-L705) and [apply validation](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L806-L872).
-- [Apply execution](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L278-L456), [merge handling](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-git-status/src/lib.ts#L299-L440), and [unlock job](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L504-L563).
+- [Command parsing and options](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L91-L133).
+- [Review checks](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L545-L705) and [apply validation](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L806-L872).
+- [Apply execution](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L278-L456), [merge handling](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-git-status/src/lib.ts#L299-L440), and [unlock job](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L504-L563).

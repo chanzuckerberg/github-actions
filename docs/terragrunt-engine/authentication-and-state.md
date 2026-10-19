@@ -23,7 +23,7 @@ The checked repositories do not establish the complete permissions of the instal
 >
 > Confirm the App owner, installation process, exact App permissions, and how repositories receive its secrets.
 
-Sources: [token creation and module authentication](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L270-L326) and [repository-setting updates](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L189).
+Sources: [token creation and module authentication](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L270-L326) and [repository-setting updates](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-branch-protection/src/lib.ts#L89-L189).
 
 ## AWS authentication
 
@@ -41,20 +41,20 @@ GitHub OIDC -> terragrunt-engine-ci -> tfe-si for cache and ownership
            -> terragrunt-engine-ci -> configured backend/provider roles
 ```
 
-The `shared-infra` [CI role definition](https://github.com/chanzuckerberg/shared-infra/blob/main/terraform/accounts/czi-id/terragrunt-engine-ci-role.tf) configures access for repositories under `chanzuckerberg` and a `job_workflow_ref` condition for the shared engine and authority-reaper workflows.
+The `shared-infra` [CI role definition](https://github.com/chanzuckerberg/shared-infra/blob/8a2fd6c7a2a2ac3125a4dd33bd82b03b7f832227/terraform/accounts/czi-id/terragrunt-engine-ci-role.tf) configures access for repositories under `chanzuckerberg` and a `job_workflow_ref` condition matching `terragrunt-engine.yml` and `terragrunt_reap_authority.yml` under `.github/workflows/` in `chanzuckerberg/github-actions`.
 It grants `sts:AssumeRole` and `sts:TagSession` on roles named `tfe-si` across AWS accounts.
 The referenced [cztack module at v0.128.0](https://github.com/chanzuckerberg/cztack/blob/v0.128.0/aws-iam-role-github-action/main.tf) creates the GitHub federated trust statements and their repository and additional claim conditions.
 This source does not authorize the `evolutionaryscale` GitHub organization through the default repository mapping.
 
 The destination role needs its own trust policy permitting the source identity, as well as policies granting access to the resources Terraform manages.
-The reference [tfe-si role](https://github.com/chanzuckerberg/shared-infra/blob/main/terraform/modules/aws-account-complete/role-tfe-si.tf) trusts the configured CZI identity account and attaches `AdministratorAccess`.
+The reference [tfe-si role](https://github.com/chanzuckerberg/shared-infra/blob/8a2fd6c7a2a2ac3125a4dd33bd82b03b7f832227/terraform/modules/aws-account-complete/role-tfe-si.tf) trusts the configured CZI identity account and attaches `AdministratorAccess`.
 That is the existing configuration, rather than a minimal permission policy for a new repository.
 Its [cztack cross-account module](https://github.com/chanzuckerberg/cztack/blob/v0.47.0/aws-iam-role-crossacct/main.tf) delegates trust generation to [aws-assume-role-policy](https://github.com/chanzuckerberg/cztack/blob/v0.47.0/aws-assume-role-policy/main.tf).
 
 The default role names and trust configuration are not evidence that a new repository already has access.
 Confirm the deployed OIDC provider, trust conditions, role policies, and destination roles before integration.
 
-Source: [engine AWS credential steps](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L327-L403).
+Source: [engine AWS credential steps](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L327-L403).
 
 ## Provider credentials and inputs
 
@@ -70,7 +70,7 @@ The infrastructure repository configures its Terraform backend.
 The engine does not create that backend or select a state key through a workflow input.
 In particular, `provider_cache_bucket` controls the provider cache even when its value happens to name the same bucket as the backend.
 
-The reference [route53 component backend](https://github.com/chanzuckerberg/shared-infra/blob/main/terraform/envs/prod/route53/fogg.tf#L112-L125) uses:
+The reference [route53 component backend](https://github.com/chanzuckerberg/shared-infra/blob/8a2fd6c7a2a2ac3125a4dd33bd82b03b7f832227/terraform/envs/prod/route53/fogg.tf#L112-L125) uses:
 
 | Setting | Existing reference value |
 | --- | --- |
@@ -107,16 +107,17 @@ See [Bot commands](bot-commands.md#terragrunt-bot-unlock) before using it.
 
 The cleanup parser requires literal S3 backend settings for bucket, key, region, and DynamoDB table in readable `.tf` files.
 It does not clear native S3 lockfiles or state locks for other backends.
-The engine defaults to Terraform `1.9.8`; adopting native S3 locking would require a compatible Terraform version and changes to this cleanup path.
+The engine defaults to Terraform `1.9.8`; adopting native S3 locking would require a Terraform version that supports it, generally available from 1.11, and changes to this cleanup path.
+The reference route53 component also pins `required_version = "=1.9.8"`, so changing only the engine's `terraform_version` input would make components with that pin fail Terraform's version check.
 
-Sources: [reference caller concurrency](https://github.com/chanzuckerberg/shared-infra/blob/main/.github/workflows/terragrunt_apply.yml#L19-L21), [cleanup job](https://github.com/chanzuckerberg/github-actions/blob/main/.github/workflows/terragrunt-engine.yml#L494-L503), [cleanup ownership checks and backend parser](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-release-locks/src/lib.ts#L61-L136), and [DynamoDB lock deletion](https://github.com/chanzuckerberg/github-actions/blob/main/.github/actions/terragrunt-release-locks/src/index.ts#L63-L128).
+Sources: [reference caller concurrency](https://github.com/chanzuckerberg/shared-infra/blob/8a2fd6c7a2a2ac3125a4dd33bd82b03b7f832227/.github/workflows/terragrunt_apply.yml#L19-L21), [cleanup job](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/workflows/terragrunt-engine.yml#L494-L503), [cleanup ownership checks and backend parser](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-release-locks/src/lib.ts#L61-L136), and [DynamoDB lock deletion](https://github.com/chanzuckerberg/github-actions/blob/v6.42.0/.github/actions/terragrunt-release-locks/src/index.ts#L63-L128).
 
 ## Applies and production controls
 
 The bot command checks the commenter's write access, review requirements, and the PR's readiness before applying.
 It uses the validated PR commit and attempts to incorporate the latest base branch before execution.
 The apply status and required branch check coordinate applying before merging.
-Other invocation paths, including a push to `main` or a scheduled caller, do not run the comment command's PR checks.
+Other invocation paths, including a push to `main`, a scheduled caller, or a manual run from any branch, do not run the comment command's PR checks.
 The shared workflow does not declare a GitHub deployment environment with a production approval gate.
 
 See [Getting started](getting-started.md#branch-protection) for branch protection and [Bot commands](bot-commands.md#preconditions) for the implemented PR checks.
