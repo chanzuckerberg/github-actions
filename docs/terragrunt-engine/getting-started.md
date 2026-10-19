@@ -115,33 +115,7 @@ Repository rulesets and bypass permissions are not changed, so review them separ
 
 ## Scheduled applies (optional)
 
-A scheduled caller applies every stack from the default branch, which corrects drift by changing live resources:
-
-```yaml
-# .github/workflows/terragrunt-apply-all.yml
-name: Apply all stacks
-
-on:
-  schedule:
-    - cron: "0 10 * * *"
-  workflow_dispatch: {}
-
-permissions:
-  contents: read
-  id-token: write
-
-concurrency:
-  group: apply-all
-  cancel-in-progress: false
-
-jobs:
-  apply:
-    uses: chanzuckerberg/github-actions/.github/workflows/terragrunt-engine.yml@v6
-    secrets: inherit
-    with:
-      action: apply
-      all_stacks: true
-```
-
+To correct drift, a repository can add a scheduled caller that runs the engine with `action: apply` and `all_stacks: true`.
+It applies every stack from the default branch, changing live resources to match.
 The run fails for any stack a PR has claimed rather than overwriting that PR's applied changes; the other stacks still apply.
-A manual run applies whichever branch it is started on, without the bot's review checks.
+If the caller also allows manual runs (`workflow_dispatch`), a manual run applies whichever branch it is started on, without the bot's review checks.
