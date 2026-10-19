@@ -30,6 +30,10 @@ Releases are created by [Release Please](https://github.com/googleapis/release-p
 Many actions have their own release tags named after the action, such as `terragrunt-git-status-v0`; everything else is released under repository-wide tags, such as `v6`.
 Floating tags such as `v6` and `v6.42` move to the newest matching release.
 
+## Workflows
+
+- [Terragrunt Engine](terragrunt-engine/index.md): plan and apply Terraform through Terragrunt from pull requests.
+
 ## Actions with their own documentation
 
 - [archived-repo-scanner](https://github.com/chanzuckerberg/github-actions/tree/main/.github/actions/archived-repo-scanner)
