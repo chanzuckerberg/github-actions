@@ -1,9 +1,75 @@
 import {
-  findMatchingChangedFiles, isLabelOnPullRequest, isMatchingBranch, ProcessedImage, processImagesInput, wildcardMatch,
+  findMatchingChangedFiles,
+  getPullRequestLabels,
+  isLabelOnPullRequest,
+  isMatchingBranch,
+  ProcessedImage,
+  processImagesInput,
+  shouldUpdateManifests,
+  wildcardMatch,
 } from './main';
 
 // mock core to suppress logs
 jest.mock('@actions/core');
+
+function fakeOctokit(listPullRequestsAssociatedWithCommit: jest.Mock) {
+  return { rest: { repos: { listPullRequestsAssociatedWithCommit } } } as unknown as Parameters<typeof getPullRequestLabels>[1];
+}
+
+const pushContext = { payload: {}, repo: { owner: 'chanzuckerberg', repo: 'argus' }, sha: 'abc123' };
+
+describe('shouldUpdateManifests', () => {
+  it('does not look up labels when the build is skipped', async () => {
+    const hasTriggerLabel = jest.fn(async () => true);
+    expect(await shouldUpdateManifests(false, false, hasTriggerLabel)).toBe(false);
+    expect(await shouldUpdateManifests(false, true, hasTriggerLabel)).toBe(false);
+    expect(hasTriggerLabel).not.toHaveBeenCalled();
+  });
+
+  it('does not look up labels when manifest updates are forced', async () => {
+    const hasTriggerLabel = jest.fn(async () => false);
+    expect(await shouldUpdateManifests(true, true, hasTriggerLabel)).toBe(true);
+    expect(hasTriggerLabel).not.toHaveBeenCalled();
+  });
+
+  it('uses the label lookup otherwise', async () => {
+    expect(await shouldUpdateManifests(true, false, async () => true)).toBe(true);
+    expect(await shouldUpdateManifests(true, false, async () => false)).toBe(false);
+  });
+});
+
+describe('getPullRequestLabels', () => {
+  it('reads labels from the payload on pull_request events without calling the API', async () => {
+    const list = jest.fn();
+    const context = {
+      ...pushContext,
+      payload: { pull_request: { number: 1, state: 'open', labels: [{ name: 'stack' }, { name: 'bug' }] } },
+    };
+    expect(await getPullRequestLabels(context, fakeOctokit(list))).toEqual(['stack', 'bug']);
+    expect(list).not.toHaveBeenCalled();
+  });
+
+  it('returns undefined for a closed pull request in the payload', async () => {
+    const context = { ...pushContext, payload: { pull_request: { number: 1, state: 'closed', labels: [{ name: 'stack' }] } } };
+    expect(await getPullRequestLabels(context, fakeOctokit(jest.fn()))).toBeUndefined();
+  });
+
+  it('looks up the open pull request for the commit on push events', async () => {
+    const list = jest.fn().mockResolvedValue({
+      data: [
+        { state: 'closed', labels: [{ name: 'old' }] },
+        { state: 'open', labels: [{ name: 'stack' }] },
+      ],
+    });
+    expect(await getPullRequestLabels(pushContext, fakeOctokit(list))).toEqual(['stack']);
+    expect(list).toHaveBeenCalledWith({ owner: 'chanzuckerberg', repo: 'argus', commit_sha: 'abc123' });
+  });
+
+  it('returns undefined when the commit has no open pull request', async () => {
+    const list = jest.fn().mockResolvedValue({ data: [{ state: 'closed', labels: [] }] });
+    expect(await getPullRequestLabels(pushContext, fakeOctokit(list))).toBeUndefined();
+  });
+});
 
 describe('validate-json-schema', () => {
   describe('wildcardMatch', () => {
