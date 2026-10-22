@@ -1,13 +1,14 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { GitHub } from '@actions/github/lib/utils';
+import { retryTransientErrors } from './retry';
 
 type Output = {
   allModifiedFiles: string[]
 };
 
 export async function findChangedFiles(githubToken: string, sinceCommitSha: string = ''): Promise<Output> {
-  const gitClient = github.getOctokit(githubToken);
+  const gitClient = retryTransientErrors(github.getOctokit(githubToken));
 
   const { owner, repo } = github.context.repo;
 
