@@ -131,9 +131,7 @@ export async function main() {
     const shouldBuild = hasImages && filesMatched && branchMatched;
     core.setOutput('should_build', shouldBuild);
 
-    const hasTriggerLabel = await checkPullRequestForLabel(inputs);
-    // only update manifests if the build should run and the trigger label is present (or forceUpdateManifests is true)
-    const shouldDeploy = shouldBuild && (hasTriggerLabel || inputs.forceUpdateManifests);
+    const shouldDeploy = await shouldUpdateManifests(shouldBuild, inputs.forceUpdateManifests, () => checkPullRequestForLabel(inputs));
     core.setOutput('should_deploy', shouldDeploy);
 
     return {
@@ -224,24 +222,106 @@ export function processImagesInput(images: Record<string, ImageInput>, changedFi
   return processedImages;
 }
 
+// Manifests are updated only when the build runs, and then either always (forceUpdateManifests) or
+// when the pull request has a trigger label. The label lookup calls the GitHub API, so it is skipped
+// whenever its answer can't change the result.
+export async function shouldUpdateManifests(
+  shouldBuild: boolean,
+  forceUpdateManifests: boolean,
+  hasTriggerLabel: () => Promise<boolean>,
+): Promise<boolean> {
+  if (!shouldBuild) {
+    return false;
+  }
+  if (forceUpdateManifests) {
+    return true;
+  }
+  return hasTriggerLabel();
+}
+
+const githubAPIAttempts = 4;
+const githubAPIRetryBaseDelayMs = 2000;
+
+const defaultSleep = (ms: number): Promise<void> => new Promise((resolve) => { setTimeout(resolve, ms); });
+
+function isTransientGitHubError(status: number | undefined): boolean {
+  // No status means the request never got a response.
+  return status === undefined || status === 429 || status >= 500;
+}
+
+// withRetries retries a GitHub API call that fails transiently, with exponential backoff, and
+// otherwise rethrows with the status in the message, since Octokit's error message is empty when
+// GitHub returns an empty error body.
+export async function withRetries<T>(
+  description: string,
+  call: () => Promise<T>,
+  sleep: (ms: number) => Promise<void> = defaultSleep,
+  attempt = 1,
+): Promise<T> {
+  try {
+    return await call();
+  } catch (err) {
+    const { status } = err as { status?: number };
+    const statusText = status === undefined ? 'no response' : `status ${status}`;
+    if (!isTransientGitHubError(status) || attempt >= githubAPIAttempts) {
+      throw new Error(`${description} failed with ${statusText} after ${attempt} attempt(s): ${(err as Error).message}`);
+    }
+    const delayMs = githubAPIRetryBaseDelayMs * 2 ** (attempt - 1);
+    core.warning(`${description} failed with ${statusText}; retrying in ${delayMs / 1000}s (attempt ${attempt} of ${githubAPIAttempts})`);
+    await sleep(delayMs);
+    return withRetries(description, call, sleep, attempt + 1);
+  }
+}
+
+type Octokit = ReturnType<typeof github.getOctokit>;
+type PullRequestsForCommit = Awaited<ReturnType<Octokit['rest']['repos']['listPullRequestsAssociatedWithCommit']>>;
+
+type LabelLookupContext = {
+  payload: typeof github.context.payload
+  repo: typeof github.context.repo
+  sha: string
+};
+
+// getPullRequestLabels returns the labels of the open pull request for the triggering commit, or
+// undefined when there is none. pull_request events carry the labels in their payload, so only
+// push events need the GitHub API.
+export async function getPullRequestLabels(
+  context: LabelLookupContext,
+  octokit: Octokit,
+  sleep?: (ms: number) => Promise<void>,
+): Promise<string[] | undefined> {
+  const payloadPR = context.payload.pull_request;
+  if (payloadPR) {
+    if (payloadPR.state !== 'open') {
+      return undefined;
+    }
+    return (payloadPR.labels ?? []).map((label: { name: string }) => label.name);
+  }
+
+  const result = await withRetries<PullRequestsForCommit>(
+    `Listing pull requests for commit ${context.sha}`,
+    () => octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      commit_sha: context.sha,
+    }),
+    sleep,
+  );
+
+  const openPR = result.data.find((pr) => pr.state === 'open');
+  return openPR?.labels.map((label: { name: string }) => label.name);
+}
+
 async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean> {
-  const gitClient = github.getOctokit(inputs.githubToken);
-
-  const sha = getTriggerSha();
-  const result = await gitClient.rest.repos.listPullRequestsAssociatedWithCommit({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    commit_sha: sha,
-  });
-
-  const openPRs = result.data.filter((pr) => pr.state === 'open');
-  if (openPRs.length === 0) {
+  const labels = await getPullRequestLabels(
+    { payload: github.context.payload, repo: github.context.repo, sha: getTriggerSha() },
+    github.getOctokit(inputs.githubToken),
+  );
+  if (labels === undefined) {
     core.info('> No open pull requests found - manifests will not be updated');
     return false;
   }
 
-  const pr = openPRs[0];
-  const labels = pr.labels.map((label: { name: string }) => label.name);
   const prLabelsJoined = labels.join(',');
   core.info(`- Pull request labels: [${prLabelsJoined}]`);
 
