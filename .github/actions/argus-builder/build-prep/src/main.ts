@@ -6,6 +6,8 @@ import { escapeRegExp } from 'lodash';
 // eslint-disable-next-line import/no-relative-packages
 import { findChangedFiles } from '../../../find-changed-files/src/findChangedFiles';
 // eslint-disable-next-line import/no-relative-packages
+import { retryTransientErrors } from '../../../find-changed-files/src/retry';
+// eslint-disable-next-line import/no-relative-packages
 import { validateJsonSchema } from '../../../validate-json-schema/src/validateJsonSchema';
 import {
   getCommaDelimitedArrayInput, ProcessedImage,
@@ -239,42 +241,7 @@ export async function shouldUpdateManifests(
   return hasTriggerLabel();
 }
 
-const githubAPIAttempts = 4;
-const githubAPIRetryBaseDelayMs = 2000;
-
-const defaultSleep = (ms: number): Promise<void> => new Promise((resolve) => { setTimeout(resolve, ms); });
-
-function isTransientGitHubError(status: number | undefined): boolean {
-  // No status means the request never got a response.
-  return status === undefined || status === 429 || status >= 500;
-}
-
-// withRetries retries a GitHub API call that fails transiently, with exponential backoff, and
-// otherwise rethrows with the status in the message, since Octokit's error message is empty when
-// GitHub returns an empty error body.
-export async function withRetries<T>(
-  description: string,
-  call: () => Promise<T>,
-  sleep: (ms: number) => Promise<void> = defaultSleep,
-  attempt = 1,
-): Promise<T> {
-  try {
-    return await call();
-  } catch (err) {
-    const { status } = err as { status?: number };
-    const statusText = status === undefined ? 'no response' : `status ${status}`;
-    if (!isTransientGitHubError(status) || attempt >= githubAPIAttempts) {
-      throw new Error(`${description} failed with ${statusText} after ${attempt} attempt(s): ${(err as Error).message}`);
-    }
-    const delayMs = githubAPIRetryBaseDelayMs * 2 ** (attempt - 1);
-    core.warning(`${description} failed with ${statusText}; retrying in ${delayMs / 1000}s (attempt ${attempt} of ${githubAPIAttempts})`);
-    await sleep(delayMs);
-    return withRetries(description, call, sleep, attempt + 1);
-  }
-}
-
 type Octokit = ReturnType<typeof github.getOctokit>;
-type PullRequestsForCommit = Awaited<ReturnType<Octokit['rest']['repos']['listPullRequestsAssociatedWithCommit']>>;
 
 type LabelLookupContext = {
   payload: typeof github.context.payload
@@ -288,7 +255,6 @@ type LabelLookupContext = {
 export async function getPullRequestLabels(
   context: LabelLookupContext,
   octokit: Octokit,
-  sleep?: (ms: number) => Promise<void>,
 ): Promise<string[] | undefined> {
   const payloadPR = context.payload.pull_request;
   if (payloadPR) {
@@ -298,15 +264,11 @@ export async function getPullRequestLabels(
     return (payloadPR.labels ?? []).map((label: { name: string }) => label.name);
   }
 
-  const result = await withRetries<PullRequestsForCommit>(
-    `Listing pull requests for commit ${context.sha}`,
-    () => octokit.rest.repos.listPullRequestsAssociatedWithCommit({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      commit_sha: context.sha,
-    }),
-    sleep,
-  );
+  const result = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    commit_sha: context.sha,
+  });
 
   const openPR = result.data.find((pr) => pr.state === 'open');
   return openPR?.labels.map((label: { name: string }) => label.name);
@@ -315,7 +277,7 @@ export async function getPullRequestLabels(
 async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean> {
   const labels = await getPullRequestLabels(
     { payload: github.context.payload, repo: github.context.repo, sha: getTriggerSha() },
-    github.getOctokit(inputs.githubToken),
+    retryTransientErrors(github.getOctokit(inputs.githubToken)),
   );
   if (labels === undefined) {
     core.info('> No open pull requests found - manifests will not be updated');

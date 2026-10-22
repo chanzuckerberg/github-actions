@@ -7,18 +7,10 @@ import {
   processImagesInput,
   shouldUpdateManifests,
   wildcardMatch,
-  withRetries,
 } from './main';
 
 // mock core to suppress logs
 jest.mock('@actions/core');
-
-const noSleep = jest.fn(async () => {});
-
-// Octokit's HttpError carries the response status; its message is empty when GitHub returns an empty body.
-function githubError(status: number): Error {
-  return Object.assign(new Error(''), { status });
-}
 
 function fakeOctokit(listPullRequestsAssociatedWithCommit: jest.Mock) {
   return { rest: { repos: { listPullRequestsAssociatedWithCommit } } } as unknown as Parameters<typeof getPullRequestLabels>[1];
@@ -46,41 +38,6 @@ describe('shouldUpdateManifests', () => {
   });
 });
 
-describe('withRetries', () => {
-  beforeEach(() => noSleep.mockClear());
-
-  it('retries a 500 and returns the eventual result', async () => {
-    const call = jest.fn()
-      .mockRejectedValueOnce(githubError(500))
-      .mockRejectedValueOnce(githubError(502))
-      .mockResolvedValueOnce('ok');
-    expect(await withRetries('test call', call, noSleep)).toBe('ok');
-    expect(call).toHaveBeenCalledTimes(3);
-    expect(noSleep.mock.calls).toEqual([[2000], [4000]]);
-  });
-
-  it('retries rate limiting and requests with no response', async () => {
-    const call = jest.fn()
-      .mockRejectedValueOnce(githubError(429))
-      .mockRejectedValueOnce(new Error('socket hang up'))
-      .mockResolvedValueOnce('ok');
-    expect(await withRetries('test call', call, noSleep)).toBe('ok');
-  });
-
-  it('gives up after four attempts with the status in the error', async () => {
-    const call = jest.fn().mockRejectedValue(githubError(500));
-    await expect(withRetries('test call', call, noSleep)).rejects.toThrow('test call failed with status 500 after 4 attempt(s)');
-    expect(call).toHaveBeenCalledTimes(4);
-  });
-
-  it('does not retry client errors', async () => {
-    const call = jest.fn().mockRejectedValue(githubError(404));
-    await expect(withRetries('test call', call, noSleep)).rejects.toThrow('test call failed with status 404 after 1 attempt(s)');
-    expect(call).toHaveBeenCalledTimes(1);
-    expect(noSleep).not.toHaveBeenCalled();
-  });
-});
-
 describe('getPullRequestLabels', () => {
   it('reads labels from the payload on pull_request events without calling the API', async () => {
     const list = jest.fn();
@@ -88,32 +45,29 @@ describe('getPullRequestLabels', () => {
       ...pushContext,
       payload: { pull_request: { number: 1, state: 'open', labels: [{ name: 'stack' }, { name: 'bug' }] } },
     };
-    expect(await getPullRequestLabels(context, fakeOctokit(list), noSleep)).toEqual(['stack', 'bug']);
+    expect(await getPullRequestLabels(context, fakeOctokit(list))).toEqual(['stack', 'bug']);
     expect(list).not.toHaveBeenCalled();
   });
 
   it('returns undefined for a closed pull request in the payload', async () => {
     const context = { ...pushContext, payload: { pull_request: { number: 1, state: 'closed', labels: [{ name: 'stack' }] } } };
-    expect(await getPullRequestLabels(context, fakeOctokit(jest.fn()), noSleep)).toBeUndefined();
+    expect(await getPullRequestLabels(context, fakeOctokit(jest.fn()))).toBeUndefined();
   });
 
-  it('looks up the open pull request for the commit on push events, retrying a 500', async () => {
-    const list = jest.fn()
-      .mockRejectedValueOnce(githubError(500))
-      .mockResolvedValueOnce({
-        data: [
-          { state: 'closed', labels: [{ name: 'old' }] },
-          { state: 'open', labels: [{ name: 'stack' }] },
-        ],
-      });
-    expect(await getPullRequestLabels(pushContext, fakeOctokit(list), noSleep)).toEqual(['stack']);
+  it('looks up the open pull request for the commit on push events', async () => {
+    const list = jest.fn().mockResolvedValue({
+      data: [
+        { state: 'closed', labels: [{ name: 'old' }] },
+        { state: 'open', labels: [{ name: 'stack' }] },
+      ],
+    });
+    expect(await getPullRequestLabels(pushContext, fakeOctokit(list))).toEqual(['stack']);
     expect(list).toHaveBeenCalledWith({ owner: 'chanzuckerberg', repo: 'argus', commit_sha: 'abc123' });
-    expect(list).toHaveBeenCalledTimes(2);
   });
 
   it('returns undefined when the commit has no open pull request', async () => {
     const list = jest.fn().mockResolvedValue({ data: [{ state: 'closed', labels: [] }] });
-    expect(await getPullRequestLabels(pushContext, fakeOctokit(list), noSleep)).toBeUndefined();
+    expect(await getPullRequestLabels(pushContext, fakeOctokit(list))).toBeUndefined();
   });
 });
 
