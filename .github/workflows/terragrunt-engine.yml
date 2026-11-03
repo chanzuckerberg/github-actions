@@ -337,7 +337,7 @@ jobs:
           role-to-assume: ${{ inputs.ci_role_arn }}
           role-session-name: TerragruntEngine
       - name: Install Terragrunt
-        uses: jaxxstorm/action-install-gh-release@v3.0.0
+        uses: jaxxstorm/action-install-gh-release@v4.0.0
         with:
           repo: gruntwork-io/terragrunt
           tag: ${{ inputs.terragrunt_version }}
