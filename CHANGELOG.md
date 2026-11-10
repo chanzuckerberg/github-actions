@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.42.3](https://github.com/chanzuckerberg/github-actions/compare/v6.42.2...v6.42.3) (2026-11-10)
+
+
+### BugFixes
+
+* **helm-lint:** enforce chart fail guards by rendering ([#675](https://github.com/chanzuckerberg/github-actions/issues/675)) ([d76dcf8](https://github.com/chanzuckerberg/github-actions/commit/d76dcf8063c30c33bafb972551892f6efba40ff9))
+
 ## [6.42.2](https://github.com/chanzuckerberg/github-actions/compare/v6.42.1...v6.42.2) (2026-10-26)
 
 
