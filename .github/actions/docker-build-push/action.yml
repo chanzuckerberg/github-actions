@@ -126,12 +126,25 @@ runs:
         EXTRA_CACHE_BRANCHES: ${{ inputs.extra_cache_branches }}
       with:
         script: |
+          const crypto = require("crypto");
+          // Docker tags are capped at 128 characters. Long branch names are
+          // truncated with a hash suffix so the tag stays valid, unique, and
+          // stable across runs (cache-from must match a prior run's cache-to).
+          const maxTagLength = 128;
+          const cacheTag = (ref) => {
+            const tag = `cache-branch-${ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-")}`;
+            if (tag.length <= maxTagLength) {
+              return tag;
+            }
+            const hash = crypto.createHash("sha256").update(ref).digest("hex").slice(0, 8);
+            return `${tag.slice(0, maxTagLength - hash.length - 1)}-${hash}`;
+          };
+
           let caches = [
             "${{ steps.refs.outputs.headRef }}",
             ...process.env.EXTRA_CACHE_BRANCHES.split(",").filter(Boolean),
           ]
-          .map(ref => ref.replaceAll(/[^a-zA-Z0-9-_\.]+/g, "-"))
-          .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:cache-branch-${ref}`);
+          .map(ref => `type=registry,ref=${{ inputs.registry }}/${{ inputs.name }}:${cacheTag(ref)}`);
 
           console.log(`Will use cached images from ${JSON.stringify(caches, null, 2)}`);
 

@@ -1,8 +1,8 @@
 {
 	".github/actions/happy-cleanup": "1.10.1",
 	".github/actions/conventional-commits": "1.9.1",
-	".github/actions/docker-build-push": "1.15.1",
-	".": "6.42.1",
+	".github/actions/docker-build-push": "1.15.2",
+	".": "6.42.2",
 	".github/actions/install-happy": "1.8.1",
 	".github/actions/deploy-happy-stack": "2.3.1",
 	".github/actions/get-github-ref-names": "1.9.1",
