@@ -25,7 +25,7 @@ The [workflow's input definitions](https://github.com/chanzuckerberg/github-acti
 | `trigger_all_paths` | `terraform/modules` | Shared-module directories, one per line. See below. |
 | `set_apply_gate` | `false` | Set the `terragrunt-apply` status after finding stacks. Enable it in the plan caller. |
 | `skip_pr_owned` | `true` | Check stack claims: applies fail for stacks another PR has claimed, and plans only warn. |
-| `claim_authority` | `false` | Claim stacks for the PR before running. Comment-triggered applies always claim. |
+| `claim_authority` | `false` | Claim stacks for the PR before running. Comment-triggered applies always claim. Applies outside a PR claim as `main-apply` while they run, unless `skip_pr_owned` is off. |
 | `release_authority` | `false` | Release claims after a successful run outside PR comments. |
 | `auto_merge_on_success` | `false` | In PR context, report the result and, after success, release claims and merge. Comment-triggered applies always do this. |
 | `status_check_name` | `terragrunt-apply` | Name of the apply status. Keep the default: the initial pending status always uses `terragrunt-apply`. |

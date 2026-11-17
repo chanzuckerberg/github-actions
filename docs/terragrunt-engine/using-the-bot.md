@@ -65,6 +65,10 @@ Another PR has claimed the stack, so look at that PR before applying.
 Its claim is released when all its stacks apply successfully, when it closes, or by `unlock`.
 Releasing a claim does not undo the other PR's changes.
 
+`owned by PR #main-apply` is not a PR.
+An apply from the base branch (after a merge, on a schedule, or run manually) is still applying the stack.
+Wait for that run to finish, then comment again.
+
 ### Terraform cannot acquire the state lock
 
 A previous run may have stopped without releasing its lock, or another run may still hold it.

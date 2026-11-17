@@ -266,6 +266,10 @@ jobs:
       TG_PROVIDER_CACHE_DIR: /tmp/terragrunt-provider-cache
       # Cache key is always derived from the calling repo: terraform/<owner>/<repo>/...
       PROVIDER_CACHE_KEY: ${{ format('terraform/{0}/provider-cache/providers.tar.gz', github.repository) }}
+      # Owner id that an apply outside a PR (post-merge push, schedule, manual run)
+      # claims its stacks under, so a PR's apply-and-merge is blocked while it runs.
+      # Empty for plans, PR-triggered runs, and callers that turn off skip_pr_owned.
+      MAIN_APPLY_OWNER: ${{ inputs.skip_pr_owned && contains(inputs.action, 'apply') && github.event_name != 'issue_comment' && github.event_name != 'pull_request' && 'main-apply' || '' }}
     steps:
       - name: Record job start
         run: echo "JOB_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
@@ -375,16 +379,19 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: read
+          # Empty outside a main apply, so the action reads the PR number from the event.
+          pr_number: ${{ env.MAIN_APPLY_OWNER }}
           stacks: ${{ format('["{0}"]', matrix.stack) }}
           skip_if_owned: ${{ contains(inputs.action, 'apply') }}
           authority_table: ${{ inputs.authority_table }}
           aws_region: ${{ inputs.aws_region }}
       - name: Claim stack authority
         id: authority_claim
-        if: ${{ (inputs.claim_authority || github.event_name == 'issue_comment') && (steps.authority.outputs.proceed != 'false') }}
+        if: ${{ (inputs.claim_authority || github.event_name == 'issue_comment' || env.MAIN_APPLY_OWNER != '') && (steps.authority.outputs.proceed != 'false') }}
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: claim
+          pr_number: ${{ env.MAIN_APPLY_OWNER }}
           stacks: ${{ format('["{0}"]', matrix.stack) }}
           authority_table: ${{ inputs.authority_table }}
           aws_region: ${{ inputs.aws_region }}
@@ -477,6 +484,16 @@ jobs:
           role-session-name: TerragruntEngineCleanup
       - name: Release stack authority
         if: ${{ inputs.release_authority && !inputs.auto_merge_on_success && github.event_name != 'issue_comment' && steps.tgaction.outcome == 'success' && steps.authority.outputs.proceed != 'false' }}
+        uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
+        with:
+          operation: release
+          stacks: ${{ format('["{0}"]', matrix.stack) }}
+          authority_table: ${{ inputs.authority_table }}
+          aws_region: ${{ inputs.aws_region }}
+      # A main apply holds its claim only while it runs, so release it on failure
+      # too. A claim left behind would block every PR's apply on this stack.
+      - name: Release stack authority (apply outside a PR)
+        if: ${{ always() && env.MAIN_APPLY_OWNER != '' && steps.authority_claim.outcome == 'success' }}
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-stack-authority@terragrunt-stack-authority-v0
         with:
           operation: release
