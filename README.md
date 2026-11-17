@@ -9,6 +9,13 @@ NOTE:
 
 GitHub has an undocumented limitation with reusable Actions -- they must all live under `.github/workflows/`
 
+## Documentation
+
+Usage guides live under [docs/](docs/index.md) and are published with GitHub Pages at [chanzuckerberg.github.io/github-actions](https://chanzuckerberg.github.io/github-actions/).
+Pages builds the site with Jekyll from `main` and the `/docs` folder (**Settings → Pages → Deploy from a branch**), so no custom publishing workflow is needed.
+Use relative `.md` links between pages; they work both on GitHub and on the published site.
+Wrap workflow examples that contain `${{ ... }}` in HTML-commented Liquid `raw` markers (`<!-- {% raw %} -->` and `<!-- {% endraw %} -->`) so Jekyll leaves the expressions alone.
+
 ## Installation
 
 For some actions you will need to have a helper Github

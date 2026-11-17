@@ -14,3 +14,9 @@ indent_style = tab
 [*.{yml,yaml,ts,js,json}]
 indent_style = space
 indent_size = 2
+
+[*.md]
+# Write prose with one sentence per source line and blank lines between paragraphs.
+# This keeps Git diffs focused on wording changes rather than paragraph reflow.
+# Use editor soft wrapping instead of reflowing prose to a fixed width.
+max_line_length = unset
