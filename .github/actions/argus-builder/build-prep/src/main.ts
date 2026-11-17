@@ -6,6 +6,8 @@ import { escapeRegExp } from 'lodash';
 // eslint-disable-next-line import/no-relative-packages
 import { findChangedFiles } from '../../../find-changed-files/src/findChangedFiles';
 // eslint-disable-next-line import/no-relative-packages
+import { retryTransientErrors } from '../../../find-changed-files/src/retry';
+// eslint-disable-next-line import/no-relative-packages
 import { validateJsonSchema } from '../../../validate-json-schema/src/validateJsonSchema';
 import {
   getCommaDelimitedArrayInput, ProcessedImage,
@@ -131,9 +133,7 @@ export async function main() {
     const shouldBuild = hasImages && filesMatched && branchMatched;
     core.setOutput('should_build', shouldBuild);
 
-    const hasTriggerLabel = await checkPullRequestForLabel(inputs);
-    // only update manifests if the build should run and the trigger label is present (or forceUpdateManifests is true)
-    const shouldDeploy = shouldBuild && (hasTriggerLabel || inputs.forceUpdateManifests);
+    const shouldDeploy = await shouldUpdateManifests(shouldBuild, inputs.forceUpdateManifests, () => checkPullRequestForLabel(inputs));
     core.setOutput('should_deploy', shouldDeploy);
 
     return {
@@ -224,24 +224,66 @@ export function processImagesInput(images: Record<string, ImageInput>, changedFi
   return processedImages;
 }
 
-async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean> {
-  const gitClient = github.getOctokit(inputs.githubToken);
+// Manifests are updated only when the build runs, and then either always (forceUpdateManifests) or
+// when the pull request has a trigger label. The label lookup calls the GitHub API, so it is skipped
+// whenever its answer can't change the result.
+export async function shouldUpdateManifests(
+  shouldBuild: boolean,
+  forceUpdateManifests: boolean,
+  hasTriggerLabel: () => Promise<boolean>,
+): Promise<boolean> {
+  if (!shouldBuild) {
+    return false;
+  }
+  if (forceUpdateManifests) {
+    return true;
+  }
+  return hasTriggerLabel();
+}
 
-  const sha = getTriggerSha();
-  const result = await gitClient.rest.repos.listPullRequestsAssociatedWithCommit({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    commit_sha: sha,
+type Octokit = ReturnType<typeof github.getOctokit>;
+
+type LabelLookupContext = {
+  payload: typeof github.context.payload
+  repo: typeof github.context.repo
+  sha: string
+};
+
+// getPullRequestLabels returns the labels of the open pull request for the triggering commit, or
+// undefined when there is none. pull_request events carry the labels in their payload, so only
+// push events need the GitHub API.
+export async function getPullRequestLabels(
+  context: LabelLookupContext,
+  octokit: Octokit,
+): Promise<string[] | undefined> {
+  const payloadPR = context.payload.pull_request;
+  if (payloadPR) {
+    if (payloadPR.state !== 'open') {
+      return undefined;
+    }
+    return (payloadPR.labels ?? []).map((label: { name: string }) => label.name);
+  }
+
+  const result = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    commit_sha: context.sha,
   });
 
-  const openPRs = result.data.filter((pr) => pr.state === 'open');
-  if (openPRs.length === 0) {
+  const openPR = result.data.find((pr) => pr.state === 'open');
+  return openPR?.labels.map((label: { name: string }) => label.name);
+}
+
+async function checkPullRequestForLabel(inputs: Inputs): Promise<boolean> {
+  const labels = await getPullRequestLabels(
+    { payload: github.context.payload, repo: github.context.repo, sha: getTriggerSha() },
+    retryTransientErrors(github.getOctokit(inputs.githubToken)),
+  );
+  if (labels === undefined) {
     core.info('> No open pull requests found - manifests will not be updated');
     return false;
   }
 
-  const pr = openPRs[0];
-  const labels = pr.labels.map((label: { name: string }) => label.name);
   const prLabelsJoined = labels.join(',');
   core.info(`- Pull request labels: [${prLabelsJoined}]`);
 

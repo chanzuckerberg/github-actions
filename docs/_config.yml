@@ -1,0 +1,12 @@
+title: CZI GitHub Actions
+description: Reusable GitHub Actions and workflows used across CZI.
+theme: jekyll-theme-minimal
+url: https://chanzuckerberg.github.io
+baseurl: /github-actions
+
+defaults:
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: default

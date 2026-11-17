@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.15.2](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.15.1...docker-build-push-v1.15.2) (2026-10-26)
+
+
+### BugFixes
+
+* **docker-build-push:** keep registry cache tag within the 128-character Docker tag limit ([#671](https://github.com/chanzuckerberg/github-actions/issues/671)) ([1f6c387](https://github.com/chanzuckerberg/github-actions/commit/1f6c3878f8a28d2708435e7bd94ee59fd00c6227))
+
+## [1.15.1](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.15.0...docker-build-push-v1.15.1) (2026-10-22)
+
+
+### Misc
+
+* bump baseline-browser-mapping from 2.10.16 to 2.11.25 ([#647](https://github.com/chanzuckerberg/github-actions/issues/647)) ([98e251a](https://github.com/chanzuckerberg/github-actions/commit/98e251ab5fefa5d70c1d50cbb136bac6a4a7830a))
+
 ## [1.15.0](https://github.com/chanzuckerberg/github-actions/compare/docker-build-push-v1.14.1...docker-build-push-v1.15.0) (2026-10-13)
 
 

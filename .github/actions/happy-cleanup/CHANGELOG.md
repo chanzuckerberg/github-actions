@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.1](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.10.0...happy-cleanup-v1.10.1) (2026-10-22)
+
+
+### Misc
+
+* bump baseline-browser-mapping from 2.10.16 to 2.11.25 ([#647](https://github.com/chanzuckerberg/github-actions/issues/647)) ([98e251a](https://github.com/chanzuckerberg/github-actions/commit/98e251ab5fefa5d70c1d50cbb136bac6a4a7830a))
+
 ## [1.10.0](https://github.com/chanzuckerberg/github-actions/compare/happy-cleanup-v1.9.2...happy-cleanup-v1.10.0) (2026-04-06)
 
 
