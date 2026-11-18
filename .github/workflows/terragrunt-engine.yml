@@ -115,9 +115,11 @@ on:
         default: false
       set_apply_gate:
         description: >
-          If true, set the apply-gate commit status right after stack discovery.
-          Posts "pending" if stacks changed (merge blocked until @terragrunt-bot apply-and-merge succeeds) or
-          "success" if none changed (docs-only PRs pass through). Used by the plan workflow.
+          If true, require and set the apply-gate commit status. Posts "pending"
+          if stacks changed (merge blocked until @terragrunt-bot apply-and-merge
+          succeeds) or "success" if none changed (docs-only PRs pass through).
+          If false, apply-and-merge still applies and enables auto-merge without
+          modifying branch protection.
         required: false
         type: boolean
         default: false
@@ -179,7 +181,7 @@ jobs:
           status_check_name: ${{ inputs.status_check_name }}
           github_token: ${{ steps.generate_token.outputs.token }}
       - name: Enforce branch protection
-        if: ${{ steps.dispatch.outputs.command == 'apply-and-merge' }}
+        if: ${{ inputs.set_apply_gate && steps.dispatch.outputs.command == 'apply-and-merge' }}
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-branch-protection@terragrunt-branch-protection-v0
         with:
           status_check_name: ${{ inputs.status_check_name }}
