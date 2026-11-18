@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.6.2...release-please-semvar-v0.6.3) (2026-11-18)
+
+
+### Misc
+
+* bump brace-expansion from 5.0.5 to 5.0.12 ([#544](https://github.com/chanzuckerberg/github-actions/issues/544)) ([96714d4](https://github.com/chanzuckerberg/github-actions/commit/96714d4cf599dc14ffd65445d0d977ba845cff93))
+
 ## [0.6.2](https://github.com/chanzuckerberg/github-actions/compare/release-please-semvar-v0.6.1...release-please-semvar-v0.6.2) (2026-10-22)
 
 

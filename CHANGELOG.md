@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.42.3](https://github.com/chanzuckerberg/github-actions/compare/v6.42.2...v6.42.3) (2026-11-18)
+
+
+### BugFixes
+
+* **helm-lint:** enforce chart fail guards by rendering ([#675](https://github.com/chanzuckerberg/github-actions/issues/675)) ([d76dcf8](https://github.com/chanzuckerberg/github-actions/commit/d76dcf8063c30c33bafb972551892f6efba40ff9))
+* **terragrunt-engine:** hold stack authority during applies from main ([#678](https://github.com/chanzuckerberg/github-actions/issues/678)) ([cf02be2](https://github.com/chanzuckerberg/github-actions/commit/cf02be2f85bd69b3578bd0059aa6ffa570c2d26a))
+* **terragrunt:** keep apply gate optional ([#679](https://github.com/chanzuckerberg/github-actions/issues/679)) ([5c7106a](https://github.com/chanzuckerberg/github-actions/commit/5c7106ae405746e167404b995fce6a4d24edf740))
+
+
+### Misc
+
+* bump brace-expansion from 5.0.5 to 5.0.12 ([#544](https://github.com/chanzuckerberg/github-actions/issues/544)) ([96714d4](https://github.com/chanzuckerberg/github-actions/commit/96714d4cf599dc14ffd65445d0d977ba845cff93))
+* bump fast-xml-parser from 5.7.3 to 5.12.0 ([#677](https://github.com/chanzuckerberg/github-actions/issues/677)) ([af4f747](https://github.com/chanzuckerberg/github-actions/commit/af4f7476e1373709ee48665f91a1eafa4acebd13))
+* bump jaxxstorm/action-install-gh-release from 3.0.0 to 4.0.0 ([#673](https://github.com/chanzuckerberg/github-actions/issues/673)) ([7959867](https://github.com/chanzuckerberg/github-actions/commit/795986715a55962c6445fa9002e63f18b4570ea5))
+* bump updatecli/updatecli-action from 3.9.0 to 3.10.0 ([#670](https://github.com/chanzuckerberg/github-actions/issues/670)) ([9250960](https://github.com/chanzuckerberg/github-actions/commit/9250960b4fd576274defd9ab09629b4f3810c5da))
+
 ## [6.42.2](https://github.com/chanzuckerberg/github-actions/compare/v6.42.1...v6.42.2) (2026-10-26)
 
 
