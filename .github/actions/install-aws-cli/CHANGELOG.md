@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/chanzuckerberg/github-actions/compare/install-aws-cli-v0.1.2...install-aws-cli-v0.1.3) (2026-11-18)
+
+
+### Misc
+
+* bump brace-expansion from 5.0.5 to 5.0.12 ([#544](https://github.com/chanzuckerberg/github-actions/issues/544)) ([96714d4](https://github.com/chanzuckerberg/github-actions/commit/96714d4cf599dc14ffd65445d0d977ba845cff93))
+* bump fast-xml-parser from 5.7.3 to 5.12.0 ([#677](https://github.com/chanzuckerberg/github-actions/issues/677)) ([af4f747](https://github.com/chanzuckerberg/github-actions/commit/af4f7476e1373709ee48665f91a1eafa4acebd13))
+
 ## [0.1.2](https://github.com/chanzuckerberg/github-actions/compare/install-aws-cli-v0.1.1...install-aws-cli-v0.1.2) (2026-10-22)
 
 
