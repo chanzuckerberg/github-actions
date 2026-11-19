@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.42.4](https://github.com/chanzuckerberg/github-actions/compare/v6.42.3...v6.42.4) (2026-11-19)
+
+
+### BugFixes
+
+* **release:** include performance changes ([#682](https://github.com/chanzuckerberg/github-actions/issues/682)) ([4e3aaf4](https://github.com/chanzuckerberg/github-actions/commit/4e3aaf4a78fadc1aef7fe963a08377926d38a2e9))
+
+
+### Performance
+
+* **terragrunt:** limit checkout history ([#681](https://github.com/chanzuckerberg/github-actions/issues/681)) ([73ce94e](https://github.com/chanzuckerberg/github-actions/commit/73ce94e72b184fdb268152e3b147ac1c7f82dbef))
+
 ## [6.42.3](https://github.com/chanzuckerberg/github-actions/compare/v6.42.2...v6.42.3) (2026-11-18)
 
 
