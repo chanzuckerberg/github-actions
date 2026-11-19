@@ -18,6 +18,11 @@
 			"hidden": false
 		},
 		{
+			"type": "perf",
+			"section": "Performance",
+			"hidden": false
+		},
+		{
 			"type": "chore",
 			"section": "Misc",
 			"hidden": false
