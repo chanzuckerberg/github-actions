@@ -288,7 +288,7 @@ jobs:
       # refs/pull/N/merge ref used elsewhere is recomputed by GitHub on its own
       # schedule, so it can resolve to a merge with a stale base or to a commit
       # pushed after validation passed.
-      - name: Checkout repository with required history
+      - name: Checkout repository
         uses: actions/checkout@v7
         with:
           ref: ${{ needs.dispatch.outputs.head_sha || steps.ref.outputs.headRef || 'refs/heads/main' }}
