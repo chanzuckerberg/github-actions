@@ -145,6 +145,12 @@ on:
       TERRAGRUNT_BOT_PK:
         description: "GitHub App private key for the terragrunt-bot token (org-wide secret)."
         required: false
+      GH_ACTIONS_HELPER_APP_ID:
+        description: "Fallback GitHub App client ID when the Terragrunt bot is unavailable."
+        required: false
+      GH_ACTIONS_HELPER_PK:
+        description: "Fallback GitHub App private key when the Terragrunt bot is unavailable."
+        required: false
 
 permissions:
   contents: read
@@ -170,8 +176,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
-          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID || secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK || secrets.GH_ACTIONS_HELPER_PK }}
           owner: ${{ github.repository_owner }}
       - name: Dispatch @terragrunt-bot command
         id: dispatch
@@ -205,8 +211,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
-          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID || secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK || secrets.GH_ACTIONS_HELPER_PK }}
       # Must be the same commit run-all applies. An issue_comment event carries
       # no ref, so the default checkout would land on the default branch and the
       # matrix would describe a tree nobody runs.
@@ -239,8 +245,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
-          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID || secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK || secrets.GH_ACTIONS_HELPER_PK }}
       - name: Set apply gate
         uses: chanzuckerberg/github-actions/.github/actions/terragrunt-git-status@terragrunt-git-status-v0
         with:
@@ -279,8 +285,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
-          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID || secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK || secrets.GH_ACTIONS_HELPER_PK }}
       - name: Get Base Git Ref
         id: ref
         uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1
@@ -318,8 +324,8 @@ jobs:
         id: module_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
-          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID || secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK || secrets.GH_ACTIONS_HELPER_PK }}
           owner: ${{ github.repository_owner }}
       # Rewriting the URL rather than the module sources means repos keep their
       # existing git@github.com: sources and need no deploy keys.
@@ -540,8 +546,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
-          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID || secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK || secrets.GH_ACTIONS_HELPER_PK }}
       - name: Get Base Git Ref
         id: ref
         uses: chanzuckerberg/github-actions/.github/actions/get-github-ref-names@get-github-ref-names-v1
@@ -598,8 +604,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID }}
-          private-key: ${{ secrets.TERRAGRUNT_BOT_PK }}
+          client-id: ${{ secrets.TERRAGRUNT_BOT_APP_ID || secrets.GH_ACTIONS_HELPER_APP_ID }}
+          private-key: ${{ secrets.TERRAGRUNT_BOT_PK || secrets.GH_ACTIONS_HELPER_PK }}
       - name: Configure AWS credentials (CI base role)
         uses: aws-actions/configure-aws-credentials@v6
         with:
