@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.43.0](https://github.com/chanzuckerberg/github-actions/compare/v6.42.4...v6.43.0) (2026-11-20)
+
+
+### Features
+
+* **argus-builder:** give builds a scoped read-only token for private repositories ([#684](https://github.com/chanzuckerberg/github-actions/issues/684)) ([2589d5c](https://github.com/chanzuckerberg/github-actions/commit/2589d5c9e1676df783676e28a2fbce4d15a48f29))
+
 ## [6.42.4](https://github.com/chanzuckerberg/github-actions/compare/v6.42.3...v6.42.4) (2026-11-19)
 
 
