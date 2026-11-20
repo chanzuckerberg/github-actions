@@ -187,6 +187,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: 'ARG1=VALUE1\nARG2=VALUE2',
         secret_files: 'secret.txt\nsecret2.txt',
+        private_repositories: '',
         argus_root: 'frontend',
         compression: '',
         compression_level: '',
@@ -195,6 +196,22 @@ describe('validate-json-schema', () => {
         branch_matched: true,
         should_build: true,
       }]);
+    });
+
+    it('joins private_repositories into a comma separated list', () => {
+      const processedImage: ProcessedImage[] = processImagesInput(
+        {
+          api: {
+            context: 'core',
+            dockerfile: 'core/Dockerfile',
+            private_repositories: [' tools ', 'library', ''],
+          },
+        },
+        ['src/main.ts'],
+        'feature-123',
+      );
+
+      expect(processedImage[0].private_repositories).toBe('tools,library');
     });
 
     it('is expected to build with default branch and file filters', () => {
@@ -216,6 +233,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: '',
         secret_files: '',
+        private_repositories: '',
         argus_root: '.',
         compression: '',
         compression_level: '',
@@ -245,6 +263,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: '',
         secret_files: '',
+        private_repositories: '',
         argus_root: '.',
         compression: '',
         compression_level: '',
@@ -275,6 +294,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: '',
         secret_files: '',
+        private_repositories: '',
         argus_root: '.',
         compression: '',
         compression_level: '',
@@ -305,6 +325,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: '',
         secret_files: '',
+        private_repositories: '',
         argus_root: '.',
         compression: '',
         compression_level: '',
@@ -335,6 +356,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: '',
         secret_files: '',
+        private_repositories: '',
         argus_root: '.',
         compression: '',
         compression_level: '',
@@ -365,6 +387,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: '',
         secret_files: '',
+        private_repositories: '',
         argus_root: '.',
         compression: '',
         compression_level: '',
@@ -395,6 +418,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: '',
         secret_files: '',
+        private_repositories: '',
         argus_root: '.',
         compression: '',
         compression_level: '',
@@ -423,6 +447,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: '',
         secret_files: '',
+        private_repositories: '',
         argus_root: '.',
         compression: '',
         compression_level: '',
@@ -455,6 +480,7 @@ describe('validate-json-schema', () => {
         platform: 'linux/arm64',
         build_args: '',
         secret_files: '',
+        private_repositories: '',
         argus_root: '.',
         compression: 'zstd',
         compression_level: '3',
