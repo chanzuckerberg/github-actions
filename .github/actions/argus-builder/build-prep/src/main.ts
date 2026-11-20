@@ -35,6 +35,10 @@ const imagesInputSchema = {
         type: 'array',
         items: { type: 'string' },
       },
+      private_repositories: {
+        type: 'array',
+        items: { type: 'string' },
+      },
       argus_root: { type: 'string' },
       path_filters: {
         type: 'array',
@@ -61,6 +65,7 @@ type ImageInput = {
   platform?: string
   build_args?: string[]
   secret_files?: string[]
+  private_repositories?: string[]
   argus_root?: string
   path_filters?: string[] | string[][]
   branches_include?: string[]
@@ -188,6 +193,7 @@ export function processImagesInput(images: Record<string, ImageInput>, changedFi
   const processedImages = Object.entries(images).map(([name, image]) => {
     const buildArgs = cleanArray(image.build_args || []).join('\n');
     const secretFiles = cleanArray(image.secret_files || []).join('\n');
+    const privateRepositories = cleanArray(image.private_repositories || []).join(',');
     const argusRoot = image.argus_root || '.';
 
     const pathFilters: string[][] = (image.path_filters || ['**/*']).map((f: any) => (Array.isArray(f) ? f : [f]));
@@ -212,6 +218,7 @@ export function processImagesInput(images: Record<string, ImageInput>, changedFi
       platform: image.platform || 'linux/arm64',
       build_args: buildArgs,
       secret_files: secretFiles,
+      private_repositories: privateRepositories,
       argus_root: argusRoot,
       compression: image.compression || '',
       compression_level: image.compression_level || '',

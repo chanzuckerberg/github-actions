@@ -43,6 +43,13 @@ inputs:
   github_private_key:
     description: "GitHub App private key"
     required: true
+  private_repositories:
+    description: >-
+      Repository names (without owner), comma or newline delimited, that the
+      build needs to read. When set, a read-only token limited to these
+      repositories is passed to the build as the BuildKit secret github_token.
+    required: false
+    default: ""
   clean_checkout:
     description: "Whether to clean the repository before checking out"
     required: false
@@ -94,6 +101,27 @@ runs:
       with:
         app-id: ${{ inputs.github_app_id }}
         private-key: ${{ inputs.github_private_key }}
+    - name: Generate read-only token for private repositories
+      id: private_repositories_token
+      if: inputs.private_repositories != ''
+      uses: actions/create-github-app-token@v3
+      with:
+        app-id: ${{ inputs.github_app_id }}
+        private-key: ${{ inputs.github_private_key }}
+        owner: ${{ github.repository_owner }}
+        repositories: ${{ inputs.private_repositories }}
+        permission-contents: read
+    - name: Stage the private repositories token
+      id: private_repositories_secret
+      if: inputs.private_repositories != ''
+      shell: bash
+      env:
+        PRIVATE_REPOSITORIES_TOKEN: ${{ steps.private_repositories_token.outputs.token }}
+      run: |
+        umask 077
+        token_path="${RUNNER_TEMP}/github_token"
+        printf '%s' "${PRIVATE_REPOSITORIES_TOKEN}" > "${token_path}"
+        echo "path=${token_path}" >> "${GITHUB_OUTPUT}"
     - uses: actions/checkout@v6
       with:
         persist-credentials: false
@@ -165,12 +193,20 @@ runs:
           IMAGE_TAG=${{ inputs.image_tag }}
           COMMIT_SHA=${{ inputs.commit_sha }}
           ${{ inputs.build_args }}
-        secret-files: ${{ inputs.secret_files }}
+        secret-files: |
+          ${{ inputs.secret_files }}
+          ${{ steps.private_repositories_secret.outputs.path && format('github_token={0}', steps.private_repositories_secret.outputs.path) || '' }}
         load: "false"
         extra_cache_branches: ${{ steps.release-please-branches.outputs.RELEASE_PLEASE_BRANCHES }}
         compression: ${{ inputs.compression }}
         compression_level: ${{ inputs.compression_level }}
         force_compression: ${{ inputs.force_compression }}
+    - name: Remove the private repositories token
+      if: always() && steps.private_repositories_secret.outputs.path != ''
+      shell: bash
+      env:
+        TOKEN_PATH: ${{ steps.private_repositories_secret.outputs.path }}
+      run: rm -f "${TOKEN_PATH}"
     - name: Job summary
       uses: actions/github-script@v9
       env:

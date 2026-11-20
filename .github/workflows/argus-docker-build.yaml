@@ -127,6 +127,7 @@ jobs:
           platform: ${{ matrix.image.platform }}
           build_args: ${{ matrix.image.build_args }}
           secret_files: ${{ matrix.image.secret_files }}
+          private_repositories: ${{ matrix.image.private_repositories }}
           image_tag: |
             ${{ needs.prep.outputs.image_tag }}
             ${{ contains(inputs.envs, 'prod') && format('prod-{0}', needs.prep.outputs.image_tag) || '' }}

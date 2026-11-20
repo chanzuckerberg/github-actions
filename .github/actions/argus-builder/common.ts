@@ -8,6 +8,7 @@ export type ProcessedImage = {
   platform: string
   build_args: string
   secret_files: string
+  private_repositories?: string
   argus_root: string
   compression: string
   compression_level: string
